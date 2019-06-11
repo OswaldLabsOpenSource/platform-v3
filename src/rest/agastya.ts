@@ -13,9 +13,12 @@ import { Client } from "elasticsearch";
 import {
   AWS_ELASTIC_ACCESS_KEY,
   AWS_ELASTIC_SECRET_KEY,
-  AWS_ELASTIC_HOST
+  AWS_ELASTIC_HOST,
+  SENTRY_DSN
 } from "../config";
 import connectionClass from "http-aws-es";
+import { init, captureException } from "@sentry/node";
+init({ dsn: SENTRY_DSN });
 
 AWS.config.update({
   credentials: new AWS.Credentials(
@@ -169,9 +172,7 @@ export const collect = async (
       body: data
     })
     .then(() => {})
-    .catch(error => {
-      console.log("Elastic Error", error);
-    });
+    .catch(error => captureException(error));
 
   return {
     status: "success",

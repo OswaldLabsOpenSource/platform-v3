@@ -12,6 +12,12 @@ export class AgastyaController {
   async get(req: Request, res: Response) {
     const apiKey = req.params.apiKey;
     joiValidate({ apiKey: Joi.string().required() }, { apiKey });
-    res.json(await collect(apiKey, req.body, res.locals, req.headers));
+    let data = req.body;
+    if (!data || (typeof data === "object" && !Object.keys(data).length)) {
+      if (typeof req.query === "object" && Object.keys(req.query).length) {
+        data = req.query;
+      }
+    }
+    res.json(await collect(apiKey, data, res.locals, req.headers));
   }
 }
