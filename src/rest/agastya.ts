@@ -8,6 +8,26 @@ import parseDomain from "parse-domain";
 import cryptoRandomString from "crypto-random-string";
 import { getGeolocationFromIp } from "../helpers/location";
 import { IncomingHttpHeaders } from "http";
+import AWS from "aws-sdk";
+import { Client } from "elasticsearch";
+import {
+  AWS_ELASTIC_ACCESS_KEY,
+  AWS_ELASTIC_SECRET_KEY,
+  AWS_ELASTIC_HOST
+} from "../config";
+import connectionClass from "http-aws-es";
+
+AWS.config.update({
+  credentials: new AWS.Credentials(
+    AWS_ELASTIC_ACCESS_KEY,
+    AWS_ELASTIC_SECRET_KEY
+  ),
+  region: "eu-west-3"
+});
+const client = new Client({
+  host: AWS_ELASTIC_HOST,
+  connectionClass
+});
 
 export const collect = async (
   apiKey: string,
@@ -30,7 +50,7 @@ export const collect = async (
   // Set globals
   const currentDate = new Date();
   data.date = currentDate.toISOString();
-  data.client = `platform-${pkg.version}`;
+  data.client = `${pkg.name}-${pkg.version}`;
   data.api_key = apiKey;
   data.ip = md5(locals.ipAddress);
   data.session_id =
@@ -118,7 +138,10 @@ export const collect = async (
   );
 
   // Check domain
-  const domain = data.url_domain ? data.url_domain.replace("www.", "") : null;
+  const domain =
+    data.url_domain && data.url_domain.startsWith("www.")
+      ? data.url_domain.replace("www.", "")
+      : null;
 
   // Geolocation from IP
   const geoLocation = await getGeolocationFromIp(locals.ipAddress);
@@ -138,6 +161,17 @@ export const collect = async (
   });
 
   // Store in ElasticSearch
+  client
+    .index({
+      index: `${currentDate.getUTCFullYear()}-${currentDate.getUTCMonth() +
+        1}-${currentDate.getUTCDate()}`,
+      type: "pageview",
+      body: data
+    })
+    .then(() => {})
+    .catch(error => {
+      console.log("Elastic Error", error);
+    });
 
   return {
     status: "success",

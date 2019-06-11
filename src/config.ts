@@ -78,6 +78,10 @@ export const GOOGLE_CLIENT_REDIRECT = process.env.GOOGLE_CLIENT_REDIRECT || "";
 export const GOOGLE_PROJECT_ID = process.env.GOOGLE_PROJECT_ID || "";
 export const GOOGLE_TRANSLATE_KEY = process.env.GOOGLE_TRANSLATE_KEY || "";
 
+export const AWS_ELASTIC_ACCESS_KEY = process.env.AWS_ELASTIC_ACCESS_KEY || "";
+export const AWS_ELASTIC_SECRET_KEY = process.env.AWS_ELASTIC_SECRET_KEY || "";
+export const AWS_ELASTIC_HOST = process.env.AWS_ELASTIC_HOST || "";
+
 export const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || "";
 export const CHARGEBEE_SECRET_KEY = process.env.CHARGEBEE_SECRET_KEY || "";
 export const CHARGEBEE_SITE = process.env.CHARGEBEE_SITE || "";
