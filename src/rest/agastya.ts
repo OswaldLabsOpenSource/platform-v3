@@ -53,7 +53,6 @@ export const collect = async (
   const currentDate = new Date();
   data.date = currentDate.toISOString();
   data.client = `${pkg.name}-${pkg.version}`;
-  data.api_key = apiKey;
   data.ip = md5(locals.ipAddress);
   data.session_id =
     data.session_id || cryptoRandomString({ length: 20, type: "hex" });
@@ -165,7 +164,7 @@ export const collect = async (
   // Store in ElasticSearch
   client
     .index({
-      index: `agastya`,
+      index: `agastya-${apiKey}`,
       body: data
     })
     .then(() => {})
