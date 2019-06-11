@@ -9,7 +9,7 @@ import cryptoRandomString from "crypto-random-string";
 import { getGeolocationFromIp } from "../helpers/location";
 import { IncomingHttpHeaders } from "http";
 import AWS from "aws-sdk";
-import { Client } from "elasticsearch";
+import { Client } from "@elastic/elasticsearch";
 import {
   AWS_ELASTIC_ACCESS_KEY,
   AWS_ELASTIC_SECRET_KEY,
@@ -28,8 +28,7 @@ AWS.config.update({
   region: "eu-west-3"
 });
 const client = new Client({
-  host: AWS_ELASTIC_HOST,
-  connectionClass
+  node: AWS_ELASTIC_HOST
 });
 
 export const collect = async (
@@ -166,9 +165,7 @@ export const collect = async (
   // Store in ElasticSearch
   client
     .index({
-      index: `${currentDate.getUTCFullYear()}-${currentDate.getUTCMonth() +
-        1}-${currentDate.getUTCDate()}`,
-      type: "pageview",
+      index: `agastya`,
       body: data
     })
     .then(() => {})
