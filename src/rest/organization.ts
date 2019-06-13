@@ -155,7 +155,7 @@ export const getOrganizationBillingForUser = async (
 export const updateOrganizationBillingForUser = async (
   userId: number,
   organizationId: number,
-  data: customers.ICustomerCardSourceCreationOptions,
+  data: any,
   locals: Locals
 ) => {
   if (await can(userId, Authorizations.READ, "organization", organizationId)) {
