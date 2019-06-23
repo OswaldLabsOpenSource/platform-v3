@@ -9,7 +9,7 @@ import cryptoRandomString from "crypto-random-string";
 import { getGeolocationFromIp } from "../helpers/location";
 import { IncomingHttpHeaders } from "http";
 import AWS from "aws-sdk";
-import { Client } from "@elastic/elasticsearch";
+import { Client } from "elasticsearch";
 import {
   AWS_ELASTIC_ACCESS_KEY,
   AWS_ELASTIC_SECRET_KEY,
@@ -28,7 +28,8 @@ AWS.config.update({
   region: "eu-west-3"
 });
 const client = new Client({
-  node: AWS_ELASTIC_HOST
+  host: AWS_ELASTIC_HOST,
+  connectionClass
 });
 
 export const collect = async (
@@ -165,10 +166,11 @@ export const collect = async (
   client
     .index({
       index: `agastya-${apiKey}`,
-      body: data
+      body: data,
+      type: "collect"
     })
     .then(() => {})
-    .catch(error => captureException(error));
+    .catch((error: any) => captureException(error));
 
   return {
     status: "success",
