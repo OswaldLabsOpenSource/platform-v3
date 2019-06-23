@@ -44,7 +44,7 @@ export const mail = async (
 ) => {
   const altText = render(
     (await readFile(
-      join(__dirname, "..", "..", "src", "templates", `${template}.md`)
+      join(__dirname, "..", "..", "..", "src", "templates", `${template}.md`)
     )).toString(),
     { ...data, frontendUrl: FRONTEND_URL }
   );
