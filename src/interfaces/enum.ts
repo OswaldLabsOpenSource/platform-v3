@@ -143,5 +143,12 @@ export enum NotificationCategories {
 }
 
 export enum ApiAuthorizations {
-  EXAMPLE = "example"
+  TRANSLATE = "translate",
+  LANGUAGE_DETECT = "languageDetect",
+  SCREENSHOT = "screenshot",
+  READ_ALOUD = "readAloud",
+  READER_MODE = "reader",
+  DESCRIBE_IMAGE = "describe",
+  COLLECT_DATA = "collect",
+  AGGREGATE_DATA = "aggregateData"
 }
