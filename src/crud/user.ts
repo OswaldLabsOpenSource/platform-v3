@@ -4,7 +4,7 @@ import {
   setValues,
   removeReadOnlyValues
 } from "../helpers/mysql";
-import { User, ApprovedLocation, ApiKey } from "../interfaces/tables/user";
+import { User, ApprovedLocation } from "../interfaces/tables/user";
 import {
   capitalizeFirstAndLastLetter,
   dateToDateTime,
@@ -21,7 +21,6 @@ import {
 import { getEmail, getVerifiedEmailObject } from "./email";
 import { cachedQuery, deleteItemFromCache } from "../helpers/cache";
 import md5 from "md5";
-import cryptoRandomString from "crypto-random-string";
 import randomInt from "random-int";
 import { BackupCode } from "../interfaces/tables/backup-codes";
 
@@ -50,7 +49,7 @@ export const createUser = async (user: User) => {
   user.prefersColorSchemeDark = user.prefersColorSchemeDark || false;
   user.profilePicture =
     user.profilePicture ||
-    `https://ui-avatars.com/api/?bold=true&name=${user.name}`;
+    `https://api.adorable.io/avatars/285/${md5(user.name)}.png`;
   user.createdAt = new Date();
   user.updatedAt = user.createdAt;
   // Create user
@@ -93,21 +92,35 @@ export const getUserByEmail = async (email: string, secureOrigin = false) => {
  */
 export const updateUser = async (id: number, user: KeyValue) => {
   user.updatedAt = dateToDateTime(new Date());
-  user.password = await hash(user.password || "", 8);
+  if (user.password) user.password = await hash(user.password, 8);
   user = removeReadOnlyValues(user);
+  // If you're updating your primary email, your Gravatar should reflect it
   if (user.primaryEmail) {
     const originalUser = await getUser(id);
-    if ((originalUser.profilePicture || "").includes("ui-avatars.com")) {
+    if ((originalUser.profilePicture || "").includes("api.adorable.io")) {
       const emailDetails = await getEmail(user.primaryEmail);
       user.profilePicture = `https://www.gravatar.com/avatar/${md5(
         emailDetails.email
       )}?d=${encodeURIComponent(
-        `https://ui-avatars.com/api/?bold=true&name=${originalUser.name}`
+        `https://api.adorable.io/avatars/285/${md5(originalUser.name)}.png`
       )}`;
     }
   }
+  // If you're updating your username, make sure it's available
+  if (user.username) {
+    const originalUser = await getUser(id);
+    let usernameOwner: User | undefined = undefined;
+    try {
+      usernameOwner = await getUserByUsername(user.username);
+    } catch (error) {}
+    if (
+      usernameOwner &&
+      usernameOwner.id &&
+      usernameOwner.id != originalUser.id
+    )
+      throw new Error(ErrorCode.USERNAME_EXISTS);
+  }
   deleteItemFromCache(CacheCategories.USER, id);
-  deleteItemFromCache(CacheCategories.USER_EMAILS, id);
   return await query(`UPDATE users SET ${setValues(user)} WHERE id = ?`, [
     ...Object.values(user),
     id
@@ -136,8 +149,6 @@ export const addApprovedLocation = async (
     subnet,
     createdAt: new Date()
   };
-  deleteItemFromCache(CacheCategories.APPROVE_LOCATIONS, userId);
-  deleteItemFromCache(CacheCategories.APPROVE_LOCATION, subnet);
   return await query(
     `INSERT INTO \`approved-locations\` ${tableValues(subnetLocation)}`,
     Object.values(subnetLocation)
@@ -148,19 +159,35 @@ export const addApprovedLocation = async (
  * Get a list of all approved locations of a user
  */
 export const getUserApprovedLocations = async (userId: number) => {
-  return await cachedQuery(
-    CacheCategories.APPROVE_LOCATIONS,
-    userId,
-    "SELECT * FROM `approved-locations` WHERE userId = ?",
-    [userId]
-  );
+  return await query("SELECT * FROM `approved-locations` WHERE userId = ?", [
+    userId
+  ]);
+};
+
+/**
+ * Get a user by their username
+ */
+export const getUserByUsername = async (username: string) => {
+  return ((await query("SELECT * FROM users WHERE username = ? LIMIT 1", [
+    username
+  ])) as User[])[0];
+};
+
+/**
+ * Get a user by their username
+ */
+export const checkUsernameAvailability = async (username: string) => {
+  try {
+    const user = await getUserByUsername(username);
+    if (user && user.id) return false;
+  } catch (error) {}
+  return true;
 };
 
 /**
  * Delete all approved locations for a user
  */
 export const deleteAllUserApprovedLocations = async (userId: number) => {
-  deleteItemFromCache(CacheCategories.APPROVE_LOCATIONS, userId);
   return await query("DELETE FROM `approved-locations` WHERE userId = ?", [
     userId
   ]);
@@ -176,94 +203,13 @@ export const checkApprovedLocation = async (
 ) => {
   const subnet = anonymizeIpAddress(ipAddress);
   const approvedLocations = <ApprovedLocation[]>(
-    await cachedQuery(
-      CacheCategories.APPROVE_LOCATION,
-      subnet,
+    await query(
       "SELECT * FROM `approved-locations` WHERE userId = ? AND subnet = ? LIMIT 1",
       [userId, subnet]
     )
   );
   if (!approvedLocations.length) return false;
   return true;
-};
-
-/**
- * Get a list of all approved locations of a user
- */
-export const getUserApiKeys = async (userId: number) => {
-  return <ApiKey[]>(
-    await cachedQuery(
-      CacheCategories.API_KEYS,
-      userId,
-      "SELECT * FROM `api-keys` WHERE userId = ?",
-      [userId]
-    )
-  );
-};
-
-/**
- * Get an API key
- */
-export const getApiKey = async (apiKey: string) => {
-  deleteItemFromCache(CacheCategories.API_KEY, apiKey);
-  return (<ApiKey[]>(
-    await query("SELECT * FROM `api-keys` WHERE apiKey = ? LIMIT 1", [apiKey])
-  ))[0];
-};
-
-/**
- * Get an API key/secret
- */
-export const getApiKeySecret = async (apiKey: string, secretKey: string) => {
-  deleteItemFromCache(CacheCategories.API_KEY, apiKey);
-  return (<ApiKey[]>(
-    await query(
-      "SELECT * FROM `api-keys` WHERE apiKey = ? AND secretKey = ? LIMIT 1",
-      [apiKey, secretKey]
-    )
-  ))[0];
-};
-
-/**
- * Create an API key
- */
-export const createApiKey = async (apiKey: ApiKey) => {
-  apiKey.apiKey = cryptoRandomString({ length: 20, type: "hex" });
-  apiKey.secretKey = cryptoRandomString({ length: 20, type: "hex" });
-  apiKey.createdAt = new Date();
-  apiKey.updatedAt = apiKey.createdAt;
-  deleteItemFromCache(CacheCategories.API_KEYS, apiKey.userId);
-  return await query(
-    `INSERT INTO \`api-keys\` ${tableValues(apiKey)}`,
-    Object.values(apiKey)
-  );
-};
-
-/**
- * Update a user's details
- */
-export const updateApiKey = async (apiKey: string, data: KeyValue) => {
-  const apiKeyDetails = await getApiKey(apiKey);
-  data.updatedAt = dateToDateTime(new Date());
-  data = removeReadOnlyValues(data);
-  deleteItemFromCache(CacheCategories.API_KEY, apiKey);
-  deleteItemFromCache(CacheCategories.API_KEYS, apiKeyDetails.userId);
-  return await query(
-    `UPDATE \`api-keys\` SET ${setValues(data)} WHERE apiKey = ?`,
-    [...Object.values(data), apiKey]
-  );
-};
-
-/**
- * Delete an API key
- */
-export const deleteApiKey = async (apiKey: string) => {
-  const apiKeyDetails = await getApiKey(apiKey);
-  deleteItemFromCache(CacheCategories.API_KEY, apiKey);
-  deleteItemFromCache(CacheCategories.API_KEYS, apiKeyDetails.userId);
-  return await query("DELETE FROM `api-keys` WHERE apiKey = ? LIMIT 1", [
-    apiKey
-  ]);
 };
 
 /**

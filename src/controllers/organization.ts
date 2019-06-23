@@ -16,7 +16,16 @@ import {
   deleteOrganizationSourceForUser,
   getAllOrganizationDataForUser,
   getOrganizationRecentEventsForUser,
-  getOrganizationMembershipsForUser
+  getOrganizationMembershipsForUser,
+  createOrganizationSubscriptionForUser,
+  getOrganizationSubscriptionForUser,
+  updateOrganizationSubscriptionForUser,
+  getOrganizationInvoiceForUser,
+  getOrganizationApiKeysForUser,
+  createApiKeyForUser,
+  getOrganizationApiKeyForUser,
+  updateApiKeyForUser,
+  deleteApiKeyForUser
 } from "../rest/organization";
 import {
   Get,
@@ -28,11 +37,15 @@ import {
   ClassWrapper
 } from "@overnightjs/core";
 import { authHandler } from "../helpers/middleware";
-import { ErrorCode, MembershipRole } from "../interfaces/enum";
+import { MembershipRole, ApiKeyAccess } from "../interfaces/enum";
 import { CREATED } from "http-status-codes";
 import asyncHandler from "express-async-handler";
 import { inviteMemberToOrganization } from "../rest/membership";
-import { joiValidate } from "../helpers/utils";
+import {
+  joiValidate,
+  organizationUsernameToId,
+  localsToTokenOrKey
+} from "../helpers/utils";
 import Joi from "@hapi/joi";
 
 @Controller("organizations")
@@ -48,7 +61,7 @@ export class OrganizationController {
         name: Joi.string()
           .min(3)
           .required(),
-        invitationDomain: Joi.string().min(3)
+        invitationDomain: Joi.string()
       },
       {
         name,
@@ -60,93 +73,272 @@ export class OrganizationController {
       { name, invitationDomain },
       res.locals
     );
-    res.status(CREATED).json({ success: true });
+    res
+      .status(CREATED)
+      .json({ success: true, message: "organization-created" });
   }
 
   @Get(":id")
   async get(req: Request, res: Response) {
-    const id = req.params.id;
+    const id = await organizationUsernameToId(req.params.id);
     joiValidate({ id: Joi.number().required() }, { id });
-    const organization = await getOrganizationForUser(res.locals.token.id, id);
+    const organization = await getOrganizationForUser(
+      localsToTokenOrKey(res),
+      id
+    );
     res.json(organization);
   }
 
   @Patch(":id")
   async patch(req: Request, res: Response) {
-    const id = req.params.id;
+    const id = await organizationUsernameToId(req.params.id);
     joiValidate({ id: Joi.number().required() }, { id });
     await updateOrganizationForUser(
-      res.locals.token.id,
+      localsToTokenOrKey(res),
       id,
       req.body,
       res.locals
     );
-    res.json({ success: true });
+    res.json({ success: true, message: "organization-updated" });
   }
 
   @Delete(":id")
   async delete(req: Request, res: Response) {
-    const organizationId = req.params.id;
-    const userId = res.locals.token.id;
+    const organizationId = await organizationUsernameToId(req.params.id);
     joiValidate(
       { organizationId: Joi.number().required() },
       { organizationId }
     );
-    await deleteOrganizationForUser(userId, organizationId, res.locals);
-    res.json({ success: true });
+    await deleteOrganizationForUser(
+      res.locals.token.id,
+      organizationId,
+      res.locals
+    );
+    res.json({ success: true, message: "organization-deleted" });
   }
 
   @Get(":id/billing")
   async getBilling(req: Request, res: Response) {
-    const organizationId = req.params.id;
+    const organizationId = await organizationUsernameToId(req.params.id);
     joiValidate(
       { organizationId: Joi.number().required() },
       { organizationId }
     );
     res.json(
-      await getOrganizationBillingForUser(res.locals.token.id, organizationId)
+      await getOrganizationBillingForUser(
+        localsToTokenOrKey(res),
+        organizationId
+      )
     );
   }
 
   @Patch(":id/billing")
   async patchBilling(req: Request, res: Response) {
-    const organizationId = req.params.id;
+    const organizationId = await organizationUsernameToId(req.params.id);
     joiValidate(
       { organizationId: Joi.number().required() },
       { organizationId }
     );
     await updateOrganizationBillingForUser(
-      res.locals.token.id,
+      localsToTokenOrKey(res),
       organizationId,
       req.body,
       res.locals
     );
-    res.json({ updated: true });
+    res.json({ success: true, message: "organization-billing-updated" });
   }
 
   @Get(":id/invoices")
   async getInvoices(req: Request, res: Response) {
-    const organizationId = req.params.id;
+    const organizationId = await organizationUsernameToId(req.params.id);
     joiValidate(
       { organizationId: Joi.number().required() },
       { organizationId }
     );
+    const subscriptionParams = { ...req.query };
+    joiValidate(
+      {
+        start: Joi.string(),
+        billing: Joi.string().valid("charge_automatically", "send_invoice"),
+        itemsPerPage: Joi.number(),
+        plan: Joi.string(),
+        status: Joi.string()
+      },
+      subscriptionParams
+    );
     res.json(
-      await getOrganizationInvoicesForUser(res.locals.token.id, organizationId)
+      await getOrganizationInvoicesForUser(
+        localsToTokenOrKey(res),
+        organizationId,
+        subscriptionParams
+      )
+    );
+  }
+
+  @Get(":id/invoices/:invoiceId")
+  async getInvoice(req: Request, res: Response) {
+    const organizationId = await organizationUsernameToId(req.params.id);
+    const invoiceId = req.params.invoiceId;
+    joiValidate(
+      {
+        organizationId: Joi.number().required(),
+        invoiceId: Joi.string().required()
+      },
+      { organizationId, invoiceId }
+    );
+    res.json(
+      await getOrganizationInvoiceForUser(
+        localsToTokenOrKey(res),
+        organizationId,
+        invoiceId
+      )
+    );
+  }
+
+  @Get(":id/sources")
+  async getSources(req: Request, res: Response) {
+    const organizationId = await organizationUsernameToId(req.params.id);
+    joiValidate(
+      { organizationId: Joi.number().required() },
+      { organizationId }
+    );
+    const subscriptionParams = { ...req.query };
+    joiValidate(
+      {
+        start: Joi.string(),
+        itemsPerPage: Joi.number()
+      },
+      subscriptionParams
+    );
+    res.json(
+      await getOrganizationSourcesForUser(
+        localsToTokenOrKey(res),
+        organizationId,
+        subscriptionParams
+      )
+    );
+  }
+
+  @Get(":id/sources/:sourceId")
+  async getSource(req: Request, res: Response) {
+    const organizationId = await organizationUsernameToId(req.params.id);
+    const sourceId = req.params.sourceId;
+    joiValidate(
+      {
+        organizationId: Joi.number().required(),
+        sourceId: Joi.string().required()
+      },
+      { organizationId, sourceId }
+    );
+    res.json(
+      await getOrganizationSourceForUser(
+        localsToTokenOrKey(res),
+        organizationId,
+        sourceId
+      )
     );
   }
 
   @Get(":id/subscriptions")
   async getSubscriptions(req: Request, res: Response) {
-    const organizationId = req.params.id;
+    const organizationId = await organizationUsernameToId(req.params.id);
     joiValidate(
       { organizationId: Joi.number().required() },
       { organizationId }
     );
+    const subscriptionParams = { ...req.query };
+    joiValidate(
+      {
+        start: Joi.string(),
+        billing: Joi.string().valid("charge_automatically", "send_invoice"),
+        itemsPerPage: Joi.number(),
+        plan: Joi.string(),
+        status: Joi.string()
+      },
+      subscriptionParams
+    );
     res.json(
       await getOrganizationSubscriptionsForUser(
-        res.locals.token.id,
-        organizationId
+        localsToTokenOrKey(res),
+        organizationId,
+        subscriptionParams
+      )
+    );
+  }
+
+  @Get(":id/subscriptions/:subscriptionId")
+  async getSubscription(req: Request, res: Response) {
+    const organizationId = await organizationUsernameToId(req.params.id);
+    const subscriptionId = req.params.subscriptionId;
+    joiValidate(
+      {
+        organizationId: Joi.number().required(),
+        subscriptionId: Joi.string().required()
+      },
+      { organizationId, subscriptionId }
+    );
+    res.json(
+      await getOrganizationSubscriptionForUser(
+        localsToTokenOrKey(res),
+        organizationId,
+        subscriptionId
+      )
+    );
+  }
+
+  @Patch(":id/subscriptions/:subscriptionId")
+  async patchSubscription(req: Request, res: Response) {
+    const organizationId = await organizationUsernameToId(req.params.id);
+    const subscriptionId = req.params.subscriptionId;
+    const data = req.body;
+    joiValidate(
+      {
+        organizationId: Joi.number().required(),
+        subscriptionId: Joi.string().required()
+      },
+      { organizationId, subscriptionId }
+    );
+    joiValidate(
+      {
+        billing: Joi.string().valid("charge_automatically", "send_invoice"),
+        cancel_at_period_end: Joi.boolean(),
+        coupon: Joi.string(),
+        default_source: Joi.string()
+      },
+      data
+    );
+    res.json(
+      await updateOrganizationSubscriptionForUser(
+        localsToTokenOrKey(res),
+        organizationId,
+        subscriptionId,
+        data
+      )
+    );
+  }
+
+  @Put(":id/subscriptions")
+  async putSubscriptions(req: Request, res: Response) {
+    const organizationId = await organizationUsernameToId(req.params.id);
+    joiValidate(
+      { organizationId: Joi.number().required() },
+      { organizationId }
+    );
+    const subscriptionParams = { ...req.body };
+    joiValidate(
+      {
+        plan: Joi.string().required(),
+        billing: Joi.string().valid("charge_automatically", "send_invoice"),
+        tax_percent: Joi.number(),
+        number_of_seats: Joi.number()
+      },
+      subscriptionParams
+    );
+    res.json(
+      await createOrganizationSubscriptionForUser(
+        localsToTokenOrKey(res),
+        organizationId,
+        subscriptionParams
       )
     );
   }
@@ -154,7 +346,7 @@ export class OrganizationController {
   @Get(":id/pricing/:product")
   async getPlans(req: Request, res: Response) {
     const product = req.params.product;
-    const organizationId = req.params.id;
+    const organizationId = await organizationUsernameToId(req.params.id);
     joiValidate(
       {
         organizationId: Joi.number().required(),
@@ -164,28 +356,16 @@ export class OrganizationController {
     );
     res.json(
       await getOrganizationPricingPlansForUser(
-        res.locals.token.id,
+        localsToTokenOrKey(res),
         organizationId,
         product
       )
     );
   }
 
-  @Get(":id/sources")
-  async getSources(req: Request, res: Response) {
-    const organizationId = req.params.id;
-    joiValidate(
-      { organizationId: Joi.number().required() },
-      { organizationId }
-    );
-    res.json(
-      await getOrganizationSourcesForUser(res.locals.token.id, organizationId)
-    );
-  }
-
   @Put(":id/sources")
   async putSources(req: Request, res: Response) {
-    const organizationId = req.params.id;
+    const organizationId = await organizationUsernameToId(req.params.id);
     joiValidate(
       { organizationId: Joi.number().required() },
       { organizationId }
@@ -194,37 +374,17 @@ export class OrganizationController {
       .status(CREATED)
       .json(
         await createOrganizationSourceForUser(
-          res.locals.token.id,
+          localsToTokenOrKey(res),
           organizationId,
           req.body
         )
       );
   }
 
-  @Get(":id/sources/:sourceId")
-  async getSource(req: Request, res: Response) {
-    const sourceId = req.params.sourceId;
-    const organizationId = req.params.id;
-    joiValidate(
-      {
-        organizationId: Joi.number().required(),
-        sourceId: Joi.number().required()
-      },
-      { organizationId, sourceId }
-    );
-    res.json(
-      await getOrganizationSourceForUser(
-        res.locals.token.id,
-        organizationId,
-        sourceId
-      )
-    );
-  }
-
   @Delete(":id/sources/:sourceId")
   async deleteSource(req: Request, res: Response) {
     const sourceId = req.params.sourceId;
-    const organizationId = req.params.id;
+    const organizationId = await organizationUsernameToId(req.params.id);
     joiValidate(
       {
         organizationId: Joi.number().required(),
@@ -234,7 +394,7 @@ export class OrganizationController {
     );
     res.json(
       await deleteOrganizationSourceForUser(
-        res.locals.token.id,
+        localsToTokenOrKey(res),
         organizationId,
         sourceId
       )
@@ -244,7 +404,7 @@ export class OrganizationController {
   @Patch(":id/sources/:sourceId")
   async patchSource(req: Request, res: Response) {
     const sourceId = req.params.sourceId;
-    const organizationId = req.params.id;
+    const organizationId = await organizationUsernameToId(req.params.id);
     joiValidate(
       {
         organizationId: Joi.number().required(),
@@ -254,7 +414,7 @@ export class OrganizationController {
     );
     res.json(
       await updateOrganizationSourceForUser(
-        res.locals.token.id,
+        localsToTokenOrKey(res),
         organizationId,
         sourceId,
         req.body
@@ -264,26 +424,29 @@ export class OrganizationController {
 
   @Get(":id/data")
   async getData(req: Request, res: Response) {
-    const organizationId = req.params.id;
+    const organizationId = await organizationUsernameToId(req.params.id);
     joiValidate(
       { organizationId: Joi.number().required() },
       { organizationId }
     );
     res.json(
-      await getAllOrganizationDataForUser(res.locals.token.id, organizationId)
+      await getAllOrganizationDataForUser(
+        localsToTokenOrKey(res),
+        organizationId
+      )
     );
   }
 
   @Get(":id/events")
   async getEvents(req: Request, res: Response) {
-    const organizationId = req.params.id;
+    const organizationId = await organizationUsernameToId(req.params.id);
     joiValidate(
       { organizationId: Joi.number().required() },
       { organizationId }
     );
     res.json(
       await getOrganizationRecentEventsForUser(
-        res.locals.token.id,
+        localsToTokenOrKey(res),
         organizationId
       )
     );
@@ -291,23 +454,23 @@ export class OrganizationController {
 
   @Get(":id/memberships")
   async getMemberships(req: Request, res: Response) {
-    const organizationId = req.params.id;
+    const organizationId = await organizationUsernameToId(req.params.id);
     joiValidate(
       { organizationId: Joi.number().required() },
       { organizationId }
     );
     res.json(
       await getOrganizationMembershipsForUser(
-        res.locals.token.id,
+        localsToTokenOrKey(res),
         organizationId,
-        req.query.start
+        req.query
       )
     );
   }
 
   @Put(":id/memberships")
   async putMemberships(req: Request, res: Response) {
-    const organizationId = req.params.id;
+    const organizationId = await organizationUsernameToId(req.params.id);
     const newMemberName = req.body.name;
     const newMemberEmail = req.body.email;
     const role = req.body.role;
@@ -330,7 +493,7 @@ export class OrganizationController {
       }
     );
     await inviteMemberToOrganization(
-      res.locals.token.id,
+      localsToTokenOrKey(res),
       organizationId,
       newMemberName,
       newMemberEmail,
@@ -338,5 +501,118 @@ export class OrganizationController {
       res.locals
     );
     res.status(CREATED).json({ invited: true });
+  }
+
+  @Get(":id/api-keys")
+  async getUserApiKeys(req: Request, res: Response) {
+    const id = await organizationUsernameToId(req.params.id);
+    joiValidate(
+      { id: [Joi.string().required(), Joi.number().required()] },
+      { id }
+    );
+    const apiKeyParams = { ...req.query };
+    joiValidate(
+      {
+        start: Joi.string(),
+        itemsPerPage: Joi.number()
+      },
+      apiKeyParams
+    );
+    res.json(
+      await getOrganizationApiKeysForUser(
+        localsToTokenOrKey(res),
+        id,
+        apiKeyParams
+      )
+    );
+  }
+
+  @Put(":id/api-keys")
+  async putUserApiKeys(req: Request, res: Response) {
+    const id = await organizationUsernameToId(req.params.id);
+    joiValidate(
+      { id: [Joi.string().required(), Joi.number().required()] },
+      { id }
+    );
+    joiValidate(
+      {
+        apiRestrictions: Joi.string().allow(null),
+        ipRestrictions: Joi.string().allow(null),
+        referrerRestrictions: Joi.string().allow(null)
+      },
+      req.body
+    );
+    res
+      .status(CREATED)
+      .json(
+        await createApiKeyForUser(
+          localsToTokenOrKey(res),
+          id,
+          req.body,
+          res.locals
+        )
+      );
+  }
+
+  @Get(":id/api-keys/:apiKey")
+  async getUserApiKey(req: Request, res: Response) {
+    const id = await organizationUsernameToId(req.params.id);
+    const apiKey = req.params.apiKey;
+    joiValidate(
+      {
+        id: [Joi.string().required(), Joi.number().required()],
+        apiKey: Joi.string().required()
+      },
+      { id, apiKey }
+    );
+    res.json(
+      await getOrganizationApiKeyForUser(localsToTokenOrKey(res), id, apiKey)
+    );
+  }
+
+  @Patch(":id/api-keys/:apiKey")
+  async patchUserApiKey(req: Request, res: Response) {
+    const id = await organizationUsernameToId(req.params.id);
+    const apiKey = req.params.apiKey;
+    joiValidate(
+      {
+        id: [Joi.string().required(), Joi.number().required()],
+        apiKey: Joi.string().required()
+      },
+      { id, apiKey }
+    );
+    joiValidate(
+      {
+        apiRestrictions: Joi.string().allow(null),
+        ipRestrictions: Joi.string().allow(null),
+        referrerRestrictions: Joi.string().allow(null)
+      },
+      req.body
+    );
+    res.json(
+      await updateApiKeyForUser(
+        localsToTokenOrKey(res),
+        id,
+        apiKey,
+        req.body,
+        res.locals
+      )
+    );
+  }
+
+  @Delete(":id/api-keys/:apiKey")
+  async deleteUserApiKey(req: Request, res: Response) {
+    const id = await organizationUsernameToId(req.params.id);
+    const apiKey = req.params.apiKey;
+    joiValidate(
+      {
+        id: [Joi.string().required(), Joi.number().required()],
+        apiKey: Joi.string().required()
+      },
+      { id, apiKey }
+    );
+    res.json(
+      await deleteApiKeyForUser(localsToTokenOrKey(res), id, apiKey, res.locals)
+    );
   }
 }

@@ -15,7 +15,7 @@ import {
   getMembershipDetailed,
   updateMembership
 } from "../crud/membership";
-import { User } from "../interfaces/tables/user";
+import { User, ApiKey } from "../interfaces/tables/user";
 import { register } from "./auth";
 import { can } from "../helpers/authorization";
 import { Locals, KeyValue } from "../interfaces/general";
@@ -33,7 +33,7 @@ export const getMembershipDetailsForUser = async (
 };
 
 export const inviteMemberToOrganization = async (
-  userId: number,
+  userId: number | ApiKey,
   organizationId: number,
   newMemberName: string,
   newMemberEmail: string,
@@ -64,14 +64,6 @@ export const inviteMemberToOrganization = async (
       } catch (error) {}
       if (isMemberAlready) throw new Error(ErrorCode.USER_IS_MEMBER_ALREADY);
       await createMembership({ userId: newUser.id, organizationId, role });
-      await createNotification({
-        userId: newUser.id,
-        category: NotificationCategories.JOINED_ORGANIZATION,
-        text: `You were invited to the organization **${
-          (await getOrganization(organizationId)).name
-        }**`,
-        link: "/settings/organizations"
-      });
       return;
     } else {
       await register(
@@ -88,7 +80,7 @@ export const inviteMemberToOrganization = async (
 };
 
 export const deleteMembershipForUser = async (
-  tokenUserId: number,
+  tokenUserId: number | ApiKey,
   membershipId: number,
   locals: Locals
 ) => {
@@ -107,22 +99,13 @@ export const deleteMembershipForUser = async (
         throw new Error(ErrorCode.CANNOT_DELETE_SOLE_OWNER);
     }
     await deleteMembership(membership.id);
-    await createEvent(
-      {
-        userId: tokenUserId,
-        organizationId: membership.organizationId,
-        type: EventType.MEMBERSHIP_DELETED,
-        data: { membership }
-      },
-      locals
-    );
     return;
   }
   throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
 };
 
 export const updateMembershipForUser = async (
-  userId: number,
+  userId: number | ApiKey,
   membershipId: number,
   data: KeyValue,
   locals: Locals
@@ -142,15 +125,6 @@ export const updateMembershipForUser = async (
       }
     }
     await updateMembership(membershipId, data);
-    await createEvent(
-      {
-        userId,
-        organizationId: membership.organizationId,
-        type: EventType.MEMBERSHIP_UPDATED,
-        data: { membership: data }
-      },
-      locals
-    );
     return;
   }
   throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);

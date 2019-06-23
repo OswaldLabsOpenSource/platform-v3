@@ -11,7 +11,13 @@ import {
   approveLocation,
   verifyEmail,
   register,
-  login2FA
+  login2FA,
+  github,
+  githubCallback,
+  facebook,
+  facebookCallback,
+  salesforceCallback,
+  salesforce
 } from "../rest/auth";
 import { verifyToken } from "../helpers/jwt";
 import {
@@ -25,7 +31,11 @@ import {
 import { authHandler, bruteForceHandler } from "../helpers/middleware";
 import { CREATED } from "http-status-codes";
 import asyncHandler from "express-async-handler";
-import { joiValidate } from "../helpers/utils";
+import {
+  joiValidate,
+  safeRedirect,
+  getCodeFromRequest
+} from "../helpers/utils";
 import Joi from "@hapi/joi";
 
 @Controller("auth")
@@ -71,7 +81,9 @@ export class AuthController {
       req.body.organizationId,
       req.body.membershipRole
     );
-    res.status(CREATED).json({ success: true });
+    res
+      .status(CREATED)
+      .json({ success: true, message: "auth-register-success" });
   }
 
   @Post("login")
@@ -167,7 +179,7 @@ export class AuthController {
       { token, password }
     );
     await updatePassword(token, password, res.locals);
-    res.json({ success: true });
+    res.json({ success: true, message: "auth-recover-success" });
   }
 
   @Get("google/link")
@@ -215,6 +227,36 @@ export class AuthController {
     const token = req.body.token || req.params.token;
     joiValidate({ token: Joi.string().required() }, { token });
     await verifyEmail(token, res.locals);
-    res.json({ success: true });
+    res.json({ success: true, message: "auth-verify-email-success" });
+  }
+
+  @Get("oauth/github")
+  async oauthGitHub(req: Request, res: Response) {
+    safeRedirect(req, res, github.code.getUri());
+  }
+  @Post("oauth/github")
+  async oauthGitHubCallback(req: Request, res: Response) {
+    const code = getCodeFromRequest(req);
+    res.json(await githubCallback(code, res.locals));
+  }
+
+  @Get("oauth/facebook")
+  async oauthFacebook(req: Request, res: Response) {
+    safeRedirect(req, res, facebook.code.getUri());
+  }
+  @Post("oauth/facebook")
+  async oauthFacebookCallback(req: Request, res: Response) {
+    const code = getCodeFromRequest(req);
+    res.json(await facebookCallback(code, res.locals));
+  }
+
+  @Get("oauth/salesforce")
+  async oauthSalesforce(req: Request, res: Response) {
+    safeRedirect(req, res, salesforce.code.getUri());
+  }
+  @Post("oauth/salesforce")
+  async oauthSalesforceCallback(req: Request, res: Response) {
+    const code = getCodeFromRequest(req);
+    res.json(await salesforceCallback(code, res.locals));
   }
 }

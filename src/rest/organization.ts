@@ -3,7 +3,12 @@ import {
   createOrganization,
   updateOrganization,
   deleteOrganization,
-  getOrganization
+  getOrganization,
+  getOrganizationApiKeys,
+  getApiKey,
+  updateApiKey,
+  createApiKey,
+  deleteApiKey
 } from "../crud/organization";
 import { InsertResult } from "../interfaces/mysql";
 import {
@@ -16,14 +21,15 @@ import {
   ErrorCode,
   EventType,
   Authorizations,
-  NotificationCategories
+  NotificationCategories,
+  ApiKeyAccess
 } from "../interfaces/enum";
 import {
   createEvent,
   getOrganizationEvents,
   getOrganizationRecentEvents
 } from "../crud/event";
-import { Locals } from "../interfaces/general";
+import { Locals, KeyValue } from "../interfaces/general";
 import { can } from "../helpers/authorization";
 import {
   getStripeCustomer,
@@ -37,14 +43,17 @@ import {
   createStripeSource,
   updateStripeSource,
   deleteStripeSource,
-  deleteStripeCustomer
+  deleteStripeCustomer,
+  getStripeSubscription,
+  updateStripeSubscription,
+  getStripeInvoice,
+  createStripeSubscriptionSession
 } from "../crud/billing";
-import { customers } from "stripe";
 import { getUser } from "../crud/user";
-import { createNotification } from "../crud/notification";
+import { ApiKey } from "../interfaces/tables/user";
 
 export const getOrganizationForUser = async (
-  userId: number,
+  userId: number | ApiKey,
   organizationId: number
 ) => {
   if (await can(userId, Authorizations.READ, "organization", organizationId))
@@ -68,14 +77,6 @@ export const newOrganizationForUser = async (
     userId,
     role: MembershipRole.OWNER
   });
-  await createNotification({
-    userId,
-    category: NotificationCategories.JOINED_ORGANIZATION,
-    text: `You created the organization **${
-      (await getOrganization(organizationId)).name
-    }**`,
-    link: "/settings/organizations"
-  });
   await createEvent(
     {
       userId,
@@ -89,7 +90,7 @@ export const newOrganizationForUser = async (
 };
 
 export const updateOrganizationForUser = async (
-  userId: number,
+  userId: number | ApiKey,
   organizationId: number,
   data: Organization,
   locals: Locals
@@ -98,22 +99,13 @@ export const updateOrganizationForUser = async (
     await can(userId, Authorizations.UPDATE, "organization", organizationId)
   ) {
     await updateOrganization(organizationId, data);
-    await createEvent(
-      {
-        userId,
-        organizationId,
-        type: EventType.ORGANIZATION_UPDATED,
-        data: { id: organizationId, data }
-      },
-      locals
-    );
     return;
   }
   throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
 };
 
 export const deleteOrganizationForUser = async (
-  userId: number,
+  userId: number | ApiKey,
   organizationId: number,
   locals: Locals
 ) => {
@@ -125,22 +117,13 @@ export const deleteOrganizationForUser = async (
       await deleteStripeCustomer(organizationDetails.stripeCustomerId);
     await deleteOrganization(organizationId);
     await deleteAllOrganizationMemberships(organizationId);
-    await createEvent(
-      {
-        userId,
-        organizationId,
-        type: EventType.ORGANIZATION_DELETED,
-        data: { id: organizationId }
-      },
-      locals
-    );
     return;
   }
   throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
 };
 
 export const getOrganizationBillingForUser = async (
-  userId: number,
+  userId: number | ApiKey,
   organizationId: number
 ) => {
   if (await can(userId, Authorizations.READ, "organization", organizationId)) {
@@ -153,7 +136,7 @@ export const getOrganizationBillingForUser = async (
 };
 
 export const updateOrganizationBillingForUser = async (
-  userId: number,
+  userId: number | ApiKey,
   organizationId: number,
   data: any,
   locals: Locals
@@ -166,71 +149,55 @@ export const updateOrganizationBillingForUser = async (
     } else {
       result = await createStripeCustomer(organizationId, data);
     }
-    await createEvent(
-      {
-        userId,
-        organizationId,
-        type: EventType.BILLING_UPDATED,
-        data
-      },
-      locals
-    );
     return result;
   }
   throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
 };
 
 export const getOrganizationInvoicesForUser = async (
-  userId: number,
-  organizationId: number
-) => {
-  if (await can(userId, Authorizations.READ, "organization", organizationId)) {
-    const organization = await getOrganization(organizationId);
-    if (organization.stripeCustomerId)
-      return await getStripeInvoices(organization.stripeCustomerId);
-    throw new Error(ErrorCode.STRIPE_NO_CUSTOMER);
-  }
-  throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
-};
-
-export const getOrganizationSubscriptionsForUser = async (
-  userId: number,
-  organizationId: number
-) => {
-  if (await can(userId, Authorizations.READ, "organization", organizationId)) {
-    const organization = await getOrganization(organizationId);
-    if (organization.stripeCustomerId)
-      return await getStripeSubscriptions(organization.stripeCustomerId);
-    throw new Error(ErrorCode.STRIPE_NO_CUSTOMER);
-  }
-  throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
-};
-
-export const getOrganizationPricingPlansForUser = async (
-  userId: number,
+  userId: number | ApiKey,
   organizationId: number,
-  productId: string
+  params: KeyValue
 ) => {
-  if (await can(userId, Authorizations.READ, "organization", organizationId))
-    return await getStripeProductPricing(productId);
+  if (await can(userId, Authorizations.READ, "organization", organizationId)) {
+    const organization = await getOrganization(organizationId);
+    if (organization.stripeCustomerId)
+      return await getStripeInvoices(organization.stripeCustomerId, params);
+    throw new Error(ErrorCode.STRIPE_NO_CUSTOMER);
+  }
+  throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
+};
+
+export const getOrganizationInvoiceForUser = async (
+  userId: number | ApiKey,
+  organizationId: number,
+  invoiceId: string
+) => {
+  if (await can(userId, Authorizations.READ, "organization", organizationId)) {
+    const organization = await getOrganization(organizationId);
+    if (organization.stripeCustomerId)
+      return await getStripeInvoice(organization.stripeCustomerId, invoiceId);
+    throw new Error(ErrorCode.STRIPE_NO_CUSTOMER);
+  }
   throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
 };
 
 export const getOrganizationSourcesForUser = async (
-  userId: number,
-  organizationId: number
+  userId: number | ApiKey,
+  organizationId: number,
+  params: KeyValue
 ) => {
   if (await can(userId, Authorizations.READ, "organization", organizationId)) {
     const organization = await getOrganization(organizationId);
     if (organization.stripeCustomerId)
-      return await getStripeSources(organization.stripeCustomerId);
+      return await getStripeSources(organization.stripeCustomerId, params);
     throw new Error(ErrorCode.STRIPE_NO_CUSTOMER);
   }
   throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
 };
 
 export const getOrganizationSourceForUser = async (
-  userId: number,
+  userId: number | ApiKey,
   organizationId: number,
   sourceId: string
 ) => {
@@ -243,8 +210,88 @@ export const getOrganizationSourceForUser = async (
   throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
 };
 
+export const getOrganizationSubscriptionsForUser = async (
+  userId: number | ApiKey,
+  organizationId: number,
+  params: KeyValue
+) => {
+  if (await can(userId, Authorizations.READ, "organization", organizationId)) {
+    const organization = await getOrganization(organizationId);
+    if (organization.stripeCustomerId)
+      return await getStripeSubscriptions(
+        organization.stripeCustomerId,
+        params
+      );
+    throw new Error(ErrorCode.STRIPE_NO_CUSTOMER);
+  }
+  throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
+};
+
+export const getOrganizationSubscriptionForUser = async (
+  userId: number | ApiKey,
+  organizationId: number,
+  subscriptionId: string
+) => {
+  if (await can(userId, Authorizations.READ, "organization", organizationId)) {
+    const organization = await getOrganization(organizationId);
+    if (organization.stripeCustomerId)
+      return await getStripeSubscription(
+        organization.stripeCustomerId,
+        subscriptionId
+      );
+    throw new Error(ErrorCode.STRIPE_NO_CUSTOMER);
+  }
+  throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
+};
+
+export const updateOrganizationSubscriptionForUser = async (
+  userId: number | ApiKey,
+  organizationId: number,
+  subscriptionId: string,
+  data: KeyValue
+) => {
+  if (await can(userId, Authorizations.READ, "organization", organizationId)) {
+    const organization = await getOrganization(organizationId);
+    if (organization.stripeCustomerId)
+      return await updateStripeSubscription(
+        organization.stripeCustomerId,
+        subscriptionId,
+        data
+      );
+    throw new Error(ErrorCode.STRIPE_NO_CUSTOMER);
+  }
+  throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
+};
+
+export const createOrganizationSubscriptionForUser = async (
+  userId: number | ApiKey,
+  organizationId: number,
+  params: { plan: string; [index: string]: any }
+) => {
+  if (await can(userId, Authorizations.READ, "organization", organizationId)) {
+    const organization = await getOrganization(organizationId);
+    if (organization.stripeCustomerId)
+      return await createStripeSubscriptionSession(
+        organization.stripeCustomerId,
+        params
+      );
+    throw new Error(ErrorCode.STRIPE_NO_CUSTOMER);
+  }
+  throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
+};
+
+export const getOrganizationPricingPlansForUser = async (
+  userId: number | ApiKey,
+  organizationId: number,
+  productId: string
+) => {
+  if (await can(userId, Authorizations.READ, "organization", organizationId))
+    return await getStripeProductPricing(productId);
+  throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
+};
+
 export const deleteOrganizationSourceForUser = async (
-  userId: number,
+  userId: number | ApiKey,
   organizationId: number,
   sourceId: string
 ) => {
@@ -258,7 +305,7 @@ export const deleteOrganizationSourceForUser = async (
 };
 
 export const updateOrganizationSourceForUser = async (
-  userId: number,
+  userId: number | ApiKey,
   organizationId: number,
   sourceId: string,
   data: any
@@ -279,7 +326,7 @@ export const updateOrganizationSourceForUser = async (
 };
 
 export const createOrganizationSourceForUser = async (
-  userId: number,
+  userId: number | ApiKey,
   organizationId: number,
   card: any
 ) => {
@@ -295,7 +342,7 @@ export const createOrganizationSourceForUser = async (
 };
 
 export const getAllOrganizationDataForUser = async (
-  userId: number,
+  userId: number | ApiKey,
   organizationId: number
 ) => {
   if (
@@ -316,10 +363,11 @@ export const getAllOrganizationDataForUser = async (
     if (organization.stripeCustomerId) {
       billing = await getStripeCustomer(organization.stripeCustomerId);
       subscriptions = await getStripeSubscriptions(
-        organization.stripeCustomerId
+        organization.stripeCustomerId,
+        {}
       );
-      invoices = await getStripeInvoices(organization.stripeCustomerId);
-      sources = await getStripeSources(organization.stripeCustomerId);
+      invoices = await getStripeInvoices(organization.stripeCustomerId, {});
+      sources = await getStripeSources(organization.stripeCustomerId, {});
     }
     return {
       organization,
@@ -335,7 +383,7 @@ export const getAllOrganizationDataForUser = async (
 };
 
 export const getOrganizationRecentEventsForUser = async (
-  userId: number,
+  userId: number | ApiKey,
   organizationId: number
 ) => {
   if (await can(userId, Authorizations.READ, "organization", organizationId))
@@ -344,11 +392,106 @@ export const getOrganizationRecentEventsForUser = async (
 };
 
 export const getOrganizationMembershipsForUser = async (
-  userId: number,
+  userId: number | ApiKey,
   organizationId: number,
-  start?: number
+  query?: KeyValue
 ) => {
   if (await can(userId, Authorizations.READ, "organization", organizationId))
-    return await getOrganizationMemberDetails(organizationId, start);
+    return await getOrganizationMemberDetails(organizationId, query);
+  throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
+};
+
+export const getOrganizationApiKeysForUser = async (
+  userId: number | ApiKey,
+  organizationId: number,
+  query: KeyValue
+) => {
+  if (
+    await can(
+      userId,
+      Authorizations.READ_SECURE,
+      "organization",
+      organizationId
+    )
+  )
+    return await getOrganizationApiKeys(organizationId, query);
+  throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
+};
+
+export const getOrganizationApiKeyForUser = async (
+  userId: number | ApiKey,
+  organizationId: number,
+  apiKey: string
+) => {
+  if (
+    await can(
+      userId,
+      Authorizations.READ_SECURE,
+      "organization",
+      organizationId
+    )
+  )
+    return await getApiKey(organizationId, apiKey);
+  throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
+};
+
+export const updateApiKeyForUser = async (
+  userId: number | ApiKey,
+  organizationId: number,
+  apiKey: string,
+  data: KeyValue,
+  locals: Locals
+) => {
+  if (
+    await can(
+      userId,
+      Authorizations.UPDATE_SECURE,
+      "organization",
+      organizationId
+    )
+  ) {
+    await updateApiKey(organizationId, apiKey, data);
+    return;
+  }
+  throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
+};
+
+export const createApiKeyForUser = async (
+  userId: number | ApiKey,
+  organizationId: number,
+  apiKey: KeyValue,
+  locals: Locals
+) => {
+  if (
+    await can(
+      userId,
+      Authorizations.CREATE_SECURE,
+      "organization",
+      organizationId
+    )
+  ) {
+    const key = await createApiKey({ organizationId, ...apiKey });
+    return;
+  }
+  throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
+};
+
+export const deleteApiKeyForUser = async (
+  userId: number | ApiKey,
+  organizationId: number,
+  apiKey: string,
+  locals: Locals
+) => {
+  if (
+    await can(
+      userId,
+      Authorizations.DELETE_SECURE,
+      "organization",
+      organizationId
+    )
+  ) {
+    await deleteApiKey(organizationId, apiKey);
+    return;
+  }
   throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
 };

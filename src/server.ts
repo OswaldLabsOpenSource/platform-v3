@@ -21,13 +21,13 @@ const accessLogStream = rfs("access.log", {
   interval: "1d",
   path: logDirectory
 });
+console.log(`✅  Prepared logging`);
 
 export class Staart extends Server {
   constructor() {
     super();
     this.setupHandlers();
     this.setupControllers();
-    this.setupRedirects();
     this.app.use(errorHandler);
   }
 
@@ -47,11 +47,7 @@ export class Staart extends Server {
     // staart:setup/controllers
   }
 
-  private setupRedirects() {
-    // staart:setup/redirects
-  }
-
   public start(port: number): void {
-    this.app.listen(port, () => console.log(`Listening on ${port}!`));
+    this.app.listen(port, () => console.log(`✅  Listening on ${port}`));
   }
 }

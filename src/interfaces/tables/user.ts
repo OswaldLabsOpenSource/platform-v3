@@ -2,12 +2,14 @@ import {
   UserRole,
   NotificationEmails,
   Genders,
-  NotificationCategories
+  NotificationCategories,
+  ApiKeyAccess
 } from "../enum";
 
 export interface User {
   id?: number;
   name: string;
+  username?: string;
   nickname?: string;
   primaryEmail?: number;
   password?: string;
@@ -24,6 +26,9 @@ export interface User {
   profilePicture?: string;
   createdAt?: Date;
   updatedAt?: Date;
+
+  // email is only used for JWT
+  email?: string;
 }
 
 export interface ApprovedLocation {
@@ -36,8 +41,10 @@ export interface ApprovedLocation {
 export interface ApiKey {
   apiKey?: string;
   secretKey?: string;
-  userId: number;
-  organizationId?: number;
+  apiRestrictions?: string;
+  organizationId: number;
+  ipRestrictions?: string;
+  referrerRestrictions?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }

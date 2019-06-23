@@ -5,11 +5,6 @@ import {
   getUserApprovedLocations,
   deleteUser,
   deleteAllUserApprovedLocations,
-  getUserApiKeys,
-  createApiKey,
-  getApiKey,
-  updateApiKey,
-  deleteApiKey,
   createBackupCodes,
   deleteUserBackupCodes,
   getUserBackupCodes
@@ -71,11 +66,10 @@ export const updatePasswordForUser = async (
     await can(tokenUserId, Authorizations.UPDATE_SECURE, "user", updateUserId)
   ) {
     const user = await getUser(updateUserId, true);
-    const correctPassword = await compare(oldPassword, user.password as string);
+    if (!user.password) throw new Error(ErrorCode.MISSING_PASSWORD);
+    const correctPassword = await compare(oldPassword, user.password);
     if (!correctPassword) throw new Error(ErrorCode.INCORRECT_PASSWORD);
-    console.log("Reached here 3");
     await updateUser(updateUserId, { password: newPassword });
-    console.log("Reached here 4");
     await createEvent(
       {
         userId: tokenUserId,
@@ -116,14 +110,14 @@ export const deleteUserForUser = async (
 export const getRecentEventsForUser = async (
   tokenUserId: number,
   dataUserId: number,
-  index?: number
+  query: KeyValue
 ) => {
   if (await can(tokenUserId, Authorizations.READ_SECURE, "user", dataUserId)) {
-    const events = await getPaginatedData(
-      "events",
-      { userId: dataUserId },
-      index
-    );
+    const events = await getPaginatedData({
+      table: "events",
+      conditions: { userId: dataUserId },
+      ...query
+    });
     events.data = await addLocationToEvents(events.data);
     return events;
   }
@@ -133,14 +127,14 @@ export const getRecentEventsForUser = async (
 export const getMembershipsForUser = async (
   tokenUserId: number,
   dataUserId: number,
-  index?: number
+  query: KeyValue
 ) => {
   if (await can(tokenUserId, Authorizations.READ, "user", dataUserId)) {
-    const memberships = await getPaginatedData(
-      "memberships",
-      { userId: dataUserId },
-      index
-    );
+    const memberships = await getPaginatedData({
+      table: "memberships",
+      conditions: { userId: dataUserId },
+      ...query
+    });
     memberships.data = await addOrganizationToMemberships(memberships.data);
     return memberships;
   }
@@ -159,93 +153,6 @@ export const getAllDataForUser = async (
   const events = await getUserEvents(userId);
   const approvedLocations = await getUserApprovedLocations(userId);
   return { user, memberships, emails, events, approvedLocations };
-};
-
-export const getApiKeysForUser = async (
-  tokenUserId: number,
-  dataUserId: number
-) => {
-  if (await can(tokenUserId, Authorizations.READ_SECURE, "user", dataUserId))
-    return await getUserApiKeys(dataUserId);
-  throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
-};
-
-export const getApiKeyForUser = async (
-  tokenUserId: number,
-  dataUserId: number,
-  apiKey: string
-) => {
-  const apiKeyDetails = await getApiKey(apiKey);
-  if (await can(tokenUserId, Authorizations.READ, "api-key", apiKeyDetails))
-    return apiKeyDetails;
-  throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
-};
-
-export const updateApiKeyForUser = async (
-  tokenUserId: number,
-  dataUserId: number,
-  apiKey: string,
-  data: KeyValue,
-  locals: Locals
-) => {
-  const apiKeyDetails = await getApiKey(apiKey);
-  if (await can(tokenUserId, Authorizations.UPDATE, "api-key", apiKeyDetails)) {
-    await updateApiKey(apiKey, data);
-    await createEvent(
-      {
-        userId: tokenUserId,
-        type: EventType.API_KEY_UPDATED,
-        data: { apiKey, data }
-      },
-      locals
-    );
-    return;
-  }
-  throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
-};
-
-export const createApiKeyForUser = async (
-  tokenUserId: number,
-  dataUserId: number,
-  locals: Locals
-) => {
-  if (
-    await can(tokenUserId, Authorizations.CREATE_SECURE, "user", dataUserId)
-  ) {
-    const apiKey = await createApiKey({ userId: dataUserId });
-    await createEvent(
-      {
-        userId: tokenUserId,
-        type: EventType.API_KEY_CREATED,
-        data: { apiKey }
-      },
-      locals
-    );
-    return;
-  }
-  throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
-};
-
-export const deleteApiKeyForUser = async (
-  tokenUserId: number,
-  dataUserId: number,
-  apiKey: string,
-  locals: Locals
-) => {
-  const apiKeyDetails = await getApiKey(apiKey);
-  if (await can(tokenUserId, Authorizations.DELETE, "api-key", apiKeyDetails)) {
-    await deleteApiKey(apiKey);
-    await createEvent(
-      {
-        userId: tokenUserId,
-        type: EventType.API_KEY_DELETED,
-        data: { apiKey }
-      },
-      locals
-    );
-    return;
-  }
-  throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
 };
 
 export const getNotificationsForUser = async (

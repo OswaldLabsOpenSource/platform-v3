@@ -6,7 +6,8 @@ import {
   getUser,
   addApprovedLocation,
   getUserBackupCode,
-  updateBackupCode
+  updateBackupCode,
+  checkUsernameAvailability
 } from "../crud/user";
 import { InsertResult } from "../interfaces/mysql";
 import {
@@ -41,6 +42,24 @@ import {
 } from "../helpers/google";
 import { can } from "../helpers/authorization";
 import { authenticator } from "otplib";
+import ClientOAuth2 from "client-oauth2";
+import {
+  GITHUB_CLIENT_ID,
+  GITHUB_CLIENT_SECRET,
+  GITHUB_CLIENT_REDIRECT,
+  GOOGLE_CLIENT_ID,
+  GOOGLE_CLIENT_SECRET,
+  GOOGLE_CLIENT_REDIRECT,
+  FACEBOOK_CLIENT_ID,
+  FACEBOOK_CLIENT_SECRET,
+  FACEBOOK_CLIENT_REDIRECT,
+  SALESFORCE_CLIENT_ID,
+  SALESFORCE_CLIENT_SECRET,
+  SALESFORCE_CLIENT_REDIRECT
+} from "../config";
+import axios from "axios";
+import { GitHubEmail } from "../interfaces/oauth";
+import { createSlug } from "../helpers/utils";
 
 export const validateRefreshToken = async (token: string, locals: Locals) => {
   const data = <User>await verifyToken(token, Tokens.REFRESH);
@@ -72,7 +91,7 @@ export const login2FA = async (code: number, token: string, locals: Locals) => {
   if (authenticator.check(code.toString(), secret))
     return await postLoginTokens(user);
   const backupCode = await getUserBackupCode(data.userId, code);
-  if (!backupCode.used) {
+  if (backupCode && !backupCode.used) {
     await updateBackupCode(backupCode.code, { used: true });
     return await postLoginTokens(user);
   }
@@ -87,6 +106,9 @@ export const register = async (
   role?: MembershipRole
 ) => {
   if (email) await checkIfNewEmail(email);
+  if (!user.username) user.username = createSlug(user.name);
+  if (!(await checkUsernameAvailability(user.username)))
+    throw new Error(ErrorCode.USERNAME_EXISTS);
   const result = <InsertResult>await createUser(user);
   const userId = result.insertId;
   // Set email
@@ -195,4 +217,93 @@ export const approveLocation = async (token: string, locals: Locals) => {
     locals.ipAddress,
     locals
   );
+};
+
+/*
+ OAuth clients
+*/
+
+export const github = new ClientOAuth2({
+  clientId: GITHUB_CLIENT_ID,
+  clientSecret: GITHUB_CLIENT_SECRET,
+  redirectUri: GITHUB_CLIENT_REDIRECT,
+  authorizationUri: "https://github.com/login/oauth/authorize",
+  accessTokenUri: "https://github.com/login/oauth/access_token",
+  scopes: ["user:email"]
+});
+export const githubCallback = async (url: string, locals: Locals) => {
+  const response = await github.code.getToken(url);
+  const emails = ((await axios.get("https://api.github.com/user/emails", {
+    headers: {
+      Authorization: `token ${response.accessToken}`
+    }
+  })).data as GitHubEmail[]).filter(emails => (emails.verified = true));
+  for await (const email of emails) {
+    try {
+      const user = await getUserByEmail(email.email);
+      return await getLoginResponse(
+        user,
+        EventType.AUTH_LOGIN_OAUTH,
+        "github",
+        locals
+      );
+    } catch (error) {}
+  }
+  throw new Error(ErrorCode.OAUTH_NO_EMAIL);
+};
+
+export const facebook = new ClientOAuth2({
+  clientId: FACEBOOK_CLIENT_ID,
+  clientSecret: FACEBOOK_CLIENT_SECRET,
+  redirectUri: FACEBOOK_CLIENT_REDIRECT,
+  authorizationUri: "https://www.facebook.com/v3.3/dialog/oauth",
+  accessTokenUri: "https://graph.facebook.com/v3.3/oauth/access_token",
+  scopes: ["email"]
+});
+export const facebookCallback = async (url: string, locals: Locals) => {
+  const response = await facebook.code.getToken(url);
+  try {
+    const email = (await axios.get(
+      `https://graph.facebook.com/me?fields=email&access_token=${response.data.access_token}`
+    )).data.email;
+    const user = await getUserByEmail(email);
+    return await getLoginResponse(
+      user,
+      EventType.AUTH_LOGIN_OAUTH,
+      "facebook",
+      locals
+    );
+  } catch (error) {}
+  throw new Error(ErrorCode.OAUTH_NO_EMAIL);
+};
+
+export const salesforce = new ClientOAuth2({
+  clientId: SALESFORCE_CLIENT_ID,
+  clientSecret: SALESFORCE_CLIENT_SECRET,
+  redirectUri: SALESFORCE_CLIENT_REDIRECT,
+  authorizationUri: "https://login.salesforce.com/services/oauth2/authorize",
+  accessTokenUri: "https://login.salesforce.com/services/oauth2/token",
+  scopes: ["email"]
+});
+export const salesforceCallback = async (url: string, locals: Locals) => {
+  const response = await salesforce.code.getToken(url);
+  try {
+    const data = (await axios.get(
+      "https://login.salesforce.com/services/oauth2/userinfo",
+      {
+        headers: {
+          Authorization: `Bearer ${response.data.access_token}`
+        }
+      }
+    )).data;
+    if (!data.email_verified) throw new Error(ErrorCode.OAUTH_NO_EMAIL);
+    const user = await getUserByEmail(data.email);
+    return await getLoginResponse(
+      user,
+      EventType.AUTH_LOGIN_OAUTH,
+      "salesforce",
+      locals
+    );
+  } catch (error) {}
+  throw new Error(ErrorCode.OAUTH_NO_EMAIL);
 };

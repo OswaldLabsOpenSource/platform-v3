@@ -6,11 +6,6 @@ import {
   getRecentEventsForUser,
   deleteUserForUser,
   getMembershipsForUser,
-  getApiKeysForUser,
-  createApiKeyForUser,
-  getApiKeyForUser,
-  updateApiKeyForUser,
-  deleteApiKeyForUser,
   getNotificationsForUser,
   updateNotificationForUser,
   enable2FAForUser,
@@ -20,7 +15,6 @@ import {
   regenerateBackupCodesForUser,
   updatePasswordForUser
 } from "../rest/user";
-import { ErrorCode } from "../interfaces/enum";
 import {
   Get,
   Patch,
@@ -68,7 +62,7 @@ export class UserController {
       { id }
     );
     await updateUserForUser(res.locals.token.id, id, req.body, res.locals);
-    res.json({ success: true });
+    res.json({ success: true, message: "user-updated" });
   }
 
   @Delete(":id")
@@ -107,7 +101,7 @@ export class UserController {
       newPassword,
       res.locals
     );
-    res.json({ success: true });
+    res.json({ success: true, message: "user-password-updated" });
   }
 
   @Get(":id/events")
@@ -118,9 +112,7 @@ export class UserController {
       { id: [Joi.string().required(), Joi.number().required()] },
       { id }
     );
-    res.json(
-      await getRecentEventsForUser(res.locals.token.id, id, req.query.start)
-    );
+    res.json(await getRecentEventsForUser(res.locals.token.id, id, req.query));
   }
 
   @Get(":id/memberships")
@@ -131,9 +123,7 @@ export class UserController {
       { id: [Joi.string().required(), Joi.number().required()] },
       { id }
     );
-    res.json(
-      await getMembershipsForUser(res.locals.token.id, id, req.query.start)
-    );
+    res.json(await getMembershipsForUser(res.locals.token.id, id, req.query));
   }
 
   @Get(":id/data")
@@ -147,85 +137,6 @@ export class UserController {
     res.json(await getAllDataForUser(res.locals.token.id, id));
   }
 
-  @Get(":id/api-keys")
-  async getUserApiKeys(req: Request, res: Response) {
-    let id = req.params.id;
-    if (id === "me") id = res.locals.token.id;
-    joiValidate(
-      { id: [Joi.string().required(), Joi.number().required()] },
-      { id }
-    );
-    res.json(await getApiKeysForUser(res.locals.token.id, id));
-  }
-
-  @Put(":id/api-keys")
-  async putUserApiKeys(req: Request, res: Response) {
-    let id = req.params.id;
-    if (id === "me") id = res.locals.token.id;
-    joiValidate(
-      { id: [Joi.string().required(), Joi.number().required()] },
-      { id }
-    );
-    res
-      .status(CREATED)
-      .json(await createApiKeyForUser(res.locals.token.id, id, res.locals));
-  }
-
-  @Get(":id/api-keys/:apiKey")
-  async getUserApiKey(req: Request, res: Response) {
-    let id = req.params.id;
-    if (id === "me") id = res.locals.token.id;
-    const apiKey = req.params.apiKey;
-    joiValidate(
-      {
-        id: [Joi.string().required(), Joi.number().required()],
-        apiKey: Joi.string().required()
-      },
-      { id, apiKey }
-    );
-    res.json(await getApiKeyForUser(res.locals.token.id, id, apiKey));
-  }
-
-  @Patch(":id/api-keys/:apiKey")
-  async patchUserApiKey(req: Request, res: Response) {
-    let id = req.params.id;
-    if (id === "me") id = res.locals.token.id;
-    const apiKey = req.params.apiKey;
-    joiValidate(
-      {
-        id: [Joi.string().required(), Joi.number().required()],
-        apiKey: Joi.string().required()
-      },
-      { id, apiKey }
-    );
-    res.json(
-      await updateApiKeyForUser(
-        res.locals.token.id,
-        id,
-        apiKey,
-        req.body,
-        res.locals
-      )
-    );
-  }
-
-  @Delete(":id/api-keys/:apiKey")
-  async deleteUserApiKey(req: Request, res: Response) {
-    let id = req.params.id;
-    if (id === "me") id = res.locals.token.id;
-    const apiKey = req.params.apiKey;
-    joiValidate(
-      {
-        id: [Joi.string().required(), Joi.number().required()],
-        apiKey: Joi.string().required()
-      },
-      { id, apiKey }
-    );
-    res.json(
-      await deleteApiKeyForUser(res.locals.token.id, id, apiKey, res.locals)
-    );
-  }
-
   @Get(":id/emails")
   async getEmails(req: Request, res: Response) {
     let id = req.params.id;
@@ -234,9 +145,7 @@ export class UserController {
       { id: [Joi.string().required(), Joi.number().required()] },
       { id }
     );
-    res.json(
-      await getAllEmailsForUser(res.locals.token.id, id, req.query.start)
-    );
+    res.json(await getAllEmailsForUser(res.locals.token.id, id, req.query));
   }
 
   @Put(":id/emails")
@@ -254,7 +163,7 @@ export class UserController {
       { id, email }
     );
     await addEmailToUserForUser(res.locals.token.id, id, email, res.locals);
-    res.status(CREATED).json({ success: true });
+    res.status(CREATED).json({ success: true, message: "user-email-created" });
   }
 
   @Get(":id/emails/:emailId")
@@ -269,8 +178,7 @@ export class UserController {
       },
       { id, emailId }
     );
-    await getEmailForUser(res.locals.token.id, id, emailId);
-    res.json({ success: true });
+    res.json(await getEmailForUser(res.locals.token.id, id, emailId));
   }
 
   @Post(":id/emails/:emailId/resend")
@@ -286,7 +194,7 @@ export class UserController {
       { id, emailId }
     );
     await resendEmailVerificationForUser(res.locals.token.id, id, emailId);
-    res.json({ success: true });
+    res.json({ success: true, message: "user-email-verify-resent" });
   }
 
   @Delete(":id/emails/:emailId")
@@ -307,7 +215,7 @@ export class UserController {
       emailId,
       res.locals
     );
-    res.json({ success: true });
+    res.json({ success: true, message: "user-email-deleted" });
   }
 
   @Get(":id/notifications")

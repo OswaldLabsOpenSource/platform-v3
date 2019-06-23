@@ -81,6 +81,18 @@ export const GOOGLE_TRANSLATE_KEY = process.env.GOOGLE_TRANSLATE_KEY || "";
 export const AWS_ELASTIC_ACCESS_KEY = process.env.AWS_ELASTIC_ACCESS_KEY || "";
 export const AWS_ELASTIC_SECRET_KEY = process.env.AWS_ELASTIC_SECRET_KEY || "";
 export const AWS_ELASTIC_HOST = process.env.AWS_ELASTIC_HOST || "";
+export const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID || "";
+export const GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET || "";
+export const GITHUB_CLIENT_REDIRECT = process.env.GITHUB_CLIENT_REDIRECT || "";
+export const FACEBOOK_CLIENT_ID = process.env.FACEBOOK_CLIENT_ID || "";
+export const FACEBOOK_CLIENT_SECRET = process.env.FACEBOOK_CLIENT_SECRET || "";
+export const FACEBOOK_CLIENT_REDIRECT =
+  process.env.FACEBOOK_CLIENT_REDIRECT || "";
+export const SALESFORCE_CLIENT_ID = process.env.SALESFORCE_CLIENT_ID || "";
+export const SALESFORCE_CLIENT_SECRET =
+  process.env.SALESFORCE_CLIENT_SECRET || "";
+export const SALESFORCE_CLIENT_REDIRECT =
+  process.env.SALESFORCE_CLIENT_REDIRECT || "";
 
 export const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || "";
 export const CHARGEBEE_SECRET_KEY = process.env.CHARGEBEE_SECRET_KEY || "";
