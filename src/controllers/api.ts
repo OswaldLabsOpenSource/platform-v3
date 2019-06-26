@@ -3,7 +3,7 @@ import { Get, Controller, ClassWrapper } from "@overnightjs/core";
 import asyncHandler from "express-async-handler";
 import Joi from "@hapi/joi";
 import { joiValidate, detectTextLanguage } from "../helpers/utils";
-import { translateText } from "../crud/api";
+import { translateText, lighthouseAudit } from "../crud/api";
 
 @Controller("api")
 @ClassWrapper(asyncHandler)
@@ -27,5 +27,13 @@ export class ApiController {
       { text, lang }
     );
     res.json({ language: await translateText(text, lang) });
+  }
+
+  @Get("audit")
+  async audit(req: Request, res: Response) {
+    res.json({ queued: true });
+    try {
+      await lighthouseAudit();
+    } catch (error) {}
   }
 }

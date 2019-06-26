@@ -1,3 +1,6 @@
+// @ts-ignore
+import lighthouse from "lighthouse";
+import { launch } from "chrome-launcher";
 import { Translate } from "@google-cloud/translate";
 import { GOOGLE_PROJECT_ID, GOOGLE_TRANSLATE_KEY } from "../config";
 import { getItemFromCache, storeItemInCache } from "../helpers/cache";
@@ -30,3 +33,15 @@ export const translateText = (
         reject(error);
       });
   });
+
+export const lighthouseAudit = async () => {
+  const chrome = await launch({
+    chromeFlags: ["--show-paint-rects"]
+  });
+  const opts = {
+    port: chrome.port
+  };
+  const results = await lighthouse(`https://oswaldlabs.com`, opts);
+  console.log(results.lhr);
+  await chrome.kill();
+};
