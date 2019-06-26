@@ -65,7 +65,7 @@ const cronImport = crons
   )
   .join("\n");
 const cronCode = `
-${crons.map(cronFile => `cron_${cronFile.split(".ts")[0]}();`)}
+${crons.map(cronFile => `cron_${cronFile.split(".ts")[0]}();`).join("")}
 `;
 server = cronImport + "\n" + cronCode + "\n" + server;
 if (crons.length) console.log(`✅  Setup ${crons.length} cron jobs`);

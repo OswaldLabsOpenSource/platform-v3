@@ -25,7 +25,12 @@ import {
   createApiKeyForUser,
   getOrganizationApiKeyForUser,
   updateApiKeyForUser,
-  deleteApiKeyForUser
+  deleteApiKeyForUser,
+  getOrganizationAuditWebpagesForUser,
+  createAuditWebpageForUser,
+  getOrganizationAuditWebpageForUser,
+  updateAuditWebpageForUser,
+  deleteAuditWebpageForUser
 } from "../rest/organization";
 import {
   Get,
@@ -613,6 +618,126 @@ export class OrganizationController {
     );
     res.json(
       await deleteApiKeyForUser(localsToTokenOrKey(res), id, apiKey, res.locals)
+    );
+  }
+
+  @Get(":id/audit-webpages")
+  async getUserAuditWebpages(req: Request, res: Response) {
+    const id = await organizationUsernameToId(req.params.id);
+    joiValidate(
+      { id: [Joi.string().required(), Joi.number().required()] },
+      { id }
+    );
+    const auditWebpageParams = { ...req.query };
+    joiValidate(
+      {
+        start: Joi.string(),
+        itemsPerPage: Joi.number()
+      },
+      auditWebpageParams
+    );
+    res.json(
+      await getOrganizationAuditWebpagesForUser(
+        localsToTokenOrKey(res),
+        id,
+        auditWebpageParams
+      )
+    );
+  }
+
+  @Put(":id/audit-webpages")
+  async putUserAuditWebpages(req: Request, res: Response) {
+    const id = await organizationUsernameToId(req.params.id);
+    joiValidate(
+      { id: [Joi.string().required(), Joi.number().required()] },
+      { id }
+    );
+    joiValidate(
+      {
+        url: Joi.string().required(),
+        repeatEvery: Joi.number()
+      },
+      req.body
+    );
+    res
+      .status(CREATED)
+      .json(
+        await createAuditWebpageForUser(
+          localsToTokenOrKey(res),
+          id,
+          req.body,
+          res.locals
+        )
+      );
+  }
+
+  @Get(":id/audit-webpages/:auditWebpage")
+  async getUserAuditWebpage(req: Request, res: Response) {
+    const id = await organizationUsernameToId(req.params.id);
+    const auditWebpage = req.params.auditWebpage;
+    joiValidate(
+      {
+        id: [Joi.string().required(), Joi.number().required()],
+        auditWebpage: Joi.string().required()
+      },
+      { id, auditWebpage }
+    );
+    res.json(
+      await getOrganizationAuditWebpageForUser(
+        localsToTokenOrKey(res),
+        id,
+        auditWebpage
+      )
+    );
+  }
+
+  @Patch(":id/audit-webpages/:auditWebpage")
+  async patchUserAuditWebpage(req: Request, res: Response) {
+    const id = await organizationUsernameToId(req.params.id);
+    const auditWebpage = req.params.auditWebpage;
+    joiValidate(
+      {
+        id: [Joi.string().required(), Joi.number().required()],
+        auditWebpage: Joi.string().required()
+      },
+      { id, auditWebpage }
+    );
+    joiValidate(
+      {
+        url: Joi.string().required(),
+        repeatEvery: Joi.number()
+      },
+      req.body
+    );
+    res.json(
+      await updateAuditWebpageForUser(
+        localsToTokenOrKey(res),
+        id,
+        auditWebpage,
+        req.body,
+        res.locals
+      )
+    );
+  }
+
+  @Delete(":id/audit-webpages/:auditWebpage")
+  async deleteUserAuditWebpage(req: Request, res: Response) {
+    const id = await organizationUsernameToId(req.params.id);
+    const auditWebpage = req.params.auditWebpage;
+    joiValidate(
+      {
+        id: [Joi.string().required(), Joi.number().required()],
+        auditWebpage: Joi.string().required()
+      },
+      { id, auditWebpage }
+    );
+    res.json(
+      await deleteAuditWebpageForUser(
+        localsToTokenOrKey(res),
+        id,
+        auditWebpage,
+        res.locals
+      )
     );
   }
 }

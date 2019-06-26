@@ -37,7 +37,7 @@ export const translateText = (
       });
   });
 
-export const lighthouseStart = async () => {
+export const lighthouseStart = async (auditUrlId?: number) => {
   const currentDate = new Date();
   const audit: Audit = {
     status: AuditStatuses.PENDING,
@@ -48,7 +48,8 @@ export const lighthouseStart = async () => {
     scoreSeo: 0,
     scorePwa: 0,
     createdAt: currentDate,
-    updatedAt: currentDate
+    updatedAt: currentDate,
+    auditUrlId
   };
   const result = await query(
     `INSERT INTO audits ${tableValues(audit)}`,

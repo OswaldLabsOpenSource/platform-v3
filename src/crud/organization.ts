@@ -4,7 +4,7 @@ import {
   setValues,
   removeReadOnlyValues
 } from "../helpers/mysql";
-import { Organization } from "../interfaces/tables/organization";
+import { Organization, AuditWebpage } from "../interfaces/tables/organization";
 import {
   capitalizeFirstAndLastLetter,
   dateToDateTime,
@@ -12,7 +12,7 @@ import {
 } from "../helpers/utils";
 import { KeyValue } from "../interfaces/general";
 import { cachedQuery, deleteItemFromCache } from "../helpers/cache";
-import { CacheCategories, ErrorCode } from "../interfaces/enum";
+import { CacheCategories, ErrorCode, AuditRepeat } from "../interfaces/enum";
 import { ApiKey } from "../interfaces/tables/user";
 import cryptoRandomString from "crypto-random-string";
 import { getPaginatedData } from "./data";
@@ -198,5 +198,81 @@ export const deleteApiKey = async (organizationId: number, apiKey: string) => {
   return await query(
     "DELETE FROM `api-keys` WHERE apiKey = ? AND organizationId = ? LIMIT 1",
     [apiKey, organizationId]
+  );
+};
+
+/**
+ * Get a list of all webpages of an organization
+ */
+export const getOrganizationAuditWebpages = async (
+  organizationId: number,
+  query: KeyValue
+) => {
+  return await getPaginatedData({
+    table: "audit-webpages",
+    primaryKey: "id",
+    conditions: {
+      organizationId
+    },
+    ...query
+  });
+};
+
+/**
+ * Get an audit webpage
+ */
+export const getAuditWebpage = async (
+  organizationId: number,
+  webpage: number
+) => {
+  return (<AuditWebpage[]>(
+    await query(
+      "SELECT * FROM `audit-webpages` WHERE webpage = ? AND organizationId = ? LIMIT 1",
+      [webpage, organizationId]
+    )
+  ))[0];
+};
+
+/**
+ * Create an audit webpage
+ */
+export const createAuditWebpage = async (webpage: AuditWebpage) => {
+  webpage.repeatEvery = webpage.repeatEvery || AuditRepeat.DAILY;
+  webpage.createdAt = new Date();
+  webpage.updatedAt = webpage.createdAt;
+  return await query(
+    `INSERT INTO \`audit-webpages\` ${tableValues(webpage)}`,
+    Object.values(webpage)
+  );
+};
+
+/**
+ * Update a user's details
+ */
+export const updateAuditWebpage = async (
+  organizationId: number,
+  webpage: number,
+  data: KeyValue
+) => {
+  data.updatedAt = dateToDateTime(new Date());
+  data = removeReadOnlyValues(data);
+  return await query(
+    `UPDATE \`audit-webpages\` SET ${setValues(
+      data
+    )} WHERE webpage = ? AND organizationId = ?`,
+    [...Object.values(data), webpage, organizationId]
+  );
+};
+
+/**
+ * Delete an audit webpage
+ */
+export const deleteAuditWebpage = async (
+  organizationId: number,
+  webpage: number
+) => {
+  return await query(
+    "DELETE FROM `audit-webpages` WHERE webpage = ? AND organizationId = ? LIMIT 1",
+    [webpage, organizationId]
   );
 };

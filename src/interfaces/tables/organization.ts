@@ -1,4 +1,4 @@
-import { AuditStatuses } from "../enum";
+import { AuditStatuses, AuditRepeat } from "../enum";
 
 export interface Organization {
   id?: number;
@@ -25,4 +25,13 @@ export interface Audit {
   scorePwa: number;
   createdAt?: Date;
   updatedAt: Date;
+}
+
+export interface AuditWebpage {
+  id?: number;
+  organizationId: number;
+  url: string;
+  repeatEvery?: AuditRepeat;
+  createdAt?: Date;
+  updatedAt?: Date;
 }

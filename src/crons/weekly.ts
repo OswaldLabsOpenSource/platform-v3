@@ -6,13 +6,13 @@ import { AuditRepeat } from "../interfaces/enum";
 
 export default () => {
   new CronJob(
-    "0 0 * * *",
+    "0 0 * * 0",
     async () => {
-      const dailyAudits = (await query(
+      const weeklyAudits = (await query(
         "SELECT * FROM `audit-webpages` WHERE repeatEvery = ?",
-        [AuditRepeat.DAILY]
+        [AuditRepeat.WEEKLY]
       )) as AuditWebpage[];
-      for await (const auditWebpage of dailyAudits) {
+      for await (const auditWebpage of weeklyAudits) {
         const id = await lighthouseStart(auditWebpage.id);
         try {
           await lighthouseAudit(id, auditWebpage.url);

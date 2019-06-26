@@ -160,3 +160,10 @@ export enum AuditStatuses {
   COMPLETED = 1,
   ERROR = 2
 }
+
+export enum AuditRepeat {
+  HOURLY = 0,
+  DAILY = 1,
+  WEEKLY = 2,
+  MONTHLY = 3
+}
