@@ -36,7 +36,7 @@ export const translateText = (
 
 export const lighthouseAudit = async () => {
   const chrome = await launch({
-    chromeFlags: ["--show-paint-rects"]
+    chromeFlags: ["--headless", "--disable-gpu", "--no-sandbox", "--show-paint-rects"]
   });
   const opts = {
     port: chrome.port
