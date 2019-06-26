@@ -41,7 +41,11 @@ export const lighthouseAudit = async () => {
   const opts = {
     port: chrome.port
   };
-  const results = await lighthouse(`https://oswaldlabs.com`, opts);
-  console.log(results.lhr);
+  const { lhr } = await lighthouse(`https://oswaldlabs.com`, opts);
+  console.log(
+    `Lighthouse scores: ${Object.values(lhr.categories)
+      .map((c: any) => c.score)
+      .join(", ")}`
+  );
   await chrome.kill();
 };

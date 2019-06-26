@@ -34,6 +34,8 @@ export class ApiController {
     res.json({ queued: true });
     try {
       await lighthouseAudit();
-    } catch (error) {}
+    } catch (error) {
+      console.log("ERR", error);
+    }
   }
 }
