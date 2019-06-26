@@ -47,10 +47,12 @@ import {
   getStripeSubscription,
   updateStripeSubscription,
   getStripeInvoice,
-  createStripeSubscriptionSession
+  createStripeSubscriptionSession,
+  createStripeSubscription
 } from "../crud/billing";
 import { getUser } from "../crud/user";
 import { ApiKey } from "../interfaces/tables/user";
+import { getUserPrimaryEmail } from "../crud/email";
 
 export const getOrganizationForUser = async (
   userId: number | ApiKey,
@@ -76,6 +78,10 @@ export const newOrganizationForUser = async (
     organizationId,
     userId,
     role: MembershipRole.OWNER
+  });
+  await createStripeCustomer(organizationId, {
+    email: await getUserPrimaryEmail(userId),
+    name: (await getUser(userId)).name
   });
   await createEvent(
     {
@@ -271,7 +277,7 @@ export const createOrganizationSubscriptionForUser = async (
   if (await can(userId, Authorizations.READ, "organization", organizationId)) {
     const organization = await getOrganization(organizationId);
     if (organization.stripeCustomerId)
-      return await createStripeSubscriptionSession(
+      return await createStripeSubscription(
         organization.stripeCustomerId,
         params
       );

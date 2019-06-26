@@ -3,12 +3,13 @@ config();
 
 // Server
 export const PORT = process.env.PORT ? parseInt(process.env.PORT) : 7007;
+export const BASE_URL = process.env.BASE_URL || "";
 export const SENTRY_DSN = process.env.SENTRY_DSN || "";
 
 // Rate limiting
 export const BRUTE_FREE_RETRIES = process.env.BRUTE_FREE_RETRIES
   ? parseInt(process.env.BRUTE_FREE_RETRIES)
-  : 10;
+  : 50;
 export const BRUTE_LIFETIME = process.env.BRUTE_LIFETIME
   ? parseInt(process.env.BRUTE_LIFETIME)
   : 300000;
@@ -17,7 +18,7 @@ export const RATE_LIMIT_TIME = process.env.RATE_LIMIT_TIME
   : 60000; // 1 minute
 export const RATE_LIMIT_MAX = process.env.RATE_LIMIT_MAX
   ? parseInt(process.env.RATE_LIMIT_MAX)
-  : 300; // Max 300 requests/minute from an IP
+  : 1000; // Max 1,000 requests/minute from an IP
 export const PUBLIC_RATE_LIMIT_TIME = process.env.PUBLIC_RATE_LIMIT_TIME
   ? parseInt(process.env.PUBLIC_RATE_LIMIT_TIME)
   : 60000; // 1 minute
@@ -72,6 +73,7 @@ export const TOKEN_EXPIRY_APPROVE_LOCATION =
   process.env.TOKEN_EXPIRY_APPROVE_LOCATION || "10m";
 export const TOKEN_EXPIRY_REFRESH = process.env.TOKEN_EXPIRY_REFRESH || "30d";
 
+// OAuth2 credentials
 export const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || "";
 export const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || "";
 export const GOOGLE_CLIENT_REDIRECT = process.env.GOOGLE_CLIENT_REDIRECT || "";
@@ -83,16 +85,11 @@ export const AWS_ELASTIC_SECRET_KEY = process.env.AWS_ELASTIC_SECRET_KEY || "";
 export const AWS_ELASTIC_HOST = process.env.AWS_ELASTIC_HOST || "";
 export const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID || "";
 export const GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET || "";
-export const GITHUB_CLIENT_REDIRECT = process.env.GITHUB_CLIENT_REDIRECT || "";
 export const FACEBOOK_CLIENT_ID = process.env.FACEBOOK_CLIENT_ID || "";
 export const FACEBOOK_CLIENT_SECRET = process.env.FACEBOOK_CLIENT_SECRET || "";
-export const FACEBOOK_CLIENT_REDIRECT =
-  process.env.FACEBOOK_CLIENT_REDIRECT || "";
 export const SALESFORCE_CLIENT_ID = process.env.SALESFORCE_CLIENT_ID || "";
 export const SALESFORCE_CLIENT_SECRET =
   process.env.SALESFORCE_CLIENT_SECRET || "";
-export const SALESFORCE_CLIENT_REDIRECT =
-  process.env.SALESFORCE_CLIENT_REDIRECT || "";
 
 export const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || "";
 export const CHARGEBEE_SECRET_KEY = process.env.CHARGEBEE_SECRET_KEY || "";

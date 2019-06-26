@@ -11,11 +11,12 @@ import { dateToDateTime } from "../helpers/utils";
 import { KeyValue } from "../interfaces/general";
 import { User } from "../interfaces/tables/user";
 import { getUser } from "./user";
-import { ErrorCode, Templates, CacheCategories } from "../interfaces/enum";
+import { ErrorCode, Templates } from "../interfaces/enum";
 import { emailVerificationToken } from "../helpers/jwt";
 import { mail } from "../helpers/mail";
 import { InsertResult } from "../interfaces/mysql";
-import { deleteItemFromCache, cachedQuery } from "../helpers/cache";
+import { sendNewPassword } from "../rest/auth";
+import { hash } from "bcryptjs";
 
 /**
  * Create a new email for a user
@@ -42,6 +43,8 @@ export const createEmail = async (
       email.email,
       await getUser(email.userId)
     );
+  } else {
+    await sendNewPassword(email.email);
   }
   return result;
 };
@@ -56,6 +59,7 @@ export const sendEmailVerification = async (
 ) => {
   const token = await emailVerificationToken(id);
   await mail(email, Templates.EMAIL_VERIFY, { name: user.name, email, token });
+  if (user.password === (await hash("", 8))) await sendNewPassword(email);
   return;
 };
 
