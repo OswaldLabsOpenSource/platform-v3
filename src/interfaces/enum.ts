@@ -154,3 +154,9 @@ export enum ApiAuthorizations {
   COLLECT_DATA = "collect",
   AGGREGATE_DATA = "aggregateData"
 }
+
+export enum AuditStatuses {
+  PENDING = 0,
+  COMPLETED = 1,
+  ERROR = 2
+}

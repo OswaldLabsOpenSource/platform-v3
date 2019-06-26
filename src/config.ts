@@ -83,6 +83,9 @@ export const GOOGLE_TRANSLATE_KEY = process.env.GOOGLE_TRANSLATE_KEY || "";
 export const AWS_ELASTIC_ACCESS_KEY = process.env.AWS_ELASTIC_ACCESS_KEY || "";
 export const AWS_ELASTIC_SECRET_KEY = process.env.AWS_ELASTIC_SECRET_KEY || "";
 export const AWS_ELASTIC_HOST = process.env.AWS_ELASTIC_HOST || "";
+export const AWS_S3_ACCESS_KEY = process.env.AWS_S3_ACCESS_KEY || "";
+export const AWS_S3_SECRET_KEY = process.env.AWS_S3_SECRET_KEY || "";
+
 export const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID || "";
 export const GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET || "";
 export const FACEBOOK_CLIENT_ID = process.env.FACEBOOK_CLIENT_ID || "";

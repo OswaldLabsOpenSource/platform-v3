@@ -3,7 +3,12 @@ import { Get, Controller, ClassWrapper } from "@overnightjs/core";
 import asyncHandler from "express-async-handler";
 import Joi from "@hapi/joi";
 import { joiValidate, detectTextLanguage } from "../helpers/utils";
-import { translateText, lighthouseAudit } from "../crud/api";
+import {
+  translateText,
+  lighthouseAudit,
+  lighthouseError,
+  lighthouseStart
+} from "../crud/api";
 
 @Controller("api")
 @ClassWrapper(asyncHandler)
@@ -31,11 +36,13 @@ export class ApiController {
 
   @Get("audit")
   async audit(req: Request, res: Response) {
-    res.json({ queued: true });
+    const url = "https://oswaldlabs.com";
+    const id = await lighthouseStart();
+    res.json({ queued: true, id });
     try {
-      await lighthouseAudit();
+      await lighthouseAudit(id, url);
     } catch (error) {
-      console.log("ERR", error);
+      await lighthouseError(id);
     }
   }
 }
