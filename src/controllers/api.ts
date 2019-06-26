@@ -7,7 +7,9 @@ import {
   translateText,
   lighthouseAudit,
   lighthouseError,
-  lighthouseStart
+  lighthouseStart,
+  getLighthouseAudit,
+  getLighthouseAuditHtml
 } from "../crud/api";
 
 @Controller("api")
@@ -35,14 +37,29 @@ export class ApiController {
   }
 
   @Get("audit")
-  async audit(req: Request, res: Response) {
-    const url = "https://oswaldlabs.com";
+  async createAudit(req: Request, res: Response) {
+    const url = req.query.url;
     const id = await lighthouseStart();
     res.json({ queued: true, id });
     try {
       await lighthouseAudit(id, url);
     } catch (error) {
+      console.log("Error", error);
       await lighthouseError(id);
     }
+  }
+
+  @Get("audit/:id")
+  async getAudit(req: Request, res: Response) {
+    res.json(await getLighthouseAudit(req.params.id));
+  }
+
+  @Get("audit/:id/html")
+  async getAuditHtml(req: Request, res: Response) {
+    res
+      .header({
+        "Content-Type": "text/html"
+      })
+      .send(await getLighthouseAuditHtml(req.params.id));
   }
 }

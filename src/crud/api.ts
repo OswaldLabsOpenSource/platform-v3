@@ -7,6 +7,7 @@ import { getItemFromCache, storeItemInCache } from "../helpers/cache";
 import { CacheCategories, AuditStatuses } from "../interfaces/enum";
 import { tableValues, query, setValues } from "../helpers/mysql";
 import { Audit } from "../interfaces/tables/organization";
+import { uploadToS3, getFromS3 } from "../helpers/s3";
 
 const translate = new Translate({
   projectId: GOOGLE_PROJECT_ID,
@@ -86,6 +87,7 @@ export const lighthouseAudit = async (id: number, url: string) => {
     ...Object.values(audit),
     id
   ]);
+  await uploadToS3("dai11y", `reports/${id}.html`, report);
   return audit;
 };
 
@@ -97,4 +99,14 @@ export const lighthouseError = async (id: number) => {
     ...Object.values(audit),
     id
   ]);
+};
+
+export const getLighthouseAudit = async (id: number) => {
+  return ((await query(`SELECT * FROM audits WHERE id = ? LIMIT 1`, [
+    id
+  ])) as Audit[])[0];
+};
+
+export const getLighthouseAuditHtml = async (id: number) => {
+  return (await getFromS3("dai11y", `reports/${id}.html`)) as string;
 };
