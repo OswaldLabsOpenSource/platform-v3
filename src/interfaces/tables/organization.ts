@@ -34,4 +34,5 @@ export interface AuditWebpage {
   repeatEvery?: AuditRepeat;
   createdAt?: Date;
   updatedAt?: Date;
+  lastAuditAt?: Date;
 }

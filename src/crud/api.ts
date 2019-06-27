@@ -8,6 +8,7 @@ import { CacheCategories, AuditStatuses } from "../interfaces/enum";
 import { tableValues, query, setValues } from "../helpers/mysql";
 import { Audit } from "../interfaces/tables/organization";
 import { uploadToS3, getFromS3 } from "../helpers/s3";
+import { getAuditWebpage } from "./organization";
 
 const translate = new Translate({
   projectId: GOOGLE_PROJECT_ID,
@@ -73,6 +74,7 @@ export const lighthouseAudit = async (id: number, url: string) => {
   };
   const { lhr, report } = await lighthouse(url, opts);
   await chrome.kill();
+  const currentTime = new Date();
   const audit: Audit = {
     status: AuditStatuses.COMPLETED,
     finalUrl: lhr.finalUrl,
@@ -82,13 +84,23 @@ export const lighthouseAudit = async (id: number, url: string) => {
     scoreBestPractices: lhr.categories["best-practices"].score * 100,
     scoreSeo: lhr.categories.seo.score * 100,
     scorePwa: lhr.categories.pwa.score * 100,
-    updatedAt: new Date()
+    updatedAt: currentTime
   };
   await query(`UPDATE audits SET ${setValues(audit)} WHERE id = ?`, [
     ...Object.values(audit),
     id
   ]);
   await uploadToS3("dai11y", `reports/${id}.html`, report);
+  const currentAudit = await getLighthouseAudit(id);
+  if (currentAudit.auditUrlId) {
+    const updateObject = {
+      lastAuditAt: currentTime
+    };
+    await query(
+      `UPDATE \`audit-webpages\` SET ${setValues(updateObject)} WHERE id = ?`,
+      [...Object.values(updateObject), currentAudit.auditUrlId]
+    );
+  }
   return audit;
 };
 
@@ -110,4 +122,17 @@ export const getLighthouseAudit = async (id: number) => {
 
 export const getLighthouseAuditHtml = async (id: number) => {
   return (await getFromS3("dai11y", `reports/${id}.html`)) as string;
+};
+
+export const scheduleAudit = async (
+  organizationId: number,
+  auditUrlId: number
+) => {
+  const newId = await lighthouseStart(auditUrlId);
+  const webpageDetails = await getAuditWebpage(organizationId, auditUrlId);
+  try {
+    return await lighthouseAudit(newId, webpageDetails.url);
+  } catch (error) {
+    await lighthouseError(newId);
+  }
 };

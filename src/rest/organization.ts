@@ -13,7 +13,8 @@ import {
   getAuditWebpage,
   updateAuditWebpage,
   createAuditWebpage,
-  deleteAuditWebpage
+  deleteAuditWebpage,
+  getOrganizationAudits
 } from "../crud/organization";
 import { InsertResult } from "../interfaces/mysql";
 import {
@@ -509,14 +510,7 @@ export const getOrganizationAuditWebpagesForUser = async (
   organizationId: number,
   query: KeyValue
 ) => {
-  if (
-    await can(
-      userId,
-      Authorizations.READ_SECURE,
-      "organization",
-      organizationId
-    )
-  )
+  if (await can(userId, Authorizations.READ, "organization", organizationId))
     return await getOrganizationAuditWebpages(organizationId, query);
   throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
 };
@@ -526,14 +520,7 @@ export const getOrganizationAuditWebpageForUser = async (
   organizationId: number,
   webpage: number
 ) => {
-  if (
-    await can(
-      userId,
-      Authorizations.READ_SECURE,
-      "organization",
-      organizationId
-    )
-  )
+  if (await can(userId, Authorizations.READ, "organization", organizationId))
     return await getAuditWebpage(organizationId, webpage);
   throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
 };
@@ -546,15 +533,10 @@ export const updateAuditWebpageForUser = async (
   locals: Locals
 ) => {
   if (
-    await can(
-      userId,
-      Authorizations.UPDATE_SECURE,
-      "organization",
-      organizationId
-    )
+    await can(userId, Authorizations.UPDATE, "organization", organizationId)
   ) {
     await updateAuditWebpage(organizationId, webpage, data);
-    return;
+    return { updated: true };
   }
   throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
 };
@@ -566,12 +548,7 @@ export const createAuditWebpageForUser = async (
   locals: Locals
 ) => {
   if (
-    await can(
-      userId,
-      Authorizations.CREATE_SECURE,
-      "organization",
-      organizationId
-    )
+    await can(userId, Authorizations.CREATE, "organization", organizationId)
   ) {
     const key = await createAuditWebpage({
       organizationId,
@@ -590,15 +567,21 @@ export const deleteAuditWebpageForUser = async (
   locals: Locals
 ) => {
   if (
-    await can(
-      userId,
-      Authorizations.DELETE_SECURE,
-      "organization",
-      organizationId
-    )
+    await can(userId, Authorizations.DELETE, "organization", organizationId)
   ) {
     await deleteAuditWebpage(organizationId, webpage);
-    return;
+    return { deleted: true };
   }
+  throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
+};
+
+export const getOrganizationAuditsForUser = async (
+  userId: number | ApiKey,
+  organizationId: number,
+  auditUrlId: number,
+  query: KeyValue
+) => {
+  if (await can(userId, Authorizations.READ, "organization", organizationId))
+    return await getOrganizationAudits(organizationId, auditUrlId, query);
   throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
 };

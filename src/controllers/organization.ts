@@ -30,7 +30,8 @@ import {
   createAuditWebpageForUser,
   getOrganizationAuditWebpageForUser,
   updateAuditWebpageForUser,
-  deleteAuditWebpageForUser
+  deleteAuditWebpageForUser,
+  getOrganizationAuditsForUser
 } from "../rest/organization";
 import {
   Get,
@@ -622,7 +623,7 @@ export class OrganizationController {
   }
 
   @Get(":id/audit-webpages")
-  async getUserAuditWebpages(req: Request, res: Response) {
+  async getAuditWebpages(req: Request, res: Response) {
     const id = await organizationUsernameToId(req.params.id);
     joiValidate(
       { id: [Joi.string().required(), Joi.number().required()] },
@@ -646,7 +647,7 @@ export class OrganizationController {
   }
 
   @Put(":id/audit-webpages")
-  async putUserAuditWebpages(req: Request, res: Response) {
+  async putAuditWebpages(req: Request, res: Response) {
     const id = await organizationUsernameToId(req.params.id);
     joiValidate(
       { id: [Joi.string().required(), Joi.number().required()] },
@@ -672,7 +673,7 @@ export class OrganizationController {
   }
 
   @Get(":id/audit-webpages/:auditWebpage")
-  async getUserAuditWebpage(req: Request, res: Response) {
+  async getOrgAuditWebpage(req: Request, res: Response) {
     const id = await organizationUsernameToId(req.params.id);
     const auditWebpage = req.params.auditWebpage;
     joiValidate(
@@ -692,7 +693,7 @@ export class OrganizationController {
   }
 
   @Patch(":id/audit-webpages/:auditWebpage")
-  async patchUserAuditWebpage(req: Request, res: Response) {
+  async patchOrgAuditWebpage(req: Request, res: Response) {
     const id = await organizationUsernameToId(req.params.id);
     const auditWebpage = req.params.auditWebpage;
     joiValidate(
@@ -721,7 +722,7 @@ export class OrganizationController {
   }
 
   @Delete(":id/audit-webpages/:auditWebpage")
-  async deleteUserAuditWebpage(req: Request, res: Response) {
+  async deleteOrgAuditWebpage(req: Request, res: Response) {
     const id = await organizationUsernameToId(req.params.id);
     const auditWebpage = req.params.auditWebpage;
     joiValidate(
@@ -737,6 +738,38 @@ export class OrganizationController {
         id,
         auditWebpage,
         res.locals
+      )
+    );
+  }
+
+  @Get(":id/audit-webpages/:auditWebpage/audits")
+  async getOrgAudits(req: Request, res: Response) {
+    const id = await organizationUsernameToId(req.params.id);
+    const auditWebpage = req.params.auditWebpage;
+    joiValidate(
+      {
+        id: [Joi.string().required(), Joi.number().required()],
+        auditWebpage: Joi.string().required()
+      },
+      { id, auditWebpage }
+    );
+    const auditParams = { ...req.query };
+    joiValidate(
+      {
+        start: Joi.string(),
+        itemsPerPage: Joi.number(),
+        q: Joi.string(),
+        search: Joi.string(),
+        sort: Joi.string()
+      },
+      auditParams
+    );
+    res.json(
+      await getOrganizationAuditsForUser(
+        localsToTokenOrKey(res),
+        id,
+        auditWebpage,
+        auditParams
       )
     );
   }

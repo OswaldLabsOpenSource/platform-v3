@@ -16,6 +16,7 @@ import { CacheCategories, ErrorCode, AuditRepeat } from "../interfaces/enum";
 import { ApiKey } from "../interfaces/tables/user";
 import cryptoRandomString from "crypto-random-string";
 import { getPaginatedData } from "./data";
+import { scheduleAudit } from "./api";
 
 /*
  * Create a new organization for a user
@@ -237,10 +238,15 @@ export const createAuditWebpage = async (webpage: AuditWebpage) => {
   webpage.repeatEvery = webpage.repeatEvery || AuditRepeat.DAILY;
   webpage.createdAt = new Date();
   webpage.updatedAt = webpage.createdAt;
-  return await query(
+  const result = await query(
     `INSERT INTO \`audit-webpages\` ${tableValues(webpage)}`,
     Object.values(webpage)
   );
+  const id = (result as any).insertId;
+  try {
+    scheduleAudit(webpage.organizationId, id);
+  } catch (error) {}
+  return result;
 };
 
 /**
@@ -272,4 +278,23 @@ export const deleteAuditWebpage = async (
     "DELETE FROM `audit-webpages` WHERE id = ? AND organizationId = ? LIMIT 1",
     [id, organizationId]
   );
+};
+
+/**
+ * Get a list of all audits of a URL
+ */
+export const getOrganizationAudits = async (
+  organizationId: number,
+  auditUrlId: number,
+  query: KeyValue
+) => {
+  return await getPaginatedData({
+    table: "audits",
+    primaryKey: "id",
+    conditions: {
+      organizationId,
+      auditUrlId
+    },
+    ...query
+  });
 };
