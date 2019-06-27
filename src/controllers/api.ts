@@ -2,14 +2,20 @@ import { Request, Response } from "express";
 import { Get, Controller, ClassWrapper } from "@overnightjs/core";
 import asyncHandler from "express-async-handler";
 import Joi from "@hapi/joi";
-import { joiValidate, detectTextLanguage } from "../helpers/utils";
+import {
+  joiValidate,
+  detectTextLanguage,
+  organizationUsernameToId,
+  safeRedirect
+} from "../helpers/utils";
 import {
   translateText,
   lighthouseAudit,
   lighthouseError,
   lighthouseStart,
   getLighthouseAudit,
-  getLighthouseAuditHtml
+  getLighthouseAuditHtml,
+  auditBadgeInfo
 } from "../crud/api";
 
 @Controller("api")
@@ -61,5 +67,23 @@ export class ApiController {
         "Content-Type": "text/html"
       })
       .send(await getLighthouseAuditHtml(req.params.id));
+  }
+
+  @Get("audit-badge/:type/:organizationId/:id")
+  async getAuditBadge(req: Request, res: Response) {
+    const organizationId = await organizationUsernameToId(
+      req.params.organizationId
+    );
+    const { color, score } = await auditBadgeInfo(
+      req.params.type,
+      organizationId,
+      req.params.id
+    );
+    safeRedirect(
+      req,
+      res,
+      `https://img.shields.io/badge/${req.query.label ||
+        req.params.type}-${score}%2F100-${color}.svg`
+    );
   }
 }

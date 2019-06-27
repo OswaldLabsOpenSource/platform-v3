@@ -4,11 +4,13 @@ import { launch } from "chrome-launcher";
 import { Translate } from "@google-cloud/translate";
 import { GOOGLE_PROJECT_ID, GOOGLE_TRANSLATE_KEY } from "../config";
 import { getItemFromCache, storeItemInCache } from "../helpers/cache";
-import { CacheCategories, AuditStatuses } from "../interfaces/enum";
+import { CacheCategories, AuditStatuses, ErrorCode } from "../interfaces/enum";
 import { tableValues, query, setValues } from "../helpers/mysql";
 import { Audit } from "../interfaces/tables/organization";
 import { uploadToS3, getFromS3 } from "../helpers/s3";
 import { getAuditWebpage } from "./organization";
+import { getPaginatedData } from "./data";
+import { average } from "../helpers/utils";
 
 const translate = new Translate({
   projectId: GOOGLE_PROJECT_ID,
@@ -135,4 +137,50 @@ export const scheduleAudit = async (
   } catch (error) {
     await lighthouseError(newId);
   }
+};
+
+export const auditBadgeInfo = async (
+  badgeType: "performance" | "accessibility" | "best-practices" | "seo" | "pwa",
+  organizationId: number,
+  id: number
+) => {
+  const site = await getAuditWebpage(organizationId, id);
+  if (site.id) {
+    const mostRecentAudit = await getPaginatedData({
+      table: "audits",
+      primaryKey: "id",
+      conditions: {
+        auditUrlId: id,
+        status: AuditStatuses.COMPLETED
+      },
+      sort: "desc",
+      itemsPerPage: 1
+    });
+    if (mostRecentAudit.data.length) {
+      const mostRecentAuditDetails = mostRecentAudit.data[0] as Audit;
+
+      let score = average([
+        mostRecentAuditDetails.scoreAccessibility,
+        mostRecentAuditDetails.scorePerformance,
+        mostRecentAuditDetails.scoreBestPractices,
+        mostRecentAuditDetails.scoreSeo,
+        mostRecentAuditDetails.scorePwa
+      ]);
+      if (badgeType === "accessibility")
+        score = mostRecentAuditDetails.scoreAccessibility;
+      if (badgeType === "performance")
+        score = mostRecentAuditDetails.scorePerformance;
+      if (badgeType === "best-practices")
+        score = mostRecentAuditDetails.scoreBestPractices;
+      if (badgeType === "seo") score = mostRecentAuditDetails.scoreSeo;
+      if (badgeType === "pwa") score = mostRecentAuditDetails.scorePwa;
+
+      let color = "success";
+      if (score < 75) color = "yellow";
+      if (score < 50) color = "critical";
+
+      return { color, score };
+    }
+  }
+  throw new Error(ErrorCode.NOT_FOUND);
 };

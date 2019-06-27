@@ -144,3 +144,12 @@ export const joiValidate = (schemaMap: Joi.SchemaMap, data: any) => {
   if (result.error) throw new Error(`joi:${JSON.stringify(result.error)}`);
   return true;
 };
+
+/**
+ * Find the average of an array of numbers
+ */
+export const average = (arr: number[]) => {
+  let sum = 0;
+  arr.forEach(n => (sum += n));
+  return sum / arr.length;
+};
