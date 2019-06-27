@@ -14,7 +14,8 @@ import {
   updateAuditWebpage,
   createAuditWebpage,
   deleteAuditWebpage,
-  getOrganizationAudits
+  getOrganizationAudits,
+  getOrganizationAudit
 } from "../crud/organization";
 import { InsertResult } from "../interfaces/mysql";
 import {
@@ -583,5 +584,16 @@ export const getOrganizationAuditsForUser = async (
 ) => {
   if (await can(userId, Authorizations.READ, "organization", organizationId))
     return await getOrganizationAudits(organizationId, auditUrlId, query);
+  throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
+};
+
+export const getOrganizationAuditForUser = async (
+  userId: number | ApiKey,
+  organizationId: number,
+  webpageId: number,
+  id: number
+) => {
+  if (await can(userId, Authorizations.READ, "organization", organizationId))
+    return await getOrganizationAudit(organizationId, webpageId, id);
   throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
 };

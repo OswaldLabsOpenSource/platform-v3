@@ -4,7 +4,11 @@ import {
   setValues,
   removeReadOnlyValues
 } from "../helpers/mysql";
-import { Organization, AuditWebpage } from "../interfaces/tables/organization";
+import {
+  Organization,
+  AuditWebpage,
+  Audit
+} from "../interfaces/tables/organization";
 import {
   capitalizeFirstAndLastLetter,
   dateToDateTime,
@@ -288,13 +292,38 @@ export const getOrganizationAudits = async (
   auditUrlId: number,
   query: KeyValue
 ) => {
-  return await getPaginatedData({
-    table: "audits",
-    primaryKey: "id",
-    conditions: {
-      organizationId,
-      auditUrlId
-    },
-    ...query
-  });
+  const webpageDetails = await getAuditWebpage(organizationId, auditUrlId);
+  if (webpageDetails && webpageDetails.id)
+    return await getPaginatedData({
+      table: "audits",
+      primaryKey: "id",
+      conditions: {
+        auditUrlId
+      },
+      ...query
+    });
+  throw new Error(ErrorCode.NOT_FOUND);
+};
+
+/**
+ * Get an audit webpage
+ */
+export const getOrganizationAudit = async (
+  organizationId: number,
+  webpageId: number,
+  id: number
+) => {
+  const audit = (<Audit[]>(
+    await query(
+      "SELECT * FROM `audits` WHERE id = ? AND auditUrlId = ? LIMIT 1",
+      [id, webpageId]
+    )
+  ))[0];
+  if (!audit || !audit.auditUrlId) throw new Error(ErrorCode.NOT_FOUND);
+  const webpageDetails = await getAuditWebpage(
+    organizationId,
+    audit.auditUrlId
+  );
+  if (webpageDetails && webpageDetails.id) return audit;
+  throw new Error(ErrorCode.NOT_FOUND);
 };

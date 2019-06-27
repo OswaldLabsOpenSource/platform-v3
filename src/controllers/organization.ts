@@ -31,7 +31,8 @@ import {
   getOrganizationAuditWebpageForUser,
   updateAuditWebpageForUser,
   deleteAuditWebpageForUser,
-  getOrganizationAuditsForUser
+  getOrganizationAuditsForUser,
+  getOrganizationAuditForUser
 } from "../rest/organization";
 import {
   Get,
@@ -770,6 +771,29 @@ export class OrganizationController {
         id,
         auditWebpage,
         auditParams
+      )
+    );
+  }
+
+  @Get(":id/audit-webpages/:auditWebpage/audits/:auditId")
+  async getOrgAudit(req: Request, res: Response) {
+    const id = await organizationUsernameToId(req.params.id);
+    const auditId = req.params.auditId;
+    const auditWebpage = req.params.auditWebpage;
+    joiValidate(
+      {
+        id: [Joi.string().required(), Joi.number().required()],
+        auditWebpage: Joi.string().required(),
+        auditId: Joi.number().required()
+      },
+      { id, auditWebpage, auditId }
+    );
+    res.json(
+      await getOrganizationAuditForUser(
+        localsToTokenOrKey(res),
+        id,
+        auditWebpage,
+        auditId
       )
     );
   }
