@@ -25,7 +25,7 @@ export const translateText = (
   new Promise((resolve, reject) => {
     const cached = getItemFromCache(
       CacheCategories.TRANSLATION,
-      `${text}${lang}`
+      `${text}${language}`
     );
     if (cached) return resolve(cached);
     translate
@@ -35,7 +35,7 @@ export const translateText = (
           try {
             storeItemInCache(
               CacheCategories.TRANSLATION,
-              `${text}${lang}`,
+              `${text}${language}`,
               data[0]
             );
             return resolve(data[0]);
