@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { Get, Controller, ClassWrapper } from "@overnightjs/core";
+import { Get, Controller, ClassWrapper, Middleware } from "@overnightjs/core";
 import asyncHandler from "express-async-handler";
 import Joi from "@hapi/joi";
 import {
@@ -15,8 +15,10 @@ import {
   lighthouseStart,
   getLighthouseAudit,
   getLighthouseAuditHtml,
-  auditBadgeInfo
+  auditBadgeInfo,
+  getFaviconForSite
 } from "../crud/api";
+import { cacheForever } from "../helpers/middleware";
 
 @Controller("api")
 @ClassWrapper(asyncHandler)
@@ -85,5 +87,16 @@ export class ApiController {
       `https://img.shields.io/badge/${req.query.label ||
         req.params.type}-${score}%2F100-${color}.svg`
     );
+  }
+
+  @Get("favicon")
+  @Middleware(cacheForever)
+  async getFavicon(req: Request, res: Response) {
+    res
+      .set("Content-Type", "image/png")
+      .end(
+        await getFaviconForSite(req.query.url || "https://oswaldlabs.com"),
+        "binary"
+      );
   }
 }

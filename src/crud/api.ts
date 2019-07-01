@@ -1,5 +1,6 @@
 // @ts-ignore
 import lighthouse from "lighthouse";
+import axios from "axios";
 import { launch } from "chrome-launcher";
 import { Translate } from "@google-cloud/translate";
 import { GOOGLE_PROJECT_ID, GOOGLE_TRANSLATE_KEY } from "../config";
@@ -22,14 +23,21 @@ export const translateText = (
   language: string
 ): Promise<string> =>
   new Promise((resolve, reject) => {
-    const cached = getItemFromCache(CacheCategories.TRANSLATION, text);
+    const cached = getItemFromCache(
+      CacheCategories.TRANSLATION,
+      `${text}${lang}`
+    );
     if (cached) return resolve(cached);
     translate
       .translate(text, language)
       .then(data => {
         if (data.length) {
           try {
-            storeItemInCache(CacheCategories.TRANSLATION, text, data[0]);
+            storeItemInCache(
+              CacheCategories.TRANSLATION,
+              `${text}${lang}`,
+              data[0]
+            );
             return resolve(data[0]);
           } catch (error) {}
         }
@@ -183,4 +191,12 @@ export const auditBadgeInfo = async (
     }
   }
   throw new Error(ErrorCode.NOT_FOUND);
+};
+
+export const getFaviconForSite = async (site: string, fallback?: string) => {
+  const googleUrl = `https://www.google.com/s2/favicons?domain=${
+    site.split("//")[1]
+  }`;
+  const image = await axios.get(googleUrl, { responseType: "blob" });
+  return image.data;
 };

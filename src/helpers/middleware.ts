@@ -187,3 +187,12 @@ export const speedLimitHandler = async (
   }
   return speedLimiter(req, res, next);
 };
+
+export const cacheForever = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  res.set("Cache-Control", "max-age=31536000");
+  return next();
+};
