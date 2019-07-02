@@ -2,6 +2,7 @@
 
 [![Travis CI](https://img.shields.io/travis/OswaldLabsOpenSource/platform-v3.svg)](https://travis-ci.org/OswaldLabsOpenSource/platform-v3)
 [![Dependencies](https://img.shields.io/david/OswaldLabsOpenSource/platform-v3.svg)](https://github.com/OswaldLabsOpenSource/platform-v3/blob/master/package.json)
+[![Powered by Staart](https://img.shields.io/badge/based_on-staart-brightgreen.svg)](https://github.com/o15y/staart)
 [![Contributors](https://img.shields.io/github/contributors/OswaldLabsOpenSource/platform-v3.svg)](https://github.com/OswaldLabsOpenSource/platform-v3/graphs/contributors)
 [![GitHub](https://img.shields.io/github/license/OswaldLabsOpenSource/platform-v3.svg)](https://github.com/OswaldLabsOpenSource/platform-v3/blob/master/LICENSE)
 ![Type definitions](https://img.shields.io/badge/types-TypeScript-blue.svg)
