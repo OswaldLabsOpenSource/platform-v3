@@ -1,4 +1,8 @@
-import { Organization, Webhook } from "../interfaces/tables/organization";
+import {
+  Organization,
+  Webhook,
+  AgastyaApiKey
+} from "../interfaces/tables/organization";
 import {
   createOrganization,
   updateOrganization,
@@ -26,7 +30,12 @@ import {
   getWebhook,
   updateWebhook,
   createWebhook,
-  deleteWebhook
+  deleteWebhook,
+  getAgastyaApiKeys,
+  getAgastyaApiKey,
+  updateAgastyaApiKey,
+  createAgastyaApiKey,
+  deleteAgastyaApiKey
 } from "../crud/organization";
 import { InsertResult } from "../interfaces/mysql";
 import {
@@ -832,5 +841,81 @@ export const getOrganizationAuditForUser = async (
 ) => {
   if (await can(userId, Authorizations.READ, "organization", organizationId))
     return await getOrganizationAudit(organizationId, webpageId, id);
+  throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
+};
+
+export const getAgastyaApiKeysForUser = async (
+  userId: number | ApiKeyResponse,
+  organizationId: number,
+  query: KeyValue
+) => {
+  if (await can(userId, Authorizations.READ, "organization", organizationId))
+    return await getAgastyaApiKeys(organizationId, query);
+  throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
+};
+
+export const getAgastyaApiKeyForUser = async (
+  userId: number | ApiKeyResponse,
+  organizationId: number,
+  agastyaApiKeyId: number
+) => {
+  if (await can(userId, Authorizations.READ, "organization", organizationId))
+    return await getAgastyaApiKey(organizationId, agastyaApiKeyId);
+  throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
+};
+
+export const updateAgastyaApiKeyForUser = async (
+  userId: number | ApiKeyResponse,
+  organizationId: number,
+  agastyaApiKeyId: number,
+  data: KeyValue,
+  locals: Locals
+) => {
+  if (
+    await can(userId, Authorizations.UPDATE, "organization", organizationId)
+  ) {
+    const result = await updateAgastyaApiKey(
+      organizationId,
+      agastyaApiKeyId,
+      data
+    );
+    queueWebhook(organizationId, Webhooks.UPDATE_AGASTYA_API_KEY);
+    return result;
+  }
+  throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
+};
+
+export const createAgastyaApiKeyForUser = async (
+  userId: number | ApiKeyResponse,
+  organizationId: number,
+  agastyaApiKey: KeyValue,
+  locals: Locals
+) => {
+  if (
+    await can(userId, Authorizations.CREATE, "organization", organizationId)
+  ) {
+    const result = await createAgastyaApiKey({
+      organizationId,
+      ...agastyaApiKey
+    } as AgastyaApiKey);
+    queueWebhook(organizationId, Webhooks.CREATE_AGASTYA_API_KEY);
+    return result;
+  }
+  throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
+};
+
+export const deleteAgastyaApiKeyForUser = async (
+  userId: number | ApiKeyResponse,
+  organizationId: number,
+  agastyaApiKeyId: number,
+  locals: Locals
+) => {
+  if (
+    await can(userId, Authorizations.DELETE, "organization", organizationId)
+  ) {
+    const result = await deleteAgastyaApiKey(organizationId, agastyaApiKeyId);
+    queueWebhook(organizationId, Webhooks.DELETE_AGASTYA_API_KEY);
+    return result;
+  }
   throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
 };

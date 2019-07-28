@@ -215,5 +215,8 @@ export enum Webhooks {
   VERIFY_DOMAIN = "verify-domain",
   UPDATE_WEBHOOK = "update-webhook",
   CREATE_WEBHOOK = "create-webhook",
-  DELETE_WEBHOOK = "delete-webhook"
+  DELETE_WEBHOOK = "delete-webhook",
+  UPDATE_AGASTYA_API_KEY = "update-agastya-api-key",
+  CREATE_AGASTYA_API_KEY = "create-agastya-api-key",
+  DELETE_AGASTYA_API_KEY = "delete-agastya-api-key"
 }

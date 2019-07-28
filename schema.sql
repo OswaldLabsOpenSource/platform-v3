@@ -11,17 +11,17 @@
  Target Server Version : 100221
  File Encoding         : 65001
 
- Date: 24/07/2019 17:17:40
+ Date: 28/07/2019 19:10:06
 */
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- ----------------------------
--- Table structure for staart-access-tokens
+-- Table structure for platform-access-tokens
 -- ----------------------------
-DROP TABLE IF EXISTS `staart-access-tokens`;
-CREATE TABLE `staart-access-tokens` (
+DROP TABLE IF EXISTS `platform-access-tokens`;
+CREATE TABLE `platform-access-tokens` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userId` int(11) NOT NULL,
   `name` varchar(255) COLLATE utf8mb4_bin DEFAULT NULL,
@@ -35,10 +35,32 @@ CREATE TABLE `staart-access-tokens` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 -- ----------------------------
--- Table structure for staart-api-keys
+-- Table structure for platform-agastya-api-keys
 -- ----------------------------
-DROP TABLE IF EXISTS `staart-api-keys`;
-CREATE TABLE `staart-api-keys` (
+DROP TABLE IF EXISTS `platform-agastya-api-keys`;
+CREATE TABLE `platform-agastya-api-keys` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `organizationId` int(11) NOT NULL,
+  `name` varchar(255) COLLATE utf8mb4_bin DEFAULT NULL,
+  `slug` varchar(255) COLLATE utf8mb4_bin NOT NULL,
+  `backgroundColor` varchar(255) COLLATE utf8mb4_bin DEFAULT NULL,
+  `foregroundColor` varchar(255) COLLATE utf8mb4_bin DEFAULT NULL,
+  `customCss` longtext COLLATE utf8mb4_bin DEFAULT NULL,
+  `variables` longtext COLLATE utf8mb4_bin DEFAULT NULL,
+  `links` longtext COLLATE utf8mb4_bin DEFAULT NULL,
+  `layout` longtext COLLATE utf8mb4_bin DEFAULT NULL,
+  `integrations` longtext COLLATE utf8mb4_bin DEFAULT NULL,
+  `domains` text COLLATE utf8mb4_bin DEFAULT NULL,
+  `createdAt` datetime NOT NULL,
+  `updatedAt` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+
+-- ----------------------------
+-- Table structure for platform-api-keys
+-- ----------------------------
+DROP TABLE IF EXISTS `platform-api-keys`;
+CREATE TABLE `platform-api-keys` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) COLLATE utf8mb4_bin DEFAULT NULL,
   `description` text COLLATE utf8mb4_bin DEFAULT NULL,
@@ -54,10 +76,10 @@ CREATE TABLE `staart-api-keys` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 -- ----------------------------
--- Table structure for staart-approved-locations
+-- Table structure for platform-approved-locations
 -- ----------------------------
-DROP TABLE IF EXISTS `staart-approved-locations`;
-CREATE TABLE `staart-approved-locations` (
+DROP TABLE IF EXISTS `platform-approved-locations`;
+CREATE TABLE `platform-approved-locations` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userId` int(11) NOT NULL,
   `subnet` varchar(255) COLLATE utf8mb4_bin NOT NULL,
@@ -66,10 +88,10 @@ CREATE TABLE `staart-approved-locations` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 -- ----------------------------
--- Table structure for staart-backup-codes
+-- Table structure for platform-backup-codes
 -- ----------------------------
-DROP TABLE IF EXISTS `staart-backup-codes`;
-CREATE TABLE `staart-backup-codes` (
+DROP TABLE IF EXISTS `platform-backup-codes`;
+CREATE TABLE `platform-backup-codes` (
   `code` int(6) NOT NULL,
   `userId` int(11) NOT NULL,
   `used` int(1) NOT NULL DEFAULT 0,
@@ -80,10 +102,10 @@ CREATE TABLE `staart-backup-codes` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 -- ----------------------------
--- Table structure for staart-domains
+-- Table structure for platform-domains
 -- ----------------------------
-DROP TABLE IF EXISTS `staart-domains`;
-CREATE TABLE `staart-domains` (
+DROP TABLE IF EXISTS `platform-domains`;
+CREATE TABLE `platform-domains` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `organizationId` int(11) NOT NULL,
   `domain` varchar(255) COLLATE utf8mb4_bin NOT NULL,
@@ -95,10 +117,10 @@ CREATE TABLE `staart-domains` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 -- ----------------------------
--- Table structure for staart-emails
+-- Table structure for platform-emails
 -- ----------------------------
-DROP TABLE IF EXISTS `staart-emails`;
-CREATE TABLE `staart-emails` (
+DROP TABLE IF EXISTS `platform-emails`;
+CREATE TABLE `platform-emails` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `email` varchar(255) COLLATE utf8mb4_bin NOT NULL,
   `userId` int(11) NOT NULL,
@@ -110,10 +132,10 @@ CREATE TABLE `staart-emails` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 -- ----------------------------
--- Table structure for staart-events
+-- Table structure for platform-events
 -- ----------------------------
-DROP TABLE IF EXISTS `staart-events`;
-CREATE TABLE `staart-events` (
+DROP TABLE IF EXISTS `platform-events`;
+CREATE TABLE `platform-events` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userId` int(11) DEFAULT NULL,
   `organizationId` int(11) DEFAULT NULL,
@@ -126,10 +148,10 @@ CREATE TABLE `staart-events` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 -- ----------------------------
--- Table structure for staart-memberships
+-- Table structure for platform-memberships
 -- ----------------------------
-DROP TABLE IF EXISTS `staart-memberships`;
-CREATE TABLE `staart-memberships` (
+DROP TABLE IF EXISTS `platform-memberships`;
+CREATE TABLE `platform-memberships` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `organizationId` int(11) NOT NULL,
   `userId` int(11) NOT NULL,
@@ -142,10 +164,10 @@ CREATE TABLE `staart-memberships` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 -- ----------------------------
--- Table structure for staart-notifications
+-- Table structure for platform-notifications
 -- ----------------------------
-DROP TABLE IF EXISTS `staart-notifications`;
-CREATE TABLE `staart-notifications` (
+DROP TABLE IF EXISTS `platform-notifications`;
+CREATE TABLE `platform-notifications` (
   `id` int(12) NOT NULL AUTO_INCREMENT,
   `userId` int(12) NOT NULL,
   `category` varchar(255) COLLATE utf8mb4_bin NOT NULL,
@@ -158,10 +180,10 @@ CREATE TABLE `staart-notifications` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 -- ----------------------------
--- Table structure for staart-organizations
+-- Table structure for platform-organizations
 -- ----------------------------
-DROP TABLE IF EXISTS `staart-organizations`;
-CREATE TABLE `staart-organizations` (
+DROP TABLE IF EXISTS `platform-organizations`;
+CREATE TABLE `platform-organizations` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) COLLATE utf8mb4_bin DEFAULT NULL,
   `username` varchar(255) COLLATE utf8mb4_bin NOT NULL,
@@ -176,10 +198,25 @@ CREATE TABLE `staart-organizations` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 -- ----------------------------
--- Table structure for staart-users
+-- Table structure for platform-sessions
 -- ----------------------------
-DROP TABLE IF EXISTS `staart-users`;
-CREATE TABLE `staart-users` (
+DROP TABLE IF EXISTS `platform-sessions`;
+CREATE TABLE `platform-sessions` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `userId` int(11) NOT NULL,
+  `jwtToken` text COLLATE utf8mb4_bin NOT NULL,
+  `createdAt` datetime NOT NULL,
+  `updatedAt` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE current_timestamp(),
+  `ipAddress` varchar(255) COLLATE utf8mb4_bin NOT NULL,
+  `userAgent` text COLLATE utf8mb4_bin NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+
+-- ----------------------------
+-- Table structure for platform-users
+-- ----------------------------
+DROP TABLE IF EXISTS `platform-users`;
+CREATE TABLE `platform-users` (
   `id` int(12) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) COLLATE utf8mb4_bin NOT NULL,
   `username` varchar(255) COLLATE utf8mb4_bin NOT NULL,
@@ -203,10 +240,10 @@ CREATE TABLE `staart-users` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 -- ----------------------------
--- Table structure for staart-webhooks
+-- Table structure for platform-webhooks
 -- ----------------------------
-DROP TABLE IF EXISTS `staart-webhooks`;
-CREATE TABLE `staart-webhooks` (
+DROP TABLE IF EXISTS `platform-webhooks`;
+CREATE TABLE `platform-webhooks` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `organizationId` int(11) NOT NULL,
   `event` varchar(255) COLLATE utf8mb4_bin NOT NULL,

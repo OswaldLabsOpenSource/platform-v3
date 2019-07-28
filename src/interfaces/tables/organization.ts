@@ -39,8 +39,7 @@ export interface Webhook extends IdRow {
   isActive: boolean;
 }
 
-export interface Audit {
-  id?: number;
+export interface Audit extends IdRow {
   status?: AuditStatuses;
   auditUrlId?: number;
   finalUrl?: string;
@@ -50,16 +49,38 @@ export interface Audit {
   scoreBestPractices: number;
   scoreSeo: number;
   scorePwa: number;
-  createdAt?: Date;
-  updatedAt: Date;
 }
 
-export interface AuditWebpage {
-  id?: number;
+export interface AuditWebpage extends IdRow {
   organizationId: number;
   url: string;
   repeatEvery?: AuditRepeat;
-  createdAt?: Date;
-  updatedAt?: Date;
   lastAuditAt?: Date;
+}
+
+export interface AgastyaApiKey extends IdRow {
+  organizationId: number;
+  name: string;
+  slug: string;
+  backgroundColor?: string;
+  foregroundColor?: string;
+  domains?: string;
+  customCss?: {
+    title: string;
+    css: string;
+  }[];
+  variables?: {
+    [index: string]: string | boolean;
+  };
+  links?: {
+    [index: string]: string;
+  };
+  layout?: any;
+  integrations?: {
+    [index: string]:
+      | string
+      | {
+          [index: string]: string | number | boolean;
+        };
+  };
 }

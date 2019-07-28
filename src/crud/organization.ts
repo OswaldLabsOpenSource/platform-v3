@@ -9,7 +9,8 @@ import {
   Organization,
   Domain,
   Webhook,
-  Audit
+  Audit,
+  AgastyaApiKey
 } from "../interfaces/tables/organization";
 import {
   capitalizeFirstAndLastLetter,
@@ -537,4 +538,88 @@ export const getOrganizationAudit = async (
   );
   if (webpageDetails && webpageDetails.id) return audit;
   throw new Error(ErrorCode.NOT_FOUND);
+};
+/**
+ * Get a list of Agastya API keys
+ */
+export const getAgastyaApiKeys = async (
+  organizationId: number,
+  query: KeyValue
+) => {
+  return await getPaginatedData({
+    table: "agastya-api-keys",
+    conditions: {
+      organizationId
+    },
+    ...query
+  });
+};
+
+/**
+ * Get a single Agastya API key
+ */
+export const getAgastyaApiKey = async (
+  organizationId: number,
+  agastyaApiKeyId: number
+) => {
+  return (<AgastyaApiKey[]>(
+    await query(
+      `SELECT * FROM ${tableName(
+        "agastya-api-keys"
+      )} WHERE id = ? AND organizationId = ? LIMIT 1`,
+      [agastyaApiKeyId, organizationId]
+    )
+  ))[0];
+};
+
+/**
+ * Create a new Agastya API key
+ */
+export const createAgastyaApiKey = async (
+  agastya: AgastyaApiKey
+): Promise<InsertResult> => {
+  agastya.createdAt = new Date();
+  agastya.updatedAt = agastya.createdAt;
+  return await query(
+    `INSERT INTO ${tableName("agastya-api-keys")} ${tableValues(agastya)}`,
+    Object.values(agastya)
+  );
+};
+
+/**
+ * Update an Agastya API key
+ */
+export const updateAgastyaApiKey = async (
+  organizationId: number,
+  agastyaApiKeyId: number,
+  data: KeyValue
+) => {
+  data.updatedAt = new Date();
+  data = removeReadOnlyValues(data);
+  const agastya = await getAgastyaApiKey(organizationId, agastyaApiKeyId);
+  return await query(
+    `UPDATE ${tableName("agastya-api-keys")} SET ${setValues(
+      data
+    )} WHERE id = ? AND organizationId = ?`,
+    [...Object.values(data), agastyaApiKeyId, organizationId]
+  );
+};
+
+/**
+ * Delete an Agastya API ket
+ */
+export const deleteAgastyaApiKey = async (
+  organizationId: number,
+  agastyaApiKeyId: number
+) => {
+  const currentAgastyaApiKey = await getAgastyaApiKey(
+    organizationId,
+    agastyaApiKeyId
+  );
+  return await query(
+    `DELETE FROM ${tableName(
+      "agastya-api-keys"
+    )} WHERE id = ? AND organizationId = ? LIMIT 1`,
+    [agastyaApiKeyId, organizationId]
+  );
 };

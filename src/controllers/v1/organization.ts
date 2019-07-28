@@ -43,7 +43,12 @@ import {
   createWebhookForUser,
   getOrganizationWebhookForUser,
   updateWebhookForUser,
-  deleteWebhookForUser
+  deleteWebhookForUser,
+  getAgastyaApiKeysForUser,
+  createAgastyaApiKeyForUser,
+  getAgastyaApiKeyForUser,
+  updateAgastyaApiKeyForUser,
+  deleteAgastyaApiKeyForUser
 } from "../../rest/organization";
 import {
   Get,
@@ -1095,6 +1100,138 @@ export class OrganizationController {
         id,
         auditWebpage,
         auditId
+      )
+    );
+  }
+
+  @Get(":id/agastya-api-keys")
+  async getUserAgastyaApiKeys(req: Request, res: Response) {
+    const id = await organizationUsernameToId(req.params.id);
+    joiValidate(
+      { id: [Joi.string().required(), Joi.number().required()] },
+      { id }
+    );
+    const agastyaApiKeyParams = { ...req.query };
+    joiValidate(
+      {
+        start: Joi.string(),
+        itemsPerPage: Joi.number()
+      },
+      agastyaApiKeyParams
+    );
+    res.json(
+      await getAgastyaApiKeysForUser(
+        localsToTokenOrKey(res),
+        id,
+        agastyaApiKeyParams
+      )
+    );
+  }
+
+  @Put(":id/agastya-api-keys")
+  @Middleware(
+    validator(
+      {
+        name: Joi.string(),
+        domains: Joi.string()
+      },
+      "body"
+    )
+  )
+  async putUserAgastyaApiKeys(req: Request, res: Response) {
+    const id = await organizationUsernameToId(req.params.id);
+    joiValidate(
+      { id: [Joi.string().required(), Joi.number().required()] },
+      { id }
+    );
+    res
+      .status(CREATED)
+      .json(
+        await createAgastyaApiKeyForUser(
+          localsToTokenOrKey(res),
+          id,
+          req.body,
+          res.locals
+        )
+      );
+  }
+
+  @Get(":id/agastya-api-keys/:agastyaApiKeyId")
+  async getUserAgastyaApiKey(req: Request, res: Response) {
+    const id = await organizationUsernameToId(req.params.id);
+    const agastyaApiKeyId = req.params.agastyaApiKeyId;
+    joiValidate(
+      {
+        id: [Joi.string().required(), Joi.number().required()],
+        agastyaApiKeyId: Joi.number().required()
+      },
+      { id, agastyaApiKeyId }
+    );
+    res.json(
+      await getAgastyaApiKeyForUser(
+        localsToTokenOrKey(res),
+        id,
+        agastyaApiKeyId
+      )
+    );
+  }
+
+  @Patch(":id/agastya-api-keys/:agastyaApiKeyId")
+  @Middleware(
+    validator(
+      {
+        name: Joi.string(),
+        slug: Joi.string(),
+        backgroundColor: Joi.string(),
+        foregroundColor: Joi.string(),
+        domains: Joi.string(),
+        customCss: Joi.any(),
+        variables: Joi.any(),
+        links: Joi.any(),
+        layout: Joi.any(),
+        integrations: Joi.any()
+      },
+      "body"
+    )
+  )
+  async patchUserAgastyaApiKey(req: Request, res: Response) {
+    const id = await organizationUsernameToId(req.params.id);
+    const agastyaApiKeyId = req.params.agastyaApiKeyId;
+    joiValidate(
+      {
+        id: [Joi.string().required(), Joi.number().required()],
+        agastyaApiKeyId: Joi.number().required()
+      },
+      { id, agastyaApiKeyId }
+    );
+    res.json(
+      await updateAgastyaApiKeyForUser(
+        localsToTokenOrKey(res),
+        id,
+        agastyaApiKeyId,
+        req.body,
+        res.locals
+      )
+    );
+  }
+
+  @Delete(":id/agastya-api-keys/:agastyaApiKeyId")
+  async deleteUserAgastyaApiKey(req: Request, res: Response) {
+    const id = await organizationUsernameToId(req.params.id);
+    const agastyaApiKeyId = req.params.agastyaApiKeyId;
+    joiValidate(
+      {
+        id: [Joi.string().required(), Joi.number().required()],
+        agastyaApiKeyId: Joi.number().required()
+      },
+      { id, agastyaApiKeyId }
+    );
+    res.json(
+      await deleteAgastyaApiKeyForUser(
+        localsToTokenOrKey(res),
+        id,
+        agastyaApiKeyId,
+        res.locals
       )
     );
   }
