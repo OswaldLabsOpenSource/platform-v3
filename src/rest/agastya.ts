@@ -147,20 +147,18 @@ export const collect = async (
 
   // Geolocation from IP
   const geoLocation = await getGeolocationFromIp(locals.ipAddress);
-  [
-    "city",
-    "continent",
-    "country_code",
-    "latitude",
-    "longitude",
-    "time_zone",
-    "accuracy_radius",
-    "zip_code",
-    "region_name",
-    "region_code"
-  ].forEach(key => {
-    if (geoLocation[key]) data[key] = geoLocation[key];
-  });
+  if (geoLocation) {
+    if (geoLocation.city) data.geoLocation = geoLocation.city;
+    if (geoLocation.continent) data.geoLocation = geoLocation.continent;
+    if (geoLocation.country_code) data.geoLocation = geoLocation.country_code;
+    if (geoLocation.latitude) data.geoLocation = geoLocation.latitude;
+    if (geoLocation.longitude) data.geoLocation = geoLocation.longitude;
+    if (geoLocation.time_zone) data.geoLocation = geoLocation.time_zone;
+    if (geoLocation.accuracy_radius)
+      data.geoLocation = geoLocation.accuracy_radius;
+    if (geoLocation.zip_code) data.geoLocation = geoLocation.zip_code;
+    if (geoLocation.region_name) data.geoLocation = geoLocation.region_name;
+  }
 
   // Store in ElasticSearch
   client
