@@ -32,8 +32,19 @@ import {
   updateAuditWebpageForUser,
   deleteAuditWebpageForUser,
   getOrganizationAuditsForUser,
-  getOrganizationAuditForUser
-} from "../rest/organization";
+  getOrganizationAuditForUser,
+  getOrganizationDomainsForUser,
+  createDomainForUser,
+  getOrganizationDomainForUser,
+  updateDomainForUser,
+  deleteDomainForUser,
+  verifyDomainForUser,
+  getOrganizationWebhooksForUser,
+  createWebhookForUser,
+  getOrganizationWebhookForUser,
+  updateWebhookForUser,
+  deleteWebhookForUser
+} from "../../rest/organization";
 import {
   Get,
   Put,
@@ -42,21 +53,22 @@ import {
   Controller,
   ClassMiddleware,
   ClassWrapper,
-  Middleware
+  Middleware,
+  Post
 } from "@overnightjs/core";
-import { authHandler, validator } from "../helpers/middleware";
-import { MembershipRole, ApiKeyAccess } from "../interfaces/enum";
+import { authHandler, validator } from "../../helpers/middleware";
+import { MembershipRole } from "../../interfaces/enum";
 import { CREATED } from "http-status-codes";
 import asyncHandler from "express-async-handler";
-import { inviteMemberToOrganization } from "../rest/membership";
+import { inviteMemberToOrganization } from "../../rest/membership";
 import {
   joiValidate,
   organizationUsernameToId,
   localsToTokenOrKey
-} from "../helpers/utils";
+} from "../../helpers/utils";
 import Joi from "@hapi/joi";
 
-@Controller("organizations")
+@Controller("v1/organizations")
 @ClassWrapper(asyncHandler)
 @ClassMiddleware(authHandler)
 export class OrganizationController {
@@ -64,8 +76,7 @@ export class OrganizationController {
   @Middleware(
     validator(
       {
-        name: Joi.string().required(),
-        invitationDomain: Joi.string()
+        name: Joi.string().required()
       },
       "body"
     )
@@ -89,6 +100,19 @@ export class OrganizationController {
   }
 
   @Patch(":id")
+  @Middleware(
+    validator(
+      {
+        name: Joi.string(),
+        username: Joi.string().regex(/^[a-z0-9\-]+$/i),
+        forceTwoFactor: Joi.boolean(),
+        autoJoinDomain: Joi.boolean(),
+        onlyAllowDomain: Joi.boolean(),
+        ipRestrictions: Joi.string()
+      },
+      "body"
+    )
+  )
   async patch(req: Request, res: Response) {
     const id = await organizationUsernameToId(req.params.id);
     joiValidate({ id: Joi.number().required() }, { id });
@@ -527,19 +551,23 @@ export class OrganizationController {
   }
 
   @Put(":id/api-keys")
+  @Middleware(
+    validator(
+      {
+        scopes: Joi.string(),
+        ipRestrictions: Joi.string(),
+        referrerRestrictions: Joi.string(),
+        name: Joi.string(),
+        description: Joi.string()
+      },
+      "body"
+    )
+  )
   async putUserApiKeys(req: Request, res: Response) {
     const id = await organizationUsernameToId(req.params.id);
     joiValidate(
       { id: [Joi.string().required(), Joi.number().required()] },
       { id }
-    );
-    joiValidate(
-      {
-        apiRestrictions: Joi.string().allow(null),
-        ipRestrictions: Joi.string().allow(null),
-        referrerRestrictions: Joi.string().allow(null)
-      },
-      req.body
     );
     res
       .status(CREATED)
@@ -553,65 +581,346 @@ export class OrganizationController {
       );
   }
 
-  @Get(":id/api-keys/:apiKey")
+  @Get(":id/api-keys/:apiKeyId")
   async getUserApiKey(req: Request, res: Response) {
     const id = await organizationUsernameToId(req.params.id);
-    const apiKey = req.params.apiKey;
+    const apiKeyId = req.params.apiKeyId;
     joiValidate(
       {
         id: [Joi.string().required(), Joi.number().required()],
-        apiKey: Joi.string().required()
+        apiKeyId: Joi.number().required()
       },
-      { id, apiKey }
+      { id, apiKeyId }
     );
     res.json(
-      await getOrganizationApiKeyForUser(localsToTokenOrKey(res), id, apiKey)
+      await getOrganizationApiKeyForUser(localsToTokenOrKey(res), id, apiKeyId)
     );
   }
 
-  @Patch(":id/api-keys/:apiKey")
+  @Patch(":id/api-keys/:apiKeyId")
+  @Middleware(
+    validator(
+      {
+        scopes: Joi.string().allow(""),
+        ipRestrictions: Joi.string().allow(""),
+        referrerRestrictions: Joi.string().allow(""),
+        name: Joi.string().allow(""),
+        description: Joi.string().allow("")
+      },
+      "body"
+    )
+  )
   async patchUserApiKey(req: Request, res: Response) {
     const id = await organizationUsernameToId(req.params.id);
-    const apiKey = req.params.apiKey;
+    const apiKeyId = req.params.apiKeyId;
     joiValidate(
       {
         id: [Joi.string().required(), Joi.number().required()],
-        apiKey: Joi.string().required()
+        apiKeyId: Joi.number().required()
       },
-      { id, apiKey }
-    );
-    joiValidate(
-      {
-        apiRestrictions: Joi.string().allow(null),
-        ipRestrictions: Joi.string().allow(null),
-        referrerRestrictions: Joi.string().allow(null)
-      },
-      req.body
+      { id, apiKeyId }
     );
     res.json(
       await updateApiKeyForUser(
         localsToTokenOrKey(res),
         id,
-        apiKey,
+        apiKeyId,
         req.body,
         res.locals
       )
     );
   }
 
-  @Delete(":id/api-keys/:apiKey")
+  @Delete(":id/api-keys/:apiKeyId")
   async deleteUserApiKey(req: Request, res: Response) {
     const id = await organizationUsernameToId(req.params.id);
-    const apiKey = req.params.apiKey;
+    const apiKeyId = req.params.apiKeyId;
     joiValidate(
       {
         id: [Joi.string().required(), Joi.number().required()],
-        apiKey: Joi.string().required()
+        apiKeyId: Joi.number().required()
       },
-      { id, apiKey }
+      { id, apiKeyId }
     );
     res.json(
-      await deleteApiKeyForUser(localsToTokenOrKey(res), id, apiKey, res.locals)
+      await deleteApiKeyForUser(
+        localsToTokenOrKey(res),
+        id,
+        apiKeyId,
+        res.locals
+      )
+    );
+  }
+
+  @Get(":id/domains")
+  async getUserDomains(req: Request, res: Response) {
+    const id = await organizationUsernameToId(req.params.id);
+    joiValidate(
+      { id: [Joi.string().required(), Joi.number().required()] },
+      { id }
+    );
+    const domainParams = { ...req.query };
+    joiValidate(
+      {
+        start: Joi.string(),
+        itemsPerPage: Joi.number()
+      },
+      domainParams
+    );
+    res.json(
+      await getOrganizationDomainsForUser(
+        localsToTokenOrKey(res),
+        id,
+        domainParams
+      )
+    );
+  }
+
+  @Put(":id/domains")
+  @Middleware(
+    validator(
+      {
+        domain: Joi.string()
+      },
+      "body"
+    )
+  )
+  async putUserDomains(req: Request, res: Response) {
+    const id = await organizationUsernameToId(req.params.id);
+    joiValidate(
+      { id: [Joi.string().required(), Joi.number().required()] },
+      { id }
+    );
+    res
+      .status(CREATED)
+      .json(
+        await createDomainForUser(
+          localsToTokenOrKey(res),
+          id,
+          req.body,
+          res.locals
+        )
+      );
+  }
+
+  @Get(":id/domains/:domainId")
+  async getUserDomain(req: Request, res: Response) {
+    const id = await organizationUsernameToId(req.params.id);
+    const domainId = req.params.domainId;
+    joiValidate(
+      {
+        id: [Joi.string().required(), Joi.number().required()],
+        domainId: Joi.number().required()
+      },
+      { id, domainId }
+    );
+    res.json(
+      await getOrganizationDomainForUser(localsToTokenOrKey(res), id, domainId)
+    );
+  }
+
+  @Patch(":id/domains/:domainId")
+  @Middleware(
+    validator(
+      {
+        domain: Joi.string()
+      },
+      "body"
+    )
+  )
+  async patchUserDomain(req: Request, res: Response) {
+    const id = await organizationUsernameToId(req.params.id);
+    const domainId = req.params.domainId;
+    joiValidate(
+      {
+        id: [Joi.string().required(), Joi.number().required()],
+        domainId: Joi.number().required()
+      },
+      { id, domainId }
+    );
+    res.json(
+      await updateDomainForUser(
+        localsToTokenOrKey(res),
+        id,
+        domainId,
+        req.body,
+        res.locals
+      )
+    );
+  }
+
+  @Delete(":id/domains/:domainId")
+  async deleteUserDomain(req: Request, res: Response) {
+    const id = await organizationUsernameToId(req.params.id);
+    const domainId = req.params.domainId;
+    joiValidate(
+      {
+        id: [Joi.string().required(), Joi.number().required()],
+        domainId: Joi.number().required()
+      },
+      { id, domainId }
+    );
+    res.json(
+      await deleteDomainForUser(
+        localsToTokenOrKey(res),
+        id,
+        domainId,
+        res.locals
+      )
+    );
+  }
+
+  @Post(":id/domains/:domainId/verify")
+  async verifyOrganizationDomain(req: Request, res: Response) {
+    const id = await organizationUsernameToId(req.params.id);
+    const domainId = req.params.domainId;
+    const method = req.body.method || req.query.method;
+    joiValidate(
+      {
+        id: [Joi.string().required(), Joi.number().required()],
+        domainId: Joi.number().required(),
+        method: Joi.string().only(["file", "dns"])
+      },
+      { id, domainId, method }
+    );
+    res.json(
+      await verifyDomainForUser(
+        localsToTokenOrKey(res),
+        id,
+        domainId,
+        method,
+        res.locals
+      )
+    );
+  }
+
+  @Get(":id/webhooks")
+  async getUserWebhooks(req: Request, res: Response) {
+    const id = await organizationUsernameToId(req.params.id);
+    joiValidate(
+      { id: [Joi.string().required(), Joi.number().required()] },
+      { id }
+    );
+    const webhookParams = { ...req.query };
+    joiValidate(
+      {
+        start: Joi.string(),
+        itemsPerPage: Joi.number()
+      },
+      webhookParams
+    );
+    res.json(
+      await getOrganizationWebhooksForUser(
+        localsToTokenOrKey(res),
+        id,
+        webhookParams
+      )
+    );
+  }
+
+  @Put(":id/webhooks")
+  @Middleware(
+    validator(
+      {
+        event: Joi.string().required(),
+        url: Joi.string().required(),
+        contentType: Joi.string(),
+        secret: Joi.string().allow(""),
+        isActive: Joi.boolean()
+      },
+      "body"
+    )
+  )
+  async putUserWebhooks(req: Request, res: Response) {
+    const id = await organizationUsernameToId(req.params.id);
+    joiValidate(
+      { id: [Joi.string().required(), Joi.number().required()] },
+      { id }
+    );
+    res
+      .status(CREATED)
+      .json(
+        await createWebhookForUser(
+          localsToTokenOrKey(res),
+          id,
+          req.body,
+          res.locals
+        )
+      );
+  }
+
+  @Get(":id/webhooks/:webhookId")
+  async getUserWebhook(req: Request, res: Response) {
+    const id = await organizationUsernameToId(req.params.id);
+    const webhookId = req.params.webhookId;
+    joiValidate(
+      {
+        id: [Joi.string().required(), Joi.number().required()],
+        webhookId: Joi.number().required()
+      },
+      { id, webhookId }
+    );
+    res.json(
+      await getOrganizationWebhookForUser(
+        localsToTokenOrKey(res),
+        id,
+        webhookId
+      )
+    );
+  }
+
+  @Patch(":id/webhooks/:webhookId")
+  @Middleware(
+    validator(
+      {
+        event: Joi.string(),
+        url: Joi.string(),
+        contentType: Joi.string(),
+        secret: Joi.string(),
+        isActive: Joi.boolean()
+      },
+      "body"
+    )
+  )
+  async patchUserWebhook(req: Request, res: Response) {
+    const id = await organizationUsernameToId(req.params.id);
+    const webhookId = req.params.webhookId;
+    joiValidate(
+      {
+        id: [Joi.string().required(), Joi.number().required()],
+        webhookId: Joi.number().required()
+      },
+      { id, webhookId }
+    );
+    res.json(
+      await updateWebhookForUser(
+        localsToTokenOrKey(res),
+        id,
+        webhookId,
+        req.body,
+        res.locals
+      )
+    );
+  }
+
+  @Delete(":id/webhooks/:webhookId")
+  async deleteUserWebhook(req: Request, res: Response) {
+    const id = await organizationUsernameToId(req.params.id);
+    const webhookId = req.params.webhookId;
+    joiValidate(
+      {
+        id: [Joi.string().required(), Joi.number().required()],
+        webhookId: Joi.number().required()
+      },
+      { id, webhookId }
+    );
+    res.json(
+      await deleteWebhookForUser(
+        localsToTokenOrKey(res),
+        id,
+        webhookId,
+        res.locals
+      )
     );
   }
 

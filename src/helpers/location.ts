@@ -1,12 +1,26 @@
 import maxmind, { CityResponse } from "maxmind";
 import geoLite2 from "geolite2";
 import { Event } from "../interfaces/tables/events";
+import { Session } from "../interfaces/tables/user";
 import { getItemFromCache, storeItemInCache } from "./cache";
 import { CacheCategories } from "../interfaces/enum";
 
-export const getGeolocationFromIp = async (ipAddress: string) => {
+export interface GeoLocation {
+  city?: string;
+  country_code?: string;
+  continent?: string;
+  latitude?: number;
+  longitude?: number;
+  time_zone?: string;
+  accuracy_radius?: number;
+  zip_code?: string;
+  region_name?: string;
+}
+export const getGeolocationFromIp = async (
+  ipAddress: string
+): Promise<GeoLocation | undefined> => {
   const cachedLookup = getItemFromCache(CacheCategories.IP_LOOKUP, ipAddress);
-  if (cachedLookup) return cachedLookup;
+  if (cachedLookup) return cachedLookup as GeoLocation;
   const lookup = await maxmind.open<CityResponse>(geoLite2.paths.city);
   const ipLookup = lookup.get(ipAddress);
   if (!ipLookup) return;
@@ -40,4 +54,18 @@ export const addLocationToEvent = async (event: Event) => {
     event.location = await getGeolocationFromIp(event.ipAddress);
   }
   return event;
+};
+
+export const addLocationToSessions = async (sessions: Session[]) => {
+  for await (let session of sessions) {
+    session = await addLocationToSession(session);
+  }
+  return sessions;
+};
+
+export const addLocationToSession = async (session: Session) => {
+  if (session.ipAddress) {
+    session.location = await getGeolocationFromIp(session.ipAddress);
+  }
+  return session;
 };

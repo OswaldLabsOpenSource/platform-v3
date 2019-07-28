@@ -2,10 +2,10 @@ import {
   query,
   tableValues,
   setValues,
-  removeReadOnlyValues
+  removeReadOnlyValues,
+  tableName
 } from "../helpers/mysql";
 import { Membership } from "../interfaces/tables/memberships";
-import { dateToDateTime } from "../helpers/utils";
 import { KeyValue } from "../interfaces/general";
 import { User } from "../interfaces/tables/user";
 import { getOrganization } from "./organization";
@@ -23,7 +23,7 @@ export const createMembership = async (membership: Membership) => {
   membership.updatedAt = membership.createdAt;
   deleteItemFromCache(CacheCategories.USER_MEMBERSHIPS, membership.userId);
   return await query(
-    `INSERT INTO memberships ${tableValues(membership)}`,
+    `INSERT INTO ${tableName("memberships")} ${tableValues(membership)}`,
     Object.values(membership)
   );
 };
@@ -32,7 +32,7 @@ export const createMembership = async (membership: Membership) => {
  * Update an organization membership for a user
  */
 export const updateMembership = async (id: number, membership: KeyValue) => {
-  membership.updatedAt = dateToDateTime(new Date());
+  membership.updatedAt = new Date();
   membership = removeReadOnlyValues(membership);
   const membershipDetails = await getMembership(id);
   if (membershipDetails.id)
@@ -42,7 +42,9 @@ export const updateMembership = async (id: number, membership: KeyValue) => {
     );
   deleteItemFromCache(CacheCategories.MEMBERSHIP, id);
   return await query(
-    `UPDATE memberships SET ${setValues(membership)} WHERE id = ?`,
+    `UPDATE ${tableName("memberships")} SET ${setValues(
+      membership
+    )} WHERE id = ?`,
     [...Object.values(membership), id]
   );
 };
@@ -58,7 +60,9 @@ export const deleteMembership = async (id: number) => {
       membershipDetails.userId
     );
   deleteItemFromCache(CacheCategories.MEMBERSHIP, id);
-  return await query("DELETE FROM memberships WHERE id = ?", [id]);
+  return await query(`DELETE FROM ${tableName("memberships")} WHERE id = ?`, [
+    id
+  ]);
 };
 
 /*
@@ -73,9 +77,10 @@ export const deleteAllOrganizationMemberships = async (
       deleteItemFromCache(CacheCategories.USER_MEMBERSHIPS, membership.userId);
     }
   }
-  return await query("DELETE FROM memberships WHERE organizationId = ?", [
-    organizationId
-  ]);
+  return await query(
+    `DELETE FROM ${tableName("memberships")} WHERE organizationId = ?`,
+    [organizationId]
+  );
 };
 
 /*
@@ -88,7 +93,10 @@ export const deleteAllUserMemberships = async (userId: number) => {
       deleteItemFromCache(CacheCategories.USER_MEMBERSHIPS, membership.userId);
     }
   }
-  return await query("DELETE FROM memberships WHERE userId = ?", [userId]);
+  return await query(
+    `DELETE FROM ${tableName("memberships")} WHERE userId = ?`,
+    [userId]
+  );
 };
 
 /*
@@ -99,7 +107,7 @@ export const getMembership = async (id: number) => {
     await cachedQuery(
       CacheCategories.MEMBERSHIP,
       id,
-      "SELECT * FROM memberships WHERE id = ? LIMIT 1",
+      `SELECT * FROM ${tableName("memberships")} WHERE id = ? LIMIT 1`,
       [id]
     )
   ))[0];
@@ -122,9 +130,10 @@ export const getMembershipDetailed = async (id: number) => {
  */
 export const getOrganizationMembers = async (organizationId: number) => {
   return <Membership[]>(
-    await query(`SELECT * FROM memberships WHERE organizationId = ?`, [
-      organizationId
-    ])
+    await query(
+      `SELECT * FROM ${tableName("memberships")} WHERE organizationId = ?`,
+      [organizationId]
+    )
   );
 };
 
@@ -155,7 +164,7 @@ export const getUserMemberships = async (user: User | number) => {
     await cachedQuery(
       CacheCategories.USER_MEMBERSHIPS,
       user,
-      `SELECT * FROM memberships WHERE userId = ?`,
+      `SELECT * FROM ${tableName("memberships")} WHERE userId = ?`,
       [user]
     )
   );
@@ -213,7 +222,9 @@ export const getUserOrganizationMembership = async (
   }
   return (<Membership[]>(
     await query(
-      `SELECT * FROM memberships WHERE userId = ? AND organizationId = ?`,
+      `SELECT * FROM ${tableName(
+        "memberships"
+      )} WHERE userId = ? AND organizationId = ?`,
       [user, organization]
     )
   ))[0];

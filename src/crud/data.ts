@@ -1,6 +1,10 @@
-import { query, setValues, removeReadOnlyValues } from "../helpers/mysql";
+import {
+  query,
+  setValues,
+  removeReadOnlyValues,
+  tableName
+} from "../helpers/mysql";
 import { KeyValue } from "../interfaces/general";
-import { dateToDateTime } from "../helpers/utils";
 
 /*
  * Get pagination data
@@ -25,7 +29,7 @@ export const getPaginatedData = async ({
   sort?: string;
 }) => {
   const data = (await query(
-    `SELECT * FROM \`${table}\` WHERE ${primaryKey} ${
+    `SELECT * FROM ${tableName(table)} WHERE ${primaryKey} ${
       sort === "asc" ? ">" : "<"
     } ? ${
       conditions
@@ -57,10 +61,12 @@ export const updateData = async (
   conditions: KeyValue,
   data: KeyValue
 ) => {
-  data.updatedAt = dateToDateTime(new Date());
+  data.updatedAt = new Date();
   data = removeReadOnlyValues(data);
   return await query(
-    `UPDATE \`${table}\` SET ${setValues(data)} WHERE ${Object.keys(conditions)
+    `UPDATE ${tableName(table)} SET ${setValues(data)} WHERE ${Object.keys(
+      conditions
+    )
       .map(condition => `${condition} = ?`)
       .join(" AND ")}`,
     [...Object.values(data), ...Object.values(conditions)]
@@ -72,7 +78,7 @@ export const updateData = async (
  */
 export const deleteData = async (table: string, conditions: KeyValue) => {
   return await query(
-    `DELETE FROM \`${table}\` WHERE ${Object.keys(conditions)
+    `DELETE FROM ${tableName(table)} WHERE ${Object.keys(conditions)
       .map(condition => `${condition} = ?`)
       .join(" AND ")}`,
     [...Object.values(conditions)]

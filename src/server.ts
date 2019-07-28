@@ -1,6 +1,6 @@
 import "@babel/polyfill";
-import cors from "cors";
 import helmet from "helmet";
+import cors from "cors";
 import morgan from "morgan";
 import rfs from "rotating-file-stream";
 import responseTime from "response-time";
@@ -14,6 +14,8 @@ import {
 } from "./helpers/middleware";
 import { mkdirSync, existsSync } from "fs";
 import { join } from "path";
+import { Request, Response } from "express";
+import { DISALLOW_OPEN_CORS } from "./config";
 
 const logDirectory = join(__dirname, "..", "logs");
 existsSync(logDirectory) || mkdirSync(logDirectory);
@@ -28,13 +30,13 @@ export class Staart extends Server {
     super();
     this.setupHandlers();
     this.setupControllers();
-    this.app.use(errorHandler);
+    if (!DISALLOW_OPEN_CORS) this.app.use(errorHandler);
   }
 
   private setupHandlers() {
+    this.app.use(cors());
     this.app.use(helmet({ hsts: { maxAge: 31536000, preload: true } }));
     this.app.use(morgan("combined", { stream: accessLogStream }));
-    this.app.use(cors());
     this.app.use(json({ limit: "50mb" }));
     this.app.use(urlencoded({ extended: true }));
     this.app.use(responseTime());
@@ -44,6 +46,12 @@ export class Staart extends Server {
   }
 
   private setupControllers() {
+    this.app.get("/", (req: Request, res: Response) =>
+      res.json({
+        repository: "https://github.com/o15y/staart",
+        demo: "https://staart-demo.o15y.com"
+      })
+    );
     // staart:setup/controllers
   }
 
