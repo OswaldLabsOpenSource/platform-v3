@@ -595,6 +595,11 @@ export const createAgastyaApiKey = async (
   agastya.slug = agastya.slug || createSlug(agastya.name);
   agastya.backgroundColor = agastya.backgroundColor || "#3742fa";
   agastya.foregroundColor = agastya.foregroundColor || "#ffffff";
+  agastya.customCss = "{}";
+  agastya.variables = "{}";
+  agastya.links = "{}";
+  agastya.layout = `[{"type":"mode-card","slug":"dyslexia"},{"type":"mode-card","slug":"blue-light-filter"},{"type":"mode-card","slug":"large-font"},{"type":"mode-card","slug":"night"},{"type":"mode-card","slug":"read-aloud"},{"type":"mode-card","slug":"translate"},{"type":"link-card","title":"More accessibility features","url":"agastya-app:modes/all"}]`;
+  agastya.integrations = "{}";
   agastya.createdAt = new Date();
   agastya.updatedAt = agastya.createdAt;
   return await query(
@@ -632,6 +637,11 @@ export const updateAgastyaApiKey = async (
       originalAgastyaApiKey.slug
     );
   }
+  if (data.customCss) data.customCss = JSON.stringify(data.customCss);
+  if (data.variables) data.variables = JSON.stringify(data.variables);
+  if (data.links) data.links = JSON.stringify(data.links);
+  if (data.layout) data.layout = JSON.stringify(data.layout);
+  if (data.integrations) data.integrations = JSON.stringify(data.integrations);
   const agastya = await getAgastyaApiKey(organizationId, agastyaApiKeyId);
   return await query(
     `UPDATE ${tableName("agastya-api-keys")} SET ${setValues(

@@ -65,22 +65,36 @@ export interface AgastyaApiKey extends IdRow {
   backgroundColor?: string;
   foregroundColor?: string;
   domains?: string;
-  customCss?: {
-    title: string;
-    css: string;
-  }[];
-  variables?: {
-    [index: string]: string | boolean;
-  };
-  links?: {
-    [index: string]: string;
-  };
-  layout?: any;
-  integrations?: {
-    [index: string]:
-      | string
-      | {
-          [index: string]: string | number | boolean;
-        };
-  };
+  customCss?:
+    | string
+    | {
+        title: string;
+        css: string;
+      }[];
+  variables?:
+    | string
+    | {
+        [index: string]: string | boolean;
+      };
+  links?:
+    | string
+    | {
+        [index: string]: string;
+      };
+  layout?:
+    | string
+    | {
+        type: string;
+        slug: string;
+        [index: string]: string | boolean | number;
+      }[];
+  integrations?:
+    | string
+    | {
+        [index: string]:
+          | string
+          | {
+              [index: string]: string | number | boolean;
+            };
+      };
 }
