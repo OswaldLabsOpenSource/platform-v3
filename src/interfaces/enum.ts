@@ -122,7 +122,8 @@ export enum CacheCategories {
   API_KEY_ORG = "api-key-org",
   NOTIFICATION = "notification",
   USER_NOTIFICATIONS = "user-notifications",
-  TRANSLATION = "translation"
+  TRANSLATION = "translation",
+  AGASTYA_API_KEY = "agastya-api-key"
 }
 
 export enum Authorizations {

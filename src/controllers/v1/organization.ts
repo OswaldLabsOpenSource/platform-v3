@@ -1182,9 +1182,13 @@ export class OrganizationController {
       {
         name: Joi.string(),
         slug: Joi.string(),
-        backgroundColor: Joi.string(),
-        foregroundColor: Joi.string(),
-        domains: Joi.string(),
+        backgroundColor: Joi.string()
+          .regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/)
+          .allow(""),
+        foregroundColor: Joi.string()
+          .regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/)
+          .allow(""),
+        domains: Joi.string().allow(""),
         customCss: Joi.any(),
         variables: Joi.any(),
         links: Joi.any(),

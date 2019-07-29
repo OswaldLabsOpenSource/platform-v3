@@ -573,11 +573,28 @@ export const getAgastyaApiKey = async (
 };
 
 /**
+ * Get a single Agastya API key
+ */
+export const getAgastyaApiKeyFromSlug = async (slug: string) => {
+  return (<AgastyaApiKey[]>(
+    await cachedQuery(
+      CacheCategories.AGASTYA_API_KEY,
+      slug,
+      `SELECT * FROM ${tableName("agastya-api-keys")} WHERE slug = ?`,
+      [slug]
+    )
+  ))[0];
+};
+
+/**
  * Create a new Agastya API key
  */
 export const createAgastyaApiKey = async (
   agastya: AgastyaApiKey
 ): Promise<InsertResult> => {
+  agastya.slug = agastya.slug || createSlug(agastya.name);
+  agastya.backgroundColor = agastya.backgroundColor || "#3742fa";
+  agastya.foregroundColor = agastya.foregroundColor || "#ffffff";
   agastya.createdAt = new Date();
   agastya.updatedAt = agastya.createdAt;
   return await query(
@@ -596,6 +613,25 @@ export const updateAgastyaApiKey = async (
 ) => {
   data.updatedAt = new Date();
   data = removeReadOnlyValues(data);
+  const originalAgastyaApiKey = await getAgastyaApiKey(
+    organizationId,
+    agastyaApiKeyId
+  );
+  if (
+    data.slug &&
+    originalAgastyaApiKey.slug &&
+    originalAgastyaApiKey.slug !== data.slug
+  ) {
+    const currentOwner = await getAgastyaApiKeyFromSlug(
+      originalAgastyaApiKey.slug
+    );
+    if (currentOwner && currentOwner.organizationId != organizationId)
+      throw new Error(ErrorCode.USERNAME_EXISTS);
+    deleteItemFromCache(
+      CacheCategories.AGASTYA_API_KEY,
+      originalAgastyaApiKey.slug
+    );
+  }
   const agastya = await getAgastyaApiKey(organizationId, agastyaApiKeyId);
   return await query(
     `UPDATE ${tableName("agastya-api-keys")} SET ${setValues(
@@ -615,6 +651,10 @@ export const deleteAgastyaApiKey = async (
   const currentAgastyaApiKey = await getAgastyaApiKey(
     organizationId,
     agastyaApiKeyId
+  );
+  deleteItemFromCache(
+    CacheCategories.AGASTYA_API_KEY,
+    currentAgastyaApiKey.slug
   );
   return await query(
     `DELETE FROM ${tableName(

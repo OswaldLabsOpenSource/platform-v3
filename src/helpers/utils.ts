@@ -88,10 +88,12 @@ export const localsToTokenOrKey = (res: Response) => {
   return res.locals.token.id as number;
 };
 
-export const createSlug = (name: string) =>
-  `${slugify(name, {
-    lower: true
-  }).replace(/'|"/g, "")}-${cryptoRandomString({ length: 5 })}`;
+export const createSlug = (name?: string) =>
+  name
+    ? `${slugify(name, {
+        lower: true
+      }).replace(/'|"/g, "")}-${cryptoRandomString({ length: 5 })}`
+    : cryptoRandomString({ length: 10 });
 
 export const safeRedirect = (req: Request, res: Response, url: string) => {
   if (req.get("X-Requested-With") === "XMLHttpRequest")
