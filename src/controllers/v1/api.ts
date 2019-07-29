@@ -7,7 +7,7 @@ import {
   detectTextLanguage,
   organizationUsernameToId,
   safeRedirect
-} from "../helpers/utils";
+} from "../../helpers/utils";
 import {
   translateText,
   lighthouseAudit,
@@ -17,10 +17,10 @@ import {
   getLighthouseAuditHtml,
   auditBadgeInfo,
   getFaviconForSite
-} from "../crud/api";
-import { cacheForever } from "../helpers/middleware";
+} from "../../crud/api";
+import { cacheForever } from "../../helpers/middleware";
 
-@Controller("api")
+@Controller("v1/api")
 @ClassWrapper(asyncHandler)
 export class ApiController {
   @Get("language-detect")
