@@ -52,9 +52,7 @@ const canUserUser = async (
       allowed = true;
 
     if (action == Authorizations.READ) {
-      // A user can read another user in the same organization, as long as they're not a basic member
-      if (userMemberships[similarMembership].role != MembershipRole.BASIC)
-        allowed = true;
+      allowed = true;
     }
   });
 

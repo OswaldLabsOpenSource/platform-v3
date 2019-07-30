@@ -596,7 +596,10 @@ export const createAgastyaApiKey = async (
   agastya.backgroundColor = agastya.backgroundColor || "#3742fa";
   agastya.foregroundColor = agastya.foregroundColor || "#ffffff";
   agastya.customCss = "{}";
-  agastya.variables = "{}";
+  agastya.variables = JSON.stringify({
+    headingText: "Help & Accessibility",
+    subheadingText: agastya.name
+  });
   agastya.links = "{}";
   agastya.layout = `[{"type":"mode-card","slug":"dyslexia"},{"type":"mode-card","slug":"blue-light-filter"},{"type":"mode-card","slug":"large-font"},{"type":"mode-card","slug":"night"},{"type":"mode-card","slug":"read-aloud"},{"type":"mode-card","slug":"translate"},{"type":"link-card","title":"More accessibility features","url":"agastya-app:modes/all"}]`;
   agastya.integrations = "{}";
