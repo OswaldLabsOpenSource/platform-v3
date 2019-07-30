@@ -68,10 +68,13 @@ export const login = async (
   password: string,
   locals: Locals
 ) => {
+  console.log("Started login process");
   const user = await getUserByEmail(email, true);
+  console.log("Got user by email", user);
   if (!user.password) throw new Error(ErrorCode.MISSING_PASSWORD);
   if (!user.id) throw new Error(ErrorCode.USER_NOT_FOUND);
   const correctPassword = await compare(password, user.password);
+  console.log("Was the correct password");
   if (correctPassword)
     return await getLoginResponse(user, EventType.AUTH_LOGIN, "local", locals);
   throw new Error(ErrorCode.INVALID_LOGIN);

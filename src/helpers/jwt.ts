@@ -175,16 +175,21 @@ export const postLoginTokens = async (
 ) => {
   if (!user.id) throw new Error(ErrorCode.USER_NOT_FOUND);
   const refresh = await refreshToken(user.id);
+  console.log("Created refresh token", refreshToken);
   if (!refreshTokenString) {
+    console.log("Creating session");
     await createSession({
       userId: user.id,
       jwtToken: refresh,
       ipAddress: locals.ipAddress || "unknown-ip-address",
       userAgent: locals.userAgent || "unknown-user-agent"
     });
+    console.log("Created session");
   } else {
+    console.log("Updating session");
     await updateSessionByJwt(user.id, refreshTokenString, {});
   }
+  console.log("Returning JWT response");
   return {
     token: await loginToken(
       deleteSensitiveInfoUser({
@@ -213,10 +218,14 @@ export const getLoginResponse = async (
 ): Promise<LoginResponse> => {
   if (!user.id) throw new Error(ErrorCode.USER_NOT_FOUND);
   const verifiedEmails = await getUserVerifiedEmails(user);
+  console.log("Got verified emails", verifiedEmails);
   if (!verifiedEmails.length) throw new Error(ErrorCode.UNVERIFIED_EMAIL);
   if (locals) {
+    console.log("Got locals", locals);
     if (!(await checkApprovedLocation(user.id, locals.ipAddress))) {
+      console.log("Was not an approved location");
       const location = await getGeolocationFromIp(locals.ipAddress);
+      console.log("Starting to send email");
       await mail(
         await getUserPrimaryEmail(user),
         Templates.UNAPPROVED_LOCATION,
@@ -228,13 +237,18 @@ export const getLoginResponse = async (
           token: await approveLocationToken(user.id, locals.ipAddress)
         }
       );
+      console.log("Sent email successfully");
       throw new Error(ErrorCode.UNAPPROVED_LOCATION);
     }
   }
-  if (user.twoFactorEnabled)
+  if (user.twoFactorEnabled) {
+    console.log("2FA is enabled");
     return {
       twoFactorToken: await twoFactorToken(user)
     };
+  }
+  console.log("2FA is not enabled");
+  console.log("Sending post login tokens");
   return await postLoginTokens(user, locals);
 };
 
