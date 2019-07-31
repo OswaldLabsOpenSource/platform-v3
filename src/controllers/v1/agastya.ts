@@ -55,7 +55,7 @@ export class AgastyaController {
     });
   }
 
-  @Get("loader/.:apiKey")
+  @Get("loader/:apiKey")
   getLoader(req: Request, res: Response) {
     const environment = req.query.env || "production";
     const apiKey = (req.params.apiKey || "").replace(".js", "");
