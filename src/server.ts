@@ -15,6 +15,7 @@ import {
 import { mkdirSync, existsSync } from "fs";
 import { join } from "path";
 import { Request, Response } from "express";
+import { MOVED_PERMANENTLY } from "http-status-codes";
 import { DISALLOW_OPEN_CORS } from "./config";
 
 const logDirectory = join(__dirname, "..", "logs");
@@ -48,11 +49,12 @@ export class Staart extends Server {
 
   private setupControllers() {
     this.app.get("/", (req: Request, res: Response) =>
-      res.json({
-        repository: "https://github.com/o15y/staart",
-        demo: "https://staart-demo.o15y.com"
-      })
+      res.redirect("https://oswaldlabs.com/platform/")
     );
+    this.app.get("/_/:apiKey", (req: Request, res: Response) =>
+      res.redirect(MOVED_PERMANENTLY, `/v1/agastya/loader/${req.params.apiKey}`)
+    );
+
     // staart:setup/controllers
   }
 
