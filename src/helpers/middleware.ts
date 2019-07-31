@@ -73,6 +73,11 @@ export const trackingHandler = (
   next: NextFunction
 ) => {
   res.locals.userAgent = req.get("User-Agent");
+  const originalParamApiKey = req.get("X-Api-Key") || req.query.key;
+  if (originalParamApiKey) res.locals.originalParamApiKey = originalParamApiKey;
+  // We don't want to keep the API key here because lots of controllers
+  // use `req.query` for things like pagination and this won't validate
+  delete req.query.key;
   let ip =
     req.headers["x-forwarded-for"] ||
     req.connection.remoteAddress ||
@@ -111,7 +116,7 @@ export const authHandler = async (
       if (userToken) res.locals.token = userToken;
     }
 
-    let apiKeyJwt = req.get("X-Api-Key") || req.query.key;
+    let apiKeyJwt = res.locals.originalParamApiKey;
     if (apiKeyJwt) {
       if (apiKeyJwt.startsWith("Bearer "))
         apiKeyJwt = apiKeyJwt.replace("Bearer ", "");
@@ -165,7 +170,7 @@ export const rateLimitHandler = async (
   res: Response,
   next: NextFunction
 ) => {
-  const apiKeyJwt = req.get("X-Api-Key") || req.query.key;
+  const apiKeyJwt = res.locals.originalParamApiKey;
   if (apiKeyJwt) {
     try {
       const details = (await verifyToken(
@@ -190,7 +195,7 @@ export const speedLimitHandler = async (
   res: Response,
   next: NextFunction
 ) => {
-  const apiKeyJwt = req.get("X-Api-Key") || req.query.key;
+  const apiKeyJwt = res.locals.originalParamApiKey;
   if (apiKeyJwt) {
     try {
       const details = (await verifyToken(

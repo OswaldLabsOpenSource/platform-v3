@@ -1,5 +1,11 @@
 import { Request, Response } from "express";
-import { Get, Controller, ClassWrapper, Middleware } from "@overnightjs/core";
+import {
+  Get,
+  Post,
+  Controller,
+  ClassWrapper,
+  Middleware
+} from "@overnightjs/core";
 import asyncHandler from "express-async-handler";
 import Joi from "@hapi/joi";
 import { joiValidate } from "../../helpers/utils";
@@ -14,13 +20,14 @@ export class AgastyaController {
   async getCollect(req: Request, res: Response) {
     const apiKey = req.params.apiKey;
     joiValidate({ apiKey: Joi.string().required() }, { apiKey });
-    let data = req.body;
-    if (!data || (typeof data === "object" && !Object.keys(data).length)) {
-      if (typeof req.query === "object" && Object.keys(req.query).length) {
-        data = req.query;
-      }
-    }
-    res.json(await collect(apiKey, data, res.locals, req.headers));
+    res.json(await collect(apiKey, req.query, res.locals, req.headers));
+  }
+
+  @Post("collect/:apiKey")
+  async postCollect(req: Request, res: Response) {
+    const apiKey = req.params.apiKey;
+    joiValidate({ apiKey: Joi.string().required() }, { apiKey });
+    res.json(await collect(apiKey, req.body, res.locals, req.headers));
   }
 
   @Get("config/:apiKey")
