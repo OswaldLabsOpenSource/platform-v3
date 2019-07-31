@@ -40,7 +40,7 @@ export const collect = async (
 ) => {
   // Support for short keys
   for (let shortKey in shortKeys) {
-    if (data[shortKey]) {
+    if (typeof data[shortKey] !== "undefined") {
       data[shortKeys[shortKey]] = data[shortKey];
       delete data[shortKey];
     }
