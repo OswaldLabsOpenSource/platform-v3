@@ -22,6 +22,11 @@ export class AgastyaController {
     const apiKey = req.params.apiKey;
     joiValidate({ apiKey: Joi.string().required() }, { apiKey });
     res.status(NO_CONTENT).send();
+    if (typeof req.body === "string") {
+      try {
+        req.body = JSON.parse(req.body);
+      } catch (error) {}
+    }
     collect(apiKey, req.body, res.locals, req.headers)
       .then(() => {})
       .catch(error => console.log("Wasn't able to track event", error));
