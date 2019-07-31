@@ -26,6 +26,9 @@ export class AgastyaController {
   async getConfig(req: Request, res: Response) {
     const apiKey = req.params.apiKey;
     joiValidate({ apiKey: Joi.string().required() }, { apiKey });
-    res.json(await getAgastyaApiKeyFromSlug(apiKey));
+    res.json({
+      ...(await getAgastyaApiKeyFromSlug(apiKey)),
+      ipCountry: req.get("Cf-Ipcountry")
+    });
   }
 }
