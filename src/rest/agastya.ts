@@ -148,16 +148,16 @@ export const collect = async (
   // Geolocation from IP
   const geoLocation = await getGeolocationFromIp(locals.ipAddress);
   if (geoLocation) {
-    if (geoLocation.city) data.geoLocation = geoLocation.city;
-    if (geoLocation.continent) data.geoLocation = geoLocation.continent;
-    if (geoLocation.country_code) data.geoLocation = geoLocation.country_code;
-    if (geoLocation.latitude) data.geoLocation = geoLocation.latitude;
-    if (geoLocation.longitude) data.geoLocation = geoLocation.longitude;
-    if (geoLocation.time_zone) data.geoLocation = geoLocation.time_zone;
+    if (geoLocation.city) data.city = geoLocation.city;
+    if (geoLocation.continent) data.continent = geoLocation.continent;
+    if (geoLocation.country_code) data.country_code = geoLocation.country_code;
+    if (geoLocation.latitude) data.latitude = geoLocation.latitude;
+    if (geoLocation.longitude) data.longitude = geoLocation.longitude;
+    if (geoLocation.time_zone) data.time_zone = geoLocation.time_zone;
     if (geoLocation.accuracy_radius)
-      data.geoLocation = geoLocation.accuracy_radius;
-    if (geoLocation.zip_code) data.geoLocation = geoLocation.zip_code;
-    if (geoLocation.region_name) data.geoLocation = geoLocation.region_name;
+      data.accuracy_radius = geoLocation.accuracy_radius;
+    if (geoLocation.zip_code) data.zip_code = geoLocation.zip_code;
+    if (geoLocation.region_name) data.region_name = geoLocation.region_name;
   }
 
   // Store in ElasticSearch
