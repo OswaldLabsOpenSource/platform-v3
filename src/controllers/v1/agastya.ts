@@ -1,10 +1,10 @@
 import { Request, Response } from "express";
 import {
   Get,
-  Post,
   Controller,
   ClassWrapper,
-  Middleware
+  Middleware,
+  Post
 } from "@overnightjs/core";
 import asyncHandler from "express-async-handler";
 import Joi from "@hapi/joi";
@@ -12,22 +12,29 @@ import { joiValidate } from "../../helpers/utils";
 import { collect } from "../../rest/agastya";
 import { getAgastyaApiKeyFromSlug } from "../../crud/organization";
 import { cachedResponse } from "../../helpers/middleware";
+import { NO_CONTENT } from "http-status-codes";
 
 @Controller("v1/agastya")
 @ClassWrapper(asyncHandler)
 export class AgastyaController {
-  @Get("collect/:apiKey")
-  async getCollect(req: Request, res: Response) {
+  @Post("collect/:apiKey")
+  postCollect(req: Request, res: Response) {
     const apiKey = req.params.apiKey;
     joiValidate({ apiKey: Joi.string().required() }, { apiKey });
-    res.json(await collect(apiKey, req.query, res.locals, req.headers));
+    res.status(NO_CONTENT).send();
+    collect(apiKey, req.body, res.locals, req.headers)
+      .then(() => {})
+      .catch(error => console.log("Wasn't able to track event", error));
   }
 
-  @Post("collect/:apiKey")
-  async postCollect(req: Request, res: Response) {
+  @Get("collect/:apiKey")
+  getCollect(req: Request, res: Response) {
     const apiKey = req.params.apiKey;
     joiValidate({ apiKey: Joi.string().required() }, { apiKey });
-    res.json(await collect(apiKey, req.body, res.locals, req.headers));
+    res.status(NO_CONTENT).send();
+    collect(apiKey, req.query, res.locals, req.headers)
+      .then(() => {})
+      .catch(error => console.log("Wasn't able to track event", error));
   }
 
   @Get("config/:apiKey")
