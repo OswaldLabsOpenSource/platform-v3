@@ -639,10 +639,6 @@ export const updateAgastyaApiKey = async (
     );
     if (currentOwner && currentOwner.organizationId != organizationId)
       throw new Error(ErrorCode.USERNAME_EXISTS);
-    deleteItemFromCache(
-      CacheCategories.AGASTYA_API_KEY,
-      originalAgastyaApiKey.slug
-    );
   }
   if (data.customCss) data.customCss = JSON.stringify(data.customCss);
   if (data.variables) data.variables = JSON.stringify(data.variables);
@@ -650,6 +646,10 @@ export const updateAgastyaApiKey = async (
   if (data.layout) data.layout = JSON.stringify(data.layout);
   if (data.integrations) data.integrations = JSON.stringify(data.integrations);
   const agastya = await getAgastyaApiKey(organizationId, agastyaApiKeyId);
+  deleteItemFromCache(
+    CacheCategories.AGASTYA_API_KEY,
+    originalAgastyaApiKey.slug
+  );
   return await query(
     `UPDATE ${tableName("agastya-api-keys")} SET ${setValues(
       data
