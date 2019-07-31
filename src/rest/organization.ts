@@ -35,21 +35,26 @@ import {
   getAgastyaApiKey,
   updateAgastyaApiKey,
   createAgastyaApiKey,
-  deleteAgastyaApiKey
+  deleteAgastyaApiKey,
+  getOrganizationMemberships,
+  deleteAllOrganizationMemberships,
+  updateOrganizationMembership,
+  deleteOrganizationMembership,
+  getDomainByDomainName,
+  getOrganizationMembershipDetailed
 } from "../crud/organization";
 import { InsertResult } from "../interfaces/mysql";
 import {
   createMembership,
-  deleteAllOrganizationMemberships,
-  getOrganizationMemberDetails
+  getUserOrganizationMembership
 } from "../crud/membership";
 import {
   MembershipRole,
   ErrorCode,
   EventType,
-  Authorizations,
-  NotificationCategories,
-  Webhooks
+  Webhooks,
+  OrgScopes,
+  Authorizations
 } from "../interfaces/enum";
 import {
   createEvent,
@@ -76,19 +81,21 @@ import {
   getStripeInvoice,
   createStripeSubscription
 } from "../crud/billing";
-import { getUser } from "../crud/user";
+import { getUser, getUserByEmail } from "../crud/user";
 import { getUserPrimaryEmail } from "../crud/email";
 import { ApiKeyResponse } from "../helpers/jwt";
 import axios from "axios";
 import { dnsResolve } from "../helpers/utils";
 import { JWT_ISSUER } from "../config";
 import { queueWebhook } from "../helpers/webhooks";
+import { User } from "../interfaces/tables/user";
+import { register } from "./auth";
 
 export const getOrganizationForUser = async (
   userId: number | ApiKeyResponse,
   organizationId: number
 ) => {
-  if (await can(userId, Authorizations.READ, "organization", organizationId))
+  if (await can(userId, OrgScopes.READ_ORG, "organization", organizationId))
     return await getOrganization(organizationId);
   throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
 };
@@ -131,9 +138,7 @@ export const updateOrganizationForUser = async (
   data: Organization,
   locals: Locals
 ) => {
-  if (
-    await can(userId, Authorizations.UPDATE, "organization", organizationId)
-  ) {
+  if (await can(userId, OrgScopes.UPDATE_ORG, "organization", organizationId)) {
     await updateOrganization(organizationId, data);
     queueWebhook(organizationId, Webhooks.UPDATE_ORGANIZATION);
     return;
@@ -146,9 +151,7 @@ export const deleteOrganizationForUser = async (
   organizationId: number,
   locals: Locals
 ) => {
-  if (
-    await can(userId, Authorizations.DELETE, "organization", organizationId)
-  ) {
+  if (await can(userId, OrgScopes.DELETE_ORG, "organization", organizationId)) {
     const organizationDetails = await getOrganization(organizationId);
     if (organizationDetails.stripeCustomerId)
       await deleteStripeCustomer(organizationDetails.stripeCustomerId);
@@ -164,7 +167,14 @@ export const getOrganizationBillingForUser = async (
   userId: number | ApiKeyResponse,
   organizationId: number
 ) => {
-  if (await can(userId, Authorizations.READ, "organization", organizationId)) {
+  if (
+    await can(
+      userId,
+      OrgScopes.READ_ORG_BILLING,
+      "organization",
+      organizationId
+    )
+  ) {
     const organization = await getOrganization(organizationId);
     if (organization.stripeCustomerId)
       return await getStripeCustomer(organization.stripeCustomerId);
@@ -179,7 +189,14 @@ export const updateOrganizationBillingForUser = async (
   data: any,
   locals: Locals
 ) => {
-  if (await can(userId, Authorizations.READ, "organization", organizationId)) {
+  if (
+    await can(
+      userId,
+      OrgScopes.UPDATE_ORG_BILLING,
+      "organization",
+      organizationId
+    )
+  ) {
     const organization = await getOrganization(organizationId);
     let result;
     if (organization.stripeCustomerId) {
@@ -198,7 +215,14 @@ export const getOrganizationInvoicesForUser = async (
   organizationId: number,
   params: KeyValue
 ) => {
-  if (await can(userId, Authorizations.READ, "organization", organizationId)) {
+  if (
+    await can(
+      userId,
+      OrgScopes.READ_ORG_INVOICES,
+      "organization",
+      organizationId
+    )
+  ) {
     const organization = await getOrganization(organizationId);
     if (organization.stripeCustomerId)
       return await getStripeInvoices(organization.stripeCustomerId, params);
@@ -212,7 +236,14 @@ export const getOrganizationInvoiceForUser = async (
   organizationId: number,
   invoiceId: string
 ) => {
-  if (await can(userId, Authorizations.READ, "organization", organizationId)) {
+  if (
+    await can(
+      userId,
+      OrgScopes.READ_ORG_INVOICES,
+      "organization",
+      organizationId
+    )
+  ) {
     const organization = await getOrganization(organizationId);
     if (organization.stripeCustomerId)
       return await getStripeInvoice(organization.stripeCustomerId, invoiceId);
@@ -226,7 +257,14 @@ export const getOrganizationSourcesForUser = async (
   organizationId: number,
   params: KeyValue
 ) => {
-  if (await can(userId, Authorizations.READ, "organization", organizationId)) {
+  if (
+    await can(
+      userId,
+      OrgScopes.READ_ORG_SOURCES,
+      "organization",
+      organizationId
+    )
+  ) {
     const organization = await getOrganization(organizationId);
     if (organization.stripeCustomerId)
       return await getStripeSources(organization.stripeCustomerId, params);
@@ -240,7 +278,14 @@ export const getOrganizationSourceForUser = async (
   organizationId: number,
   sourceId: string
 ) => {
-  if (await can(userId, Authorizations.READ, "organization", organizationId)) {
+  if (
+    await can(
+      userId,
+      OrgScopes.READ_ORG_SOURCES,
+      "organization",
+      organizationId
+    )
+  ) {
     const organization = await getOrganization(organizationId);
     if (organization.stripeCustomerId)
       return await getStripeSource(organization.stripeCustomerId, sourceId);
@@ -254,7 +299,14 @@ export const getOrganizationSubscriptionsForUser = async (
   organizationId: number,
   params: KeyValue
 ) => {
-  if (await can(userId, Authorizations.READ, "organization", organizationId)) {
+  if (
+    await can(
+      userId,
+      OrgScopes.READ_ORG_SUBSCRIPTIONS,
+      "organization",
+      organizationId
+    )
+  ) {
     const organization = await getOrganization(organizationId);
     if (organization.stripeCustomerId)
       return await getStripeSubscriptions(
@@ -271,7 +323,14 @@ export const getOrganizationSubscriptionForUser = async (
   organizationId: number,
   subscriptionId: string
 ) => {
-  if (await can(userId, Authorizations.READ, "organization", organizationId)) {
+  if (
+    await can(
+      userId,
+      OrgScopes.READ_ORG_SUBSCRIPTIONS,
+      "organization",
+      organizationId
+    )
+  ) {
     const organization = await getOrganization(organizationId);
     if (organization.stripeCustomerId)
       return await getStripeSubscription(
@@ -289,7 +348,14 @@ export const updateOrganizationSubscriptionForUser = async (
   subscriptionId: string,
   data: KeyValue
 ) => {
-  if (await can(userId, Authorizations.READ, "organization", organizationId)) {
+  if (
+    await can(
+      userId,
+      OrgScopes.UPDATE_ORG_SUBSCRIPTIONS,
+      "organization",
+      organizationId
+    )
+  ) {
     const organization = await getOrganization(organizationId);
     if (organization.stripeCustomerId) {
       const result = await updateStripeSubscription(
@@ -310,7 +376,14 @@ export const createOrganizationSubscriptionForUser = async (
   organizationId: number,
   params: { plan: string; [index: string]: any }
 ) => {
-  if (await can(userId, Authorizations.READ, "organization", organizationId)) {
+  if (
+    await can(
+      userId,
+      OrgScopes.CREATE_ORG_SUBSCRIPTIONS,
+      "organization",
+      organizationId
+    )
+  ) {
     const organization = await getOrganization(organizationId);
     if (organization.stripeCustomerId) {
       const result = await createStripeSubscription(
@@ -330,7 +403,9 @@ export const getOrganizationPricingPlansForUser = async (
   organizationId: number,
   productId: string
 ) => {
-  if (await can(userId, Authorizations.READ, "organization", organizationId))
+  if (
+    await can(userId, OrgScopes.READ_ORG_PLANS, "organization", organizationId)
+  )
     return await getStripeProductPricing(productId);
   throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
 };
@@ -340,7 +415,14 @@ export const deleteOrganizationSourceForUser = async (
   organizationId: number,
   sourceId: string
 ) => {
-  if (await can(userId, Authorizations.READ, "organization", organizationId)) {
+  if (
+    await can(
+      userId,
+      OrgScopes.DELETE_ORG_SOURCES,
+      "organization",
+      organizationId
+    )
+  ) {
     const organization = await getOrganization(organizationId);
     if (organization.stripeCustomerId) {
       const result = await deleteStripeSource(
@@ -362,7 +444,12 @@ export const updateOrganizationSourceForUser = async (
   data: any
 ) => {
   if (
-    await can(userId, Authorizations.UPDATE, "organization", organizationId)
+    await can(
+      userId,
+      OrgScopes.UPDATE_ORG_SOURCES,
+      "organization",
+      organizationId
+    )
   ) {
     const organization = await getOrganization(organizationId);
     if (organization.stripeCustomerId) {
@@ -385,7 +472,12 @@ export const createOrganizationSourceForUser = async (
   card: any
 ) => {
   if (
-    await can(userId, Authorizations.CREATE, "organization", organizationId)
+    await can(
+      userId,
+      OrgScopes.CREATE_ORG_SOURCES,
+      "organization",
+      organizationId
+    )
   ) {
     const organization = await getOrganization(organizationId);
     if (organization.stripeCustomerId) {
@@ -414,7 +506,7 @@ export const getAllOrganizationDataForUser = async (
     )
   ) {
     const organization = await getOrganization(organizationId);
-    const memberships = await getOrganizationMemberDetails(organizationId);
+    const memberships = await getOrganizationMemberships(organizationId);
     const events = await getOrganizationEvents(organizationId);
     let billing = {} as any;
     let subscriptions = {} as any;
@@ -446,7 +538,14 @@ export const getOrganizationRecentEventsForUser = async (
   userId: number | ApiKeyResponse,
   organizationId: number
 ) => {
-  if (await can(userId, Authorizations.READ, "organization", organizationId))
+  if (
+    await can(
+      userId,
+      Authorizations.READ_SECURE,
+      "organization",
+      organizationId
+    )
+  )
     return await getOrganizationRecentEvents(organizationId);
   throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
 };
@@ -456,8 +555,134 @@ export const getOrganizationMembershipsForUser = async (
   organizationId: number,
   query?: KeyValue
 ) => {
-  if (await can(userId, Authorizations.READ, "organization", organizationId))
-    return await getOrganizationMemberDetails(organizationId, query);
+  if (
+    await can(
+      userId,
+      OrgScopes.READ_ORG_MEMBERSHIPS,
+      "organization",
+      organizationId
+    )
+  )
+    return await getOrganizationMemberships(organizationId, query);
+  throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
+};
+
+export const getOrganizationMembershipForUser = async (
+  userId: number | ApiKeyResponse,
+  organizationId: number,
+  membershipId: number
+) => {
+  if (
+    await can(
+      userId,
+      OrgScopes.READ_ORG_MEMBERSHIPS,
+      "organization",
+      organizationId
+    )
+  )
+    return await getOrganizationMembershipDetailed(
+      organizationId,
+      membershipId
+    );
+  throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
+};
+
+export const updateOrganizationMembershipForUser = async (
+  userId: number | ApiKeyResponse,
+  organizationId: number,
+  membershipId: number,
+  data: KeyValue
+) => {
+  if (
+    await can(
+      userId,
+      OrgScopes.UPDATE_ORG_MEMBERSHIPS,
+      "organization",
+      organizationId
+    )
+  )
+    return await updateOrganizationMembership(
+      organizationId,
+      membershipId,
+      data
+    );
+  throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
+};
+
+export const deleteOrganizationMembershipForUser = async (
+  userId: number | ApiKeyResponse,
+  organizationId: number,
+  membershipId: number
+) => {
+  if (
+    await can(
+      userId,
+      OrgScopes.DELETE_ORG_MEMBERSHIPS,
+      "organization",
+      organizationId
+    )
+  )
+    return await deleteOrganizationMembership(organizationId, membershipId);
+  throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
+};
+
+export const inviteMemberToOrganization = async (
+  userId: number | ApiKeyResponse,
+  organizationId: number,
+  newMemberName: string,
+  newMemberEmail: string,
+  role: MembershipRole,
+  locals: Locals
+) => {
+  if (
+    await can(
+      userId,
+      OrgScopes.CREATE_ORG_MEMBERSHIPS,
+      "organization",
+      organizationId
+    )
+  ) {
+    const organization = await getOrganization(organizationId);
+    if (organization.onlyAllowDomain) {
+      const emailDomain = newMemberEmail.split("@")[1];
+      try {
+        const domainDetails = await getDomainByDomainName(emailDomain);
+        if (!domainDetails || domainDetails.organizationId != organizationId)
+          throw new Error();
+      } catch (error) {
+        throw new Error(ErrorCode.CANNOT_INVITE_DOMAIN);
+      }
+    }
+    let newUser: User;
+    let userExists = false;
+    try {
+      newUser = await getUserByEmail(newMemberEmail);
+      userExists = true;
+    } catch (error) {}
+    if (userExists) {
+      newUser = await getUserByEmail(newMemberEmail);
+      if (!newUser.id) throw new Error(ErrorCode.USER_NOT_FOUND);
+      let isMemberAlready = false;
+      try {
+        isMemberAlready = !!(await getUserOrganizationMembership(
+          newUser.id,
+          organizationId
+        ));
+      } catch (error) {}
+      if (isMemberAlready) throw new Error(ErrorCode.USER_IS_MEMBER_ALREADY);
+      await createMembership({ userId: newUser.id, organizationId, role });
+      return;
+    } else {
+      await register(
+        { name: newMemberName },
+        locals,
+        newMemberEmail,
+        organizationId,
+        role
+      );
+      return;
+    }
+  }
   throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
 };
 
@@ -469,7 +694,7 @@ export const getOrganizationApiKeysForUser = async (
   if (
     await can(
       userId,
-      Authorizations.READ_SECURE,
+      OrgScopes.READ_ORG_API_KEYS,
       "organization",
       organizationId
     )
@@ -486,7 +711,7 @@ export const getOrganizationApiKeyForUser = async (
   if (
     await can(
       userId,
-      Authorizations.READ_SECURE,
+      OrgScopes.READ_ORG_API_KEYS,
       "organization",
       organizationId
     )
@@ -505,7 +730,7 @@ export const updateApiKeyForUser = async (
   if (
     await can(
       userId,
-      Authorizations.UPDATE_SECURE,
+      OrgScopes.UPDATE_ORG_API_KEYS,
       "organization",
       organizationId
     )
@@ -526,7 +751,7 @@ export const createApiKeyForUser = async (
   if (
     await can(
       userId,
-      Authorizations.CREATE_SECURE,
+      OrgScopes.CREATE_ORG_API_KEYS,
       "organization",
       organizationId
     )
@@ -547,7 +772,7 @@ export const deleteApiKeyForUser = async (
   if (
     await can(
       userId,
-      Authorizations.DELETE_SECURE,
+      OrgScopes.DELETE_ORG_API_KEYS,
       "organization",
       organizationId
     )
@@ -564,7 +789,14 @@ export const getOrganizationDomainsForUser = async (
   organizationId: number,
   query: KeyValue
 ) => {
-  if (await can(userId, Authorizations.READ, "organization", organizationId))
+  if (
+    await can(
+      userId,
+      OrgScopes.READ_ORG_DOMAINS,
+      "organization",
+      organizationId
+    )
+  )
     return await getOrganizationDomains(organizationId, query);
   throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
 };
@@ -574,7 +806,14 @@ export const getOrganizationDomainForUser = async (
   organizationId: number,
   domainId: number
 ) => {
-  if (await can(userId, Authorizations.READ, "organization", organizationId))
+  if (
+    await can(
+      userId,
+      OrgScopes.READ_ORG_DOMAINS,
+      "organization",
+      organizationId
+    )
+  )
     return await getDomain(organizationId, domainId);
   throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
 };
@@ -587,7 +826,12 @@ export const updateDomainForUser = async (
   locals: Locals
 ) => {
   if (
-    await can(userId, Authorizations.UPDATE, "organization", organizationId)
+    await can(
+      userId,
+      OrgScopes.UPDATE_ORG_DOMAINS,
+      "organization",
+      organizationId
+    )
   ) {
     const result = await updateDomain(organizationId, domainId, data);
     queueWebhook(organizationId, Webhooks.UPDATE_DOMAIN);
@@ -603,7 +847,12 @@ export const createDomainForUser = async (
   locals: Locals
 ) => {
   if (
-    await can(userId, Authorizations.CREATE, "organization", organizationId)
+    await can(
+      userId,
+      OrgScopes.CREATE_ORG_DOMAINS,
+      "organization",
+      organizationId
+    )
   ) {
     await checkDomainAvailability(domain.domain);
     const result = await createDomain({
@@ -625,7 +874,12 @@ export const deleteDomainForUser = async (
   locals: Locals
 ) => {
   if (
-    await can(userId, Authorizations.DELETE, "organization", organizationId)
+    await can(
+      userId,
+      OrgScopes.DELETE_ORG_DOMAINS,
+      "organization",
+      organizationId
+    )
   ) {
     const result = await deleteDomain(organizationId, domainId);
     queueWebhook(organizationId, Webhooks.DELETE_DOMAIN);
@@ -642,7 +896,12 @@ export const verifyDomainForUser = async (
   locals: Locals
 ) => {
   if (
-    await can(userId, Authorizations.UPDATE, "organization", organizationId)
+    await can(
+      userId,
+      OrgScopes.VERIFY_ORG_DOMAINS,
+      "organization",
+      organizationId
+    )
   ) {
     const domain = await getDomain(organizationId, domainId);
     if (domain.isVerified) throw new Error(ErrorCode.DOMAIN_ALREADY_VERIFIED);
@@ -685,7 +944,14 @@ export const getOrganizationWebhooksForUser = async (
   organizationId: number,
   query: KeyValue
 ) => {
-  if (await can(userId, Authorizations.READ, "organization", organizationId))
+  if (
+    await can(
+      userId,
+      OrgScopes.READ_ORG_WEBHOOKS,
+      "organization",
+      organizationId
+    )
+  )
     return await getOrganizationWebhooks(organizationId, query);
   throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
 };
@@ -695,7 +961,14 @@ export const getOrganizationWebhookForUser = async (
   organizationId: number,
   webhookId: number
 ) => {
-  if (await can(userId, Authorizations.READ, "organization", organizationId))
+  if (
+    await can(
+      userId,
+      OrgScopes.READ_ORG_WEBHOOKS,
+      "organization",
+      organizationId
+    )
+  )
     return await getWebhook(organizationId, webhookId);
   throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
 };
@@ -708,7 +981,12 @@ export const updateWebhookForUser = async (
   locals: Locals
 ) => {
   if (
-    await can(userId, Authorizations.UPDATE, "organization", organizationId)
+    await can(
+      userId,
+      OrgScopes.UPDATE_ORG_WEBHOOKS,
+      "organization",
+      organizationId
+    )
   ) {
     const result = await updateWebhook(organizationId, webhookId, data);
     queueWebhook(organizationId, Webhooks.UPDATE_WEBHOOK);
@@ -724,7 +1002,12 @@ export const createWebhookForUser = async (
   locals: Locals
 ) => {
   if (
-    await can(userId, Authorizations.CREATE, "organization", organizationId)
+    await can(
+      userId,
+      OrgScopes.DELETE_ORG_WEBHOOKS,
+      "organization",
+      organizationId
+    )
   ) {
     const result = await createWebhook({
       organizationId,
@@ -743,7 +1026,12 @@ export const deleteWebhookForUser = async (
   locals: Locals
 ) => {
   if (
-    await can(userId, Authorizations.DELETE, "organization", organizationId)
+    await can(
+      userId,
+      OrgScopes.CREATE_ORG_WEBHOOKS,
+      "organization",
+      organizationId
+    )
   ) {
     const result = await deleteWebhook(organizationId, webhookId);
     queueWebhook(organizationId, Webhooks.DELETE_WEBHOOK);

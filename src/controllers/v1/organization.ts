@@ -48,7 +48,11 @@ import {
   createAgastyaApiKeyForUser,
   getAgastyaApiKeyForUser,
   updateAgastyaApiKeyForUser,
-  deleteAgastyaApiKeyForUser
+  deleteAgastyaApiKeyForUser,
+  inviteMemberToOrganization,
+  getOrganizationMembershipForUser,
+  deleteOrganizationMembershipForUser,
+  updateOrganizationMembershipForUser
 } from "../../rest/organization";
 import {
   Get,
@@ -65,7 +69,6 @@ import { authHandler, validator } from "../../helpers/middleware";
 import { MembershipRole } from "../../interfaces/enum";
 import { CREATED } from "http-status-codes";
 import asyncHandler from "express-async-handler";
-import { inviteMemberToOrganization } from "../../rest/membership";
 import {
   joiValidate,
   organizationUsernameToId,
@@ -529,6 +532,77 @@ export class OrganizationController {
       res.locals
     );
     res.status(CREATED).json({ invited: true });
+  }
+
+  @Get(":id/memberships/:membershipId")
+  async getMembership(req: Request, res: Response) {
+    const organizationId = await organizationUsernameToId(req.params.id);
+    const membershipId = req.params.membershipId;
+    joiValidate(
+      {
+        organizationId: Joi.number().required(),
+        membershipId: Joi.number().required()
+      },
+      { organizationId, membershipId }
+    );
+    res.json(
+      await getOrganizationMembershipForUser(
+        localsToTokenOrKey(res),
+        organizationId,
+        membershipId
+      )
+    );
+  }
+
+  @Patch(":id/memberships/:membershipId")
+  @Middleware(
+    validator(
+      {
+        role: Joi.number()
+          .min(1)
+          .max(5)
+      },
+      "body"
+    )
+  )
+  async updateMembership(req: Request, res: Response) {
+    const organizationId = await organizationUsernameToId(req.params.id);
+    const membershipId = req.params.membershipId;
+    joiValidate(
+      {
+        organizationId: Joi.number().required(),
+        membershipId: Joi.number().required()
+      },
+      { organizationId, membershipId }
+    );
+    res.json(
+      await updateOrganizationMembershipForUser(
+        localsToTokenOrKey(res),
+        organizationId,
+        membershipId,
+        req.body
+      )
+    );
+  }
+
+  @Delete(":id/memberships/:membershipId")
+  async deleteMembership(req: Request, res: Response) {
+    const organizationId = await organizationUsernameToId(req.params.id);
+    const membershipId = req.params.membershipId;
+    joiValidate(
+      {
+        organizationId: Joi.number().required(),
+        membershipId: Joi.number().required()
+      },
+      { organizationId, membershipId }
+    );
+    res.json(
+      await deleteOrganizationMembershipForUser(
+        localsToTokenOrKey(res),
+        organizationId,
+        membershipId
+      )
+    );
   }
 
   @Get(":id/api-keys")
