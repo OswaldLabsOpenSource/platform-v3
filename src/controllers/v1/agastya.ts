@@ -4,6 +4,7 @@ import asyncHandler from "express-async-handler";
 import Joi from "@hapi/joi";
 import { joiValidate } from "../../helpers/utils";
 import { collect } from "../../rest/agastya";
+import { getAgastyaApiKeyFromSlug } from "../../crud/organization";
 
 @Controller("v1/agastya")
 @ClassWrapper(asyncHandler)
@@ -19,5 +20,12 @@ export class AgastyaController {
       }
     }
     res.json(await collect(apiKey, data, res.locals, req.headers));
+  }
+
+  @Get("config/:apiKey")
+  async getConfig(req: Request, res: Response) {
+    const apiKey = req.params.apiKey;
+    joiValidate({ apiKey: Joi.string().required() }, { apiKey });
+    res.json(await getAgastyaApiKeyFromSlug(apiKey));
   }
 }

@@ -578,7 +578,7 @@ export const getAgastyaApiKey = async (
  * Get a single Agastya API key
  */
 export const getAgastyaApiKeyFromSlug = async (slug: string) => {
-  return (<AgastyaApiKey[]>(
+  const result = (<AgastyaApiKey[]>(
     await cachedQuery(
       CacheCategories.AGASTYA_API_KEY,
       slug,
@@ -586,6 +586,8 @@ export const getAgastyaApiKeyFromSlug = async (slug: string) => {
       [slug]
     )
   ))[0];
+  if (result) return result;
+  throw new Error(ErrorCode.NOT_FOUND);
 };
 
 /**
