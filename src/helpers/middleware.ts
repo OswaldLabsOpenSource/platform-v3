@@ -4,6 +4,7 @@ import RateLimit from "express-rate-limit";
 import slowDown from "express-slow-down";
 import Joi from "@hapi/joi";
 import { safeError } from "./errors";
+import ms from "ms";
 import {
   verifyToken,
   TokenResponse,
@@ -212,6 +213,16 @@ export const cacheForever = async (
 ) => {
   res.set("Cache-Control", "max-age=31536000");
   return next();
+};
+
+export const cachedResponse = (time: string) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    res.set(
+      "Cache-Control",
+      `max-age=${Math.floor(ms(time) / 1000)}, must-revalidate`
+    );
+    return next();
+  };
 };
 
 export const validator = (
