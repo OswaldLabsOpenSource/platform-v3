@@ -10,6 +10,7 @@ import {
 } from "../../helpers/utils";
 import {
   translateText,
+  readAloudText,
   lighthouseAudit,
   lighthouseError,
   lighthouseStart,
@@ -42,6 +43,22 @@ export class ApiController {
       { text, lang }
     );
     res.json({ language: await translateText(text, lang) });
+  }
+
+  @Get("read-aloud")
+  @Middleware(cacheForever)
+  async readAloud(req: Request, res: Response) {
+    const text = req.query.q;
+    const lang = req.query.lang;
+    joiValidate(
+      {
+        text: Joi.string().required(),
+        lang: Joi.string().required()
+      },
+      { text, lang }
+    );
+    res.setHeader("Content-Type", "audio/mpeg");
+    res.send(await readAloudText(text, lang));
   }
 
   @Get("audit")

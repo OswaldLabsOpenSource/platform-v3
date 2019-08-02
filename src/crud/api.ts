@@ -3,7 +3,12 @@ import lighthouse from "lighthouse";
 import axios from "axios";
 import { launch } from "chrome-launcher";
 import { Translate } from "@google-cloud/translate";
-import { GOOGLE_PROJECT_ID, GOOGLE_TRANSLATE_KEY } from "../config";
+import {
+  GOOGLE_PROJECT_ID,
+  GOOGLE_TRANSLATE_KEY,
+  AWS_POLLY_ACCESS_KEY,
+  AWS_POLLY_SECRET_KEY
+} from "../config";
 import { getItemFromCache, storeItemInCache } from "../helpers/cache";
 import { CacheCategories, AuditStatuses, ErrorCode } from "../interfaces/enum";
 import { tableValues, query, setValues } from "../helpers/mysql";
@@ -11,12 +16,51 @@ import { Audit } from "../interfaces/tables/organization";
 import { uploadToS3, getFromS3 } from "../helpers/s3";
 import { getAuditWebpage } from "./organization";
 import { getPaginatedData } from "./data";
-import { average } from "../helpers/utils";
+import { average, getVoiceFromLanguage } from "../helpers/utils";
+import Polly from "aws-sdk/clients/polly";
+import md5 from "md5";
+const polly = new Polly({
+  accessKeyId: AWS_POLLY_ACCESS_KEY,
+  secretAccessKey: AWS_POLLY_SECRET_KEY,
+  region: "eu-central-1"
+});
 
 const translate = new Translate({
   projectId: GOOGLE_PROJECT_ID,
   key: GOOGLE_TRANSLATE_KEY
 });
+
+export const readAloudText = (text: string, language: string) =>
+  new Promise((resolve, reject) => {
+    const voice = getVoiceFromLanguage(language);
+    const key = `read-aloud/${md5(`${text}${voice}${language}`)}.mp3`;
+    getFromS3("oswald-labs-platform-cache", key)
+      .then(result => resolve(result))
+      .catch(() => {
+        polly.synthesizeSpeech(
+          {
+            OutputFormat: "mp3",
+            Text: text,
+            VoiceId: voice,
+            LanguageCode:
+              language === "en-IN" || language === "hi-IN"
+                ? language
+                : undefined
+          },
+          (error, data) => {
+            if (error) return reject(error);
+            resolve(data.AudioStream);
+            uploadToS3(
+              "oswald-labs-platform-cache",
+              key,
+              data.AudioStream as Buffer
+            )
+              .then(() => {})
+              .catch(() => {});
+          }
+        );
+      });
+  });
 
 export const translateText = (
   text: string,

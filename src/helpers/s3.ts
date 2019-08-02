@@ -35,6 +35,7 @@ export const getFromS3 = (Bucket: string, Key: string) =>
       },
       (error: Error, data: S3.GetObjectOutput) => {
         if (error) return reject(ErrorCode.NOT_FOUND);
+        if (!data.Body) return reject(ErrorCode.NOT_FOUND);
         resolve(data.Body);
       }
     );

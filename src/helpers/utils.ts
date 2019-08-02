@@ -232,3 +232,45 @@ export const dnsResolve = (
       resolve(records);
     });
   });
+
+export const getVoiceFromLanguage = (code: string) => {
+  const languages: { [index: string]: string } = {
+    en: "Joanna",
+    ar: "Zeina",
+    zh: "Zhiyu",
+    da: "Naja",
+    nl: "Lotte",
+    hi: "Aditi",
+    fr: "Celine",
+    de: "Vicki",
+    is: "Dora",
+    it: "Bianca",
+    jp: "Mizuki",
+    ko: "Seoyeon",
+    np: "Liv",
+    pl: "Maja",
+    pt: "Ines",
+    es: "Lucia",
+    ro: "Carmen",
+    ru: "Tatyana",
+    sv: "Penelope",
+    tr: "Filiz",
+    cy: "Gwyneth",
+    "en-US": "Joanna",
+    "en-GB": "Amy",
+    "en-IN": "Aditi",
+    "en-AU": "Nicole",
+    "en-GBR": "Geraint",
+    "fr-FR": "Celine",
+    "fr-CA": "Chantal",
+    "pt-PT": "Ines",
+    "pt-BR": "Vitoria",
+    "es-ES": "Lucia",
+    "es-MX": "Mia",
+    "es-US": "Penelope"
+  };
+  if (languages[code]) return languages[code];
+  const splitCode = code.split("-")[0];
+  if (languages[splitCode]) return languages[splitCode];
+  return "en";
+};
