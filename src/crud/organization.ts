@@ -34,6 +34,7 @@ import { TOKEN_EXPIRY_API_KEY_MAX, JWT_ISSUER } from "../config";
 import { InsertResult } from "../interfaces/mysql";
 import { Membership } from "../interfaces/tables/memberships";
 import { getUser } from "./user";
+import { getStripeSubscription } from "./billing";
 
 /*
  * Create a new organization for a user
@@ -564,7 +565,7 @@ export const getAgastyaApiKey = async (
   organizationId: number,
   agastyaApiKeyId: number
 ) => {
-  return (<AgastyaApiKey[]>(
+  const apiKey = (<AgastyaApiKey[]>(
     await query(
       `SELECT * FROM ${tableName(
         "agastya-api-keys"
@@ -572,6 +573,19 @@ export const getAgastyaApiKey = async (
       [agastyaApiKeyId, organizationId]
     )
   ))[0];
+  if (
+    apiKey &&
+    apiKey.subscriptionId &&
+    !apiKey.subscriptionId.includes("custom")
+  ) {
+    const organizationDetails = await getOrganization(organizationId);
+    if (organizationDetails.stripeCustomerId)
+      apiKey.subscription = await getStripeSubscription(
+        organizationDetails.stripeCustomerId,
+        apiKey.subscriptionId
+      );
+  }
+  return apiKey;
 };
 
 /**

@@ -1310,4 +1310,31 @@ export class OrganizationController {
       )
     );
   }
+
+  @Put(":id/agastya-api-keys/:agastyaApiKeyId/subscription")
+  async addSubscriptionsToAgastya(req: Request, res: Response) {
+    const organizationId = await organizationUsernameToId(req.params.id);
+    joiValidate(
+      { organizationId: Joi.number().required() },
+      { organizationId }
+    );
+    const subscriptionParams = { ...req.body };
+    joiValidate(
+      {
+        plan: Joi.string().required(),
+        billing: Joi.string().valid("charge_automatically", "send_invoice"),
+        tax_percent: Joi.number(),
+        number_of_seats: Joi.number()
+      },
+      subscriptionParams
+    );
+    res.json(
+      await createOrganizationSubscriptionForUser(
+        localsToTokenOrKey(res),
+        organizationId,
+        subscriptionParams,
+        req.params.agastyaApiKeyId
+      )
+    );
+  }
 }

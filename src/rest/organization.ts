@@ -374,7 +374,8 @@ export const updateOrganizationSubscriptionForUser = async (
 export const createOrganizationSubscriptionForUser = async (
   userId: number | ApiKeyResponse,
   organizationId: number,
-  params: { plan: string; [index: string]: any }
+  params: { plan: string; [index: string]: any },
+  agastyaApiKey?: number
 ) => {
   if (
     await can(
@@ -388,7 +389,9 @@ export const createOrganizationSubscriptionForUser = async (
     if (organization.stripeCustomerId) {
       const result = await createStripeSubscription(
         organization.stripeCustomerId,
-        params
+        params,
+        agastyaApiKey,
+        organizationId
       );
       queueWebhook(organizationId, Webhooks.CREATE_ORGANIZATION_SUBSCRIPTION);
       return result;

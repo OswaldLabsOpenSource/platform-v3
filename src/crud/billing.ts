@@ -1,6 +1,6 @@
 import Stripe, { subscriptions, IList } from "stripe";
 import { STRIPE_SECRET_KEY, STRIPE_PRODUCT_ID } from "../config";
-import { updateOrganization } from "./organization";
+import { updateOrganization, updateAgastyaApiKey } from "./organization";
 import { ErrorCode } from "../interfaces/enum";
 const stripe = new Stripe(STRIPE_SECRET_KEY);
 
@@ -174,15 +174,22 @@ export const createStripeSubscription = async (
     plan: string;
     billing?: subscriptions.SubscriptionBilling;
     number_of_seats?: number;
-  }
+  },
+  agastyaApiKey?: number,
+  organizationId?: number
 ) => {
-  await stripe.subscriptions.create({
+  const result = await stripe.subscriptions.create({
     customer: id,
     tax_percent,
     trial_from_plan: true,
     items: [{ plan, quantity: number_of_seats }],
     billing
   });
+  if (agastyaApiKey && organizationId) {
+    await updateAgastyaApiKey(organizationId, agastyaApiKey, {
+      subscriptionId: result.id
+    });
+  }
   return { success: true, message: "billing-subscription-created" };
 };
 

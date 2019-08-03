@@ -1,6 +1,7 @@
 import { AuditStatuses, AuditRepeat } from "../enum";
 import { IdRow } from "../general";
 import { Webhooks } from "../enum";
+import { subscriptions } from "stripe";
 
 export interface Organization extends IdRow {
   name?: string;
@@ -60,6 +61,8 @@ export interface AuditWebpage extends IdRow {
 
 export interface AgastyaApiKey extends IdRow {
   organizationId: number;
+  subscriptionId?: string;
+  subscription?: subscriptions.ISubscription;
   name: string;
   slug: string;
   backgroundColor?: string;
