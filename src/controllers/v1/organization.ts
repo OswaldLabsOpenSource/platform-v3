@@ -52,7 +52,9 @@ import {
   inviteMemberToOrganization,
   getOrganizationMembershipForUser,
   deleteOrganizationMembershipForUser,
-  updateOrganizationMembershipForUser
+  updateOrganizationMembershipForUser,
+  cancelAgastyaApiKeySubscriptionForUser,
+  revertAgastyaApiKeySubscriptionForUser
 } from "../../rest/organization";
 import {
   Get,
@@ -1333,6 +1335,38 @@ export class OrganizationController {
         localsToTokenOrKey(res),
         organizationId,
         subscriptionParams,
+        req.params.agastyaApiKeyId
+      )
+    );
+  }
+
+  @Delete(":id/agastya-api-keys/:agastyaApiKeyId/subscription")
+  async deleteSubscriptionsFromAgastya(req: Request, res: Response) {
+    const organizationId = await organizationUsernameToId(req.params.id);
+    joiValidate(
+      { organizationId: Joi.number().required() },
+      { organizationId }
+    );
+    res.json(
+      await cancelAgastyaApiKeySubscriptionForUser(
+        localsToTokenOrKey(res),
+        organizationId,
+        req.params.agastyaApiKeyId
+      )
+    );
+  }
+
+  @Post(":id/agastya-api-keys/:agastyaApiKeyId/subscription/revert")
+  async revertSubscriptionsFromAgastya(req: Request, res: Response) {
+    const organizationId = await organizationUsernameToId(req.params.id);
+    joiValidate(
+      { organizationId: Joi.number().required() },
+      { organizationId }
+    );
+    res.json(
+      await revertAgastyaApiKeySubscriptionForUser(
+        localsToTokenOrKey(res),
+        organizationId,
         req.params.agastyaApiKeyId
       )
     );

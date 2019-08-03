@@ -54,7 +54,8 @@ import {
   EventType,
   Webhooks,
   OrgScopes,
-  Authorizations
+  Authorizations,
+  CacheCategories
 } from "../interfaces/enum";
 import {
   createEvent,
@@ -90,6 +91,8 @@ import { JWT_ISSUER } from "../config";
 import { queueWebhook } from "../helpers/webhooks";
 import { User } from "../interfaces/tables/user";
 import { register } from "./auth";
+import { subscriptions } from "stripe";
+import { deleteItemFromCache } from "../helpers/cache";
 
 export const getOrganizationForUser = async (
   userId: number | ApiKeyResponse,
@@ -1151,6 +1154,68 @@ export const getAgastyaApiKeyForUser = async (
 ) => {
   if (await can(userId, Authorizations.READ, "organization", organizationId))
     return await getAgastyaApiKey(organizationId, agastyaApiKeyId);
+  throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
+};
+
+export const cancelAgastyaApiKeySubscriptionForUser = async (
+  userId: number | ApiKeyResponse,
+  organizationId: number,
+  agastyaApiKeyId: number
+) => {
+  if (
+    await can(userId, Authorizations.UPDATE, "organization", organizationId)
+  ) {
+    const organization = await getOrganization(organizationId);
+    if (organization.stripeCustomerId) {
+      const agastyaDetails = await getAgastyaApiKey(
+        organizationId,
+        agastyaApiKeyId
+      );
+      if (agastyaDetails.subscriptionId) {
+        const result = await updateStripeSubscription(
+          organization.stripeCustomerId,
+          agastyaDetails.subscriptionId,
+          {
+            cancel_at_period_end: true
+          } as subscriptions.ISubscriptionUpdateItem
+        );
+        queueWebhook(organizationId, Webhooks.UPDATE_ORGANIZATION_SUBSCRIPTION);
+        return result;
+      }
+    }
+    throw new Error(ErrorCode.STRIPE_NO_CUSTOMER);
+  }
+  throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
+};
+
+export const revertAgastyaApiKeySubscriptionForUser = async (
+  userId: number | ApiKeyResponse,
+  organizationId: number,
+  agastyaApiKeyId: number
+) => {
+  if (
+    await can(userId, Authorizations.UPDATE, "organization", organizationId)
+  ) {
+    const organization = await getOrganization(organizationId);
+    if (organization.stripeCustomerId) {
+      const agastyaDetails = await getAgastyaApiKey(
+        organizationId,
+        agastyaApiKeyId
+      );
+      if (agastyaDetails.subscriptionId) {
+        const result = await updateStripeSubscription(
+          organization.stripeCustomerId,
+          agastyaDetails.subscriptionId,
+          {
+            cancel_at_period_end: false
+          } as subscriptions.ISubscriptionUpdateItem
+        );
+        queueWebhook(organizationId, Webhooks.UPDATE_ORGANIZATION_SUBSCRIPTION);
+        return result;
+      }
+    }
+    throw new Error(ErrorCode.STRIPE_NO_CUSTOMER);
+  }
   throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
 };
 
