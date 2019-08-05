@@ -13,12 +13,14 @@ import { getItemFromCache, storeItemInCache } from "../helpers/cache";
 import { CacheCategories, AuditStatuses, ErrorCode } from "../interfaces/enum";
 import { tableValues, query, setValues } from "../helpers/mysql";
 import { Audit } from "../interfaces/tables/organization";
-import { uploadToS3, getFromS3 } from "../helpers/s3";
+import { uploadToS3, getFromS3, temporaryStorage } from "../helpers/s3";
 import { getAuditWebpage } from "./organization";
 import { getPaginatedData } from "./data";
 import { average, getVoiceFromLanguage } from "../helpers/utils";
 import Polly from "aws-sdk/clients/polly";
 import md5 from "md5";
+import { parse } from "@postlight/mercury-parser";
+
 const polly = new Polly({
   accessKeyId: AWS_POLLY_ACCESS_KEY,
   secretAccessKey: AWS_POLLY_SECRET_KEY,
@@ -243,4 +245,16 @@ export const getFaviconForSite = async (site: string, fallback?: string) => {
   }`;
   const image = await axios.get(googleUrl, { responseType: "blob" });
   return image.data;
+};
+
+export const getReadingModeForUrl = async (url: string) => {
+  const slug = md5(url);
+  try {
+    return await temporaryStorage.read(slug);
+  } catch (error) {
+    const file = await parse(url);
+    if (file.word_count < 20) throw new Error(ErrorCode.NOT_FOUND);
+    await temporaryStorage.create(slug, file);
+    return file;
+  }
 };

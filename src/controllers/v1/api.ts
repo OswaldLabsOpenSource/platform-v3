@@ -17,7 +17,8 @@ import {
   getLighthouseAudit,
   getLighthouseAuditHtml,
   auditBadgeInfo,
-  getFaviconForSite
+  getFaviconForSite,
+  getReadingModeForUrl
 } from "../../crud/api";
 import { cacheForever } from "../../helpers/middleware";
 
@@ -59,6 +60,13 @@ export class ApiController {
     );
     res.setHeader("Content-Type", "audio/mpeg");
     res.send(await readAloudText(text, lang));
+  }
+
+  @Get("reader")
+  async readingMode(req: Request, res: Response) {
+    const url = req.query.url;
+    joiValidate({ url: Joi.string().required() }, { url });
+    res.json(await getReadingModeForUrl(url));
   }
 
   @Get("audit")

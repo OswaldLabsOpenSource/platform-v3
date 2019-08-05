@@ -9,6 +9,17 @@
 
 **⚠️ BREAKING CHANGES:** This repository contains code for Oswald Labs Platform v3, completely rewritten in TypeScript based on [Staart](https://github.com/o15y/staart). It contains breaking changes from v2 and shouldn't be used in production.
 
+## 👩‍💻 Development
+
+### Caching
+
+There are different types of caching used:
+- Redis for JWT invalidation
+- AWS S3 for read aloud cache
+- [Fraud](https://github.com/AnandChowdhary/fraud) for reading mode cache
+
+Fraud is used because we don't want reading mode data to be cached forever. It's cached in the container and would be deleted as soon as we create a new image or restart the container, which happens often enough.
+
 ## 📄 License
 
 - Code: [MIT](https://github.com/o15y/staart/blob/master/LICENSE)

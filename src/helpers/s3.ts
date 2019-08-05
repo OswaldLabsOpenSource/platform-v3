@@ -5,6 +5,11 @@ const s3 = new S3({
   accessKeyId: AWS_S3_ACCESS_KEY,
   secretAccessKey: AWS_S3_SECRET_KEY
 });
+import Fraud from "fraud";
+
+export const temporaryStorage = new Fraud({
+  directory: "./"
+});
 
 export const uploadToS3 = (
   Bucket: string,
