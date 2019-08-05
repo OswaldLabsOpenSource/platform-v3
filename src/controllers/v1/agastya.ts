@@ -53,7 +53,8 @@ export class AgastyaController {
     res.json(await agastyaConfigResponse(apiKey, req, domain));
   }
 
-  @Get("loader/:apiKey")
+  @Get("load/:apiKey")
+  @Middleware(cachedResponse("1d"))
   getLoader(req: Request, res: Response) {
     const environment = req.query.env || "production";
     const apiKey = (req.params.apiKey || "").replace(".js", "");
@@ -69,12 +70,6 @@ export class AgastyaController {
       { apiKey, environment }
     );
     const script = `!function(){"use strict";var s=new XMLHttpRequest;s.onreadystatechange=function(){if(4===s.readyState){var e=JSON.parse(s.responseText),t=e["plugin-url"]+"/agastya."+e["cache-key"]+".js",a=document.createElement("script");a.id="agastyascript",a.setAttribute("data-cache-key",e["cache-key"]),a.setAttribute("data-app-url",e["app-url"]),a.setAttribute("data-api-key","${apiKey}"),a.setAttribute("data-plugin-url",e["plugin-url"]),a.setAttribute("src",t),(document.getElementsByTagName("head")[0]||document.head||document.body||document.documentElement).appendChild(a)}},s.open("GET","https://agastya-version.oswaldlabs.com/meta.${environment}.json",!0),s.setRequestHeader("cache-control","no-cache,must-revalidate,post-check=0,pre-check=0,max-age=0"),s.send()}();`;
-    res
-      .header(
-        "Cache-Control",
-        "no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0"
-      )
-      .type("js")
-      .send(script);
+    res.type("js").send(script);
   }
 }
