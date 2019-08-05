@@ -54,7 +54,8 @@ import {
   deleteOrganizationMembershipForUser,
   updateOrganizationMembershipForUser,
   cancelAgastyaApiKeySubscriptionForUser,
-  revertAgastyaApiKeySubscriptionForUser
+  revertAgastyaApiKeySubscriptionForUser,
+  getOrganizationApiKeyLogsForUser
 } from "../../rest/organization";
 import {
   Get,
@@ -345,7 +346,8 @@ export class OrganizationController {
         localsToTokenOrKey(res),
         organizationId,
         subscriptionId,
-        data
+        data,
+        res.locals
       )
     );
   }
@@ -371,7 +373,9 @@ export class OrganizationController {
       await createOrganizationSubscriptionForUser(
         localsToTokenOrKey(res),
         organizationId,
-        subscriptionParams
+        subscriptionParams,
+        undefined,
+        res.locals
       )
     );
   }
@@ -406,7 +410,8 @@ export class OrganizationController {
         await createOrganizationSourceForUser(
           localsToTokenOrKey(res),
           organizationId,
-          req.body
+          req.body,
+          res.locals
         )
       );
   }
@@ -426,7 +431,8 @@ export class OrganizationController {
       await deleteOrganizationSourceForUser(
         localsToTokenOrKey(res),
         organizationId,
-        sourceId
+        sourceId,
+        res.locals
       )
     );
   }
@@ -447,7 +453,8 @@ export class OrganizationController {
         localsToTokenOrKey(res),
         organizationId,
         sourceId,
-        req.body
+        req.body,
+        res.locals
       )
     );
   }
@@ -726,6 +733,27 @@ export class OrganizationController {
         id,
         apiKeyId,
         res.locals
+      )
+    );
+  }
+
+  @Get(":id/api-keys/:apiKeyId/logs")
+  async getUserApiKeyLogs(req: Request, res: Response) {
+    const id = await organizationUsernameToId(req.params.id);
+    const apiKeyId = req.params.apiKeyId;
+    joiValidate(
+      {
+        id: [Joi.string().required(), Joi.number().required()],
+        apiKeyId: Joi.number().required()
+      },
+      { id, apiKeyId }
+    );
+    res.json(
+      await getOrganizationApiKeyLogsForUser(
+        localsToTokenOrKey(res),
+        id,
+        apiKeyId,
+        req.query
       )
     );
   }
@@ -1335,7 +1363,8 @@ export class OrganizationController {
         localsToTokenOrKey(res),
         organizationId,
         subscriptionParams,
-        req.params.agastyaApiKeyId
+        req.params.agastyaApiKeyId,
+        res.locals
       )
     );
   }

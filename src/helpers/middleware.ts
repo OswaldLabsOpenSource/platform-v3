@@ -3,6 +3,7 @@ import Brute from "express-brute";
 import RateLimit from "express-rate-limit";
 import slowDown from "express-slow-down";
 import Joi from "@hapi/joi";
+import pkg from "../../package.json";
 import { safeError } from "./errors";
 import ms from "ms";
 import {
@@ -27,6 +28,7 @@ import {
 } from "../config";
 import { ApiKey } from "../interfaces/tables/organization";
 import { joiValidate, includesDomainInCommaList } from "./utils";
+import { trackUrl } from "./tracking";
 const store = new Brute.MemoryStore();
 const bruteForce = new Brute(store, {
   freeRetries: BRUTE_FREE_RETRIES,
@@ -78,6 +80,7 @@ export const trackingHandler = (
   // We don't want to keep the API key here because lots of controllers
   // use `req.query` for things like pagination and this won't validate
   delete req.query.key;
+  res.setHeader("X-Api-Version", pkg.version);
   let ip =
     req.headers["x-forwarded-for"] ||
     req.connection.remoteAddress ||
@@ -87,7 +90,10 @@ export const trackingHandler = (
   if (Array.isArray(ip) && ip.length) ip = ip[0];
   res.locals.ipAddress = ip;
   res.locals.referrer = req.headers.referer as string;
-  next();
+  trackUrl(req, res)
+    .then(() => {})
+    .then(() => {})
+    .finally(() => next());
 };
 
 export interface ApiKeyToken {
@@ -220,6 +226,10 @@ export const cacheForever = async (
   return next();
 };
 
+/**
+ * Response caching middleware
+ * @param time - Amount of time to cache contenr for
+ */
 export const cachedResponse = (time: string) => {
   return (req: Request, res: Response, next: NextFunction) => {
     res.set(
