@@ -85,6 +85,7 @@ export enum ErrorCode {
   REFERRER_CHECK_FAIL = "401/referrer-check-fail",
   DISPOSABLE_EMAIL = "422/disposable-email",
   DOMAIN_UNABLE_TO_VERIFY = "400/domain-unable-to-verify",
+  INVALID_DOMAIN = "401/invalid-domain",
   DOMAIN_MISSING_FILE = "400/domain-missing-file",
   DOMAIN_MISSING_DNS = "400/domain-missing-dns",
   DOMAIN_ALREADY_VERIFIED = "400/domain-already-verified",

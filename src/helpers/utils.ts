@@ -198,7 +198,8 @@ export const includesDomainInCommaList = (commaList: string, value: string) => {
   const list = commaList.split(",").map(item => item.trim());
   let includes = false;
   list.forEach(item => {
-    if (item === value || isMatch(value, `*.${item}`)) includes = true;
+    if (item === value || isMatch(value, `*.${item}`) || item === "*")
+      includes = true;
   });
   return includes;
 };

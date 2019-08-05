@@ -9,8 +9,7 @@ import {
 import asyncHandler from "express-async-handler";
 import Joi from "@hapi/joi";
 import { joiValidate } from "../../helpers/utils";
-import { collect } from "../../rest/agastya";
-import { getAgastyaApiKeyFromSlug } from "../../crud/organization";
+import { collect, agastyaConfigResponse } from "../../rest/agastya";
 import { cachedResponse } from "../../helpers/middleware";
 import { NO_CONTENT } from "http-status-codes";
 
@@ -46,13 +45,12 @@ export class AgastyaController {
   @Middleware(cachedResponse("10m"))
   async getConfig(req: Request, res: Response) {
     const apiKey = req.params.apiKey;
-    joiValidate({ apiKey: Joi.string().required() }, { apiKey });
-    res.json({
-      ...(await getAgastyaApiKeyFromSlug(apiKey)),
-      requestUserInfo: {
-        ipCountry: (req.get("Cf-Ipcountry") || "").toLowerCase()
-      }
-    });
+    const domain = req.query.domain;
+    joiValidate(
+      { apiKey: Joi.string().required(), domain: Joi.string() },
+      { apiKey, domain }
+    );
+    res.json(agastyaConfigResponse(apiKey, req, domain));
   }
 
   @Get("loader/:apiKey")

@@ -2,6 +2,7 @@ import { KeyValue, Locals } from "../interfaces/general";
 import { shortKeys } from "../helpers/data";
 import pkg from "../../package.json";
 import md5 from "md5";
+import { Request } from "express";
 import WhichBrowser from "which-browser";
 import { isEuMember } from "is-eu-member";
 import parseDomain from "parse-domain";
@@ -18,6 +19,9 @@ import {
 } from "../config";
 import connectionClass from "http-aws-es";
 import { init, captureException } from "@sentry/node";
+import { getAgastyaApiKeyFromSlug } from "../crud/organization";
+import { includesDomainInCommaList } from "../helpers/utils";
+import { ErrorCode } from "../interfaces/enum";
 init({ dsn: SENTRY_DSN });
 
 AWS.config.update({
@@ -31,6 +35,27 @@ const client = new Client({
   host: AWS_ELASTIC_HOST,
   connectionClass
 });
+
+export const agastyaConfigResponse = async (
+  apiKey: string,
+  req: Request,
+  domain?: string
+) => {
+  const apiKeyDetails = await getAgastyaApiKeyFromSlug(apiKey);
+  const allowedDomains = apiKeyDetails.domains;
+  let allowed = true;
+  if (allowedDomains && domain) {
+    if (!includesDomainInCommaList(allowedDomains, domain)) allowed = false;
+  }
+  if (!allowed) throw new Error(ErrorCode.INVALID_DOMAIN);
+  const result = {
+    ...apiKeyDetails,
+    requestUserInfo: {
+      ipCountry: (req.get("Cf-Ipcountry") || "").toLowerCase()
+    }
+  };
+  return result;
+};
 
 export const collect = async (
   apiKey: string,
