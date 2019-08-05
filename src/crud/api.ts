@@ -21,7 +21,7 @@ import { getPaginatedData } from "./data";
 import { average, getVoiceFromLanguage } from "../helpers/utils";
 import Polly from "aws-sdk/clients/polly";
 import md5 from "md5";
-import { parse } from "@postlight/mercury-parser";
+// import { parse } from "@postlight/mercury-parser";
 import Rekognition from "aws-sdk/clients/rekognition";
 
 const rekognition = new Rekognition({
@@ -257,15 +257,16 @@ export const getFaviconForSite = async (site: string, fallback?: string) => {
 };
 
 export const getReadingModeForUrl = async (url: string) => {
-  const slug = md5(url);
-  try {
-    return await temporaryStorage.read(slug);
-  } catch (error) {
-    const file = await parse(url);
-    if (file.word_count < 20) throw new Error(ErrorCode.NOT_FOUND);
-    await temporaryStorage.create(slug, file);
-    return file;
-  }
+  return;
+  // const slug = md5(url);
+  // try {
+  //   return await temporaryStorage.read(slug);
+  // } catch (error) {
+  //   const file = await parse(url);
+  //   if (file.word_count < 20) throw new Error(ErrorCode.NOT_FOUND);
+  //   await temporaryStorage.create(slug, file);
+  //   return file;
+  // }
 };
 
 export const getLabelsForImage = (image: Buffer) =>
