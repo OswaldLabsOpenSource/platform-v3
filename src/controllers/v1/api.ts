@@ -1,5 +1,11 @@
 import { Request, Response } from "express";
-import { Get, Controller, ClassWrapper, Middleware } from "@overnightjs/core";
+import {
+  Get,
+  Controller,
+  ClassWrapper,
+  Middleware,
+  Post
+} from "@overnightjs/core";
 import asyncHandler from "express-async-handler";
 import Joi from "@hapi/joi";
 import {
@@ -18,8 +24,10 @@ import {
   getLighthouseAuditHtml,
   auditBadgeInfo,
   getFaviconForSite,
-  getReadingModeForUrl
+  getReadingModeForUrl,
+  getLabelsForImage
 } from "../../crud/api";
+import multer from "multer";
 import { cacheForever } from "../../helpers/middleware";
 
 @Controller("v1/api")
@@ -67,6 +75,12 @@ export class ApiController {
     const url = req.query.url;
     joiValidate({ url: Joi.string().required() }, { url });
     res.json(await getReadingModeForUrl(url));
+  }
+
+  @Post("describe")
+  @Middleware(multer().single("image"))
+  async describeImage(req: Request, res: Response) {
+    res.json(await getLabelsForImage(req.file.buffer));
   }
 
   @Get("audit")

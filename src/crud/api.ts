@@ -7,7 +7,9 @@ import {
   GOOGLE_PROJECT_ID,
   GOOGLE_TRANSLATE_KEY,
   AWS_POLLY_ACCESS_KEY,
-  AWS_POLLY_SECRET_KEY
+  AWS_POLLY_SECRET_KEY,
+  AWS_REKOGNITION_ACCESS_KEY,
+  AWS_REKOGNITION_SECRET_KEY
 } from "../config";
 import { getItemFromCache, storeItemInCache } from "../helpers/cache";
 import { CacheCategories, AuditStatuses, ErrorCode } from "../interfaces/enum";
@@ -20,6 +22,13 @@ import { average, getVoiceFromLanguage } from "../helpers/utils";
 import Polly from "aws-sdk/clients/polly";
 import md5 from "md5";
 import { parse } from "@postlight/mercury-parser";
+import Rekognition from "aws-sdk/clients/rekognition";
+
+const rekognition = new Rekognition({
+  accessKeyId: AWS_REKOGNITION_ACCESS_KEY,
+  secretAccessKey: AWS_REKOGNITION_SECRET_KEY,
+  region: "eu-central-1"
+});
 
 const polly = new Polly({
   accessKeyId: AWS_POLLY_ACCESS_KEY,
@@ -258,3 +267,16 @@ export const getReadingModeForUrl = async (url: string) => {
     return file;
   }
 };
+
+export const getLabelsForImage = (image: Buffer) =>
+  new Promise((resolve, reject) => {
+    const labels = rekognition.detectLabels({
+      Image: {
+        Bytes: image
+      }
+    });
+    labels.send((error, data) => {
+      if (error) return reject(error);
+      resolve(data);
+    });
+  });

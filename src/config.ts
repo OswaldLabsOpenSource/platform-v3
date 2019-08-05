@@ -95,6 +95,10 @@ export const AWS_S3_ACCESS_KEY = process.env.AWS_S3_ACCESS_KEY || "";
 export const AWS_S3_SECRET_KEY = process.env.AWS_S3_SECRET_KEY || "";
 export const AWS_POLLY_ACCESS_KEY = process.env.AWS_POLLY_ACCESS_KEY || "";
 export const AWS_POLLY_SECRET_KEY = process.env.AWS_POLLY_SECRET_KEY || "";
+export const AWS_REKOGNITION_ACCESS_KEY =
+  process.env.AWS_REKOGNITION_ACCESS_KEY || "";
+export const AWS_REKOGNITION_SECRET_KEY =
+  process.env.AWS_REKOGNITION_SECRET_KEY || "";
 
 export const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID || "";
 export const GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET || "";
