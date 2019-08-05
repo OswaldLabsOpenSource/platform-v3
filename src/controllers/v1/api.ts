@@ -25,7 +25,8 @@ import {
   auditBadgeInfo,
   getFaviconForSite,
   getReadingModeForUrl,
-  getLabelsForImage
+  getLabelsForImage,
+  getOcrForImage
 } from "../../crud/api";
 import multer from "multer";
 import { cacheForever } from "../../helpers/middleware";
@@ -81,6 +82,12 @@ export class ApiController {
   @Middleware(multer().single("image"))
   async describeImage(req: Request, res: Response) {
     res.json(await getLabelsForImage(req.file.buffer));
+  }
+
+  @Post("ocr")
+  @Middleware(multer().single("image"))
+  async ocrImage(req: Request, res: Response) {
+    res.json(await getOcrForImage(req.file.buffer));
   }
 
   @Get("audit")

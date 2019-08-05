@@ -280,3 +280,16 @@ export const getLabelsForImage = (image: Buffer) =>
       resolve(data);
     });
   });
+
+export const getOcrForImage = (image: Buffer) =>
+  new Promise((resolve, reject) => {
+    const labels = rekognition.detectText({
+      Image: {
+        Bytes: image
+      }
+    });
+    labels.send((error, data) => {
+      if (error) return reject(error);
+      resolve(data);
+    });
+  });
