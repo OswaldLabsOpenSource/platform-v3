@@ -50,7 +50,7 @@ export class AgastyaController {
       { apiKey: Joi.string().required(), domain: Joi.string() },
       { apiKey, domain }
     );
-    res.json(agastyaConfigResponse(apiKey, req, domain));
+    res.json(await agastyaConfigResponse(apiKey, req, domain));
   }
 
   @Get("loader/:apiKey")
