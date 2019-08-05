@@ -150,17 +150,6 @@ export enum NotificationCategories {
   JOINED_ORGANIZATION = "joined-organization"
 }
 
-export enum ApiAuthorizations {
-  TRANSLATE = "translate",
-  LANGUAGE_DETECT = "languageDetect",
-  SCREENSHOT = "screenshot",
-  READ_ALOUD = "readAloud",
-  READER_MODE = "reader",
-  DESCRIBE_IMAGE = "describe",
-  COLLECT_DATA = "collect",
-  AGGREGATE_DATA = "aggregateData"
-}
-
 export enum AuditStatuses {
   PENDING = 0,
   COMPLETED = 1,
@@ -206,7 +195,15 @@ export enum OrgScopes {
   READ_ORG_MEMBERSHIPS = "org:membership:read",
   UPDATE_ORG_MEMBERSHIPS = "org:membership:update",
   DELETE_ORG_MEMBERSHIPS = "org:membership:delete",
-  CREATE_ORG_MEMBERSHIPS = "org:membership:create"
+  CREATE_ORG_MEMBERSHIPS = "org:membership:create",
+  API_TRANSLATE = "api:translate",
+  API_LANGUAGE_DETECT = "api:language-detect",
+  API_READ_ALOUD = "api:read-aloud",
+  API_READER = "api:reader",
+  API_DESCRIBE = "api:describe",
+  API_OCR = "api:ocr",
+  API_COLLECT = "api:collect",
+  API_AGGREGATE_DATA = "api:aggregate-data"
 }
 
 export enum UserScopes {
