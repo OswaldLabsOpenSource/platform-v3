@@ -21,7 +21,6 @@ import { getPaginatedData } from "./data";
 import { average, getVoiceFromLanguage } from "../helpers/utils";
 import Polly from "aws-sdk/clients/polly";
 import md5 from "md5";
-// import { parse } from "@postlight/mercury-parser";
 import Rekognition from "aws-sdk/clients/rekognition";
 
 const rekognition = new Rekognition({

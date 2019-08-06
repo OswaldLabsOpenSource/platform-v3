@@ -744,6 +744,45 @@ export const deleteAgastyaApiKey = async (
   );
 };
 
+/**
+ * Get an API key
+ */
+export const getAgastyaApiKeyLogs = async (
+  organizationId: number,
+  apiKeyId: number,
+  query: KeyValue
+) => {
+  const agastyaApiKey = await getAgastyaApiKey(organizationId, apiKeyId);
+  const range: string = query.range || "7d";
+  const from = query.from ? parseInt(query.from) : 0;
+  const result = await elasticSearch.search({
+    index: `agastya-${agastyaApiKey.slug}`,
+    from,
+    body: {
+      query: {
+        bool: {
+          must: [
+            {
+              range: {
+                date: {
+                  gte: new Date(new Date().getTime() - ms(range))
+                }
+              }
+            }
+          ]
+        }
+      },
+      sort: [
+        {
+          date: { order: "desc" }
+        }
+      ],
+      size: 10
+    }
+  });
+  return cleanElasticSearchQueryResponse(result);
+};
+
 /*
  * Get a detailed list of all members in an organization
  */

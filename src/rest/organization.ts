@@ -42,7 +42,8 @@ import {
   deleteOrganizationMembership,
   getDomainByDomainName,
   getOrganizationMembershipDetailed,
-  getApiKeyLogs
+  getApiKeyLogs,
+  getAgastyaApiKeyLogs
 } from "../crud/organization";
 import { InsertResult } from "../interfaces/mysql";
 import {
@@ -1210,7 +1211,14 @@ export const getAgastyaApiKeysForUser = async (
   organizationId: number,
   query: KeyValue
 ) => {
-  if (await can(userId, Authorizations.READ, "organization", organizationId))
+  if (
+    await can(
+      userId,
+      OrgScopes.READ_ORG_AGASTYA_API_KEYS,
+      "organization",
+      organizationId
+    )
+  )
     return await getAgastyaApiKeys(organizationId, query);
   throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
 };
@@ -1220,7 +1228,14 @@ export const getAgastyaApiKeyForUser = async (
   organizationId: number,
   agastyaApiKeyId: number
 ) => {
-  if (await can(userId, Authorizations.READ, "organization", organizationId))
+  if (
+    await can(
+      userId,
+      OrgScopes.READ_ORG_AGASTYA_API_KEYS,
+      "organization",
+      organizationId
+    )
+  )
     return await getAgastyaApiKey(organizationId, agastyaApiKeyId);
   throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
 };
@@ -1231,7 +1246,12 @@ export const cancelAgastyaApiKeySubscriptionForUser = async (
   agastyaApiKeyId: number
 ) => {
   if (
-    await can(userId, Authorizations.UPDATE, "organization", organizationId)
+    await can(
+      userId,
+      OrgScopes.UPDATE_ORG_SUBSCRIPTIONS,
+      "organization",
+      organizationId
+    )
   ) {
     const organization = await getOrganization(organizationId);
     if (organization.stripeCustomerId) {
@@ -1262,7 +1282,12 @@ export const revertAgastyaApiKeySubscriptionForUser = async (
   agastyaApiKeyId: number
 ) => {
   if (
-    await can(userId, Authorizations.UPDATE, "organization", organizationId)
+    await can(
+      userId,
+      OrgScopes.UPDATE_ORG_SUBSCRIPTIONS,
+      "organization",
+      organizationId
+    )
   ) {
     const organization = await getOrganization(organizationId);
     if (organization.stripeCustomerId) {
@@ -1295,7 +1320,12 @@ export const updateAgastyaApiKeyForUser = async (
   locals: Locals
 ) => {
   if (
-    await can(userId, Authorizations.UPDATE, "organization", organizationId)
+    await can(
+      userId,
+      OrgScopes.UPDATE_ORG_AGASTYA_API_KEYS,
+      "organization",
+      organizationId
+    )
   ) {
     const result = await updateAgastyaApiKey(
       organizationId,
@@ -1315,7 +1345,12 @@ export const createAgastyaApiKeyForUser = async (
   locals: Locals
 ) => {
   if (
-    await can(userId, Authorizations.CREATE, "organization", organizationId)
+    await can(
+      userId,
+      OrgScopes.CREATE_ORG_AGASTYA_API_KEYS,
+      "organization",
+      organizationId
+    )
   ) {
     const result = await createAgastyaApiKey({
       organizationId,
@@ -1334,11 +1369,34 @@ export const deleteAgastyaApiKeyForUser = async (
   locals: Locals
 ) => {
   if (
-    await can(userId, Authorizations.DELETE, "organization", organizationId)
+    await can(
+      userId,
+      OrgScopes.DELETE_ORG_AGASTYA_API_KEYS,
+      "organization",
+      organizationId
+    )
   ) {
     const result = await deleteAgastyaApiKey(organizationId, agastyaApiKeyId);
     queueWebhook(organizationId, Webhooks.DELETE_AGASTYA_API_KEY);
     return result;
   }
+  throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
+};
+
+export const getOrganizationAgastyaApiKeyLogsForUser = async (
+  userId: number | ApiKeyResponse,
+  organizationId: number,
+  agastyaApiKeyId: number,
+  query: KeyValue
+) => {
+  if (
+    await can(
+      userId,
+      OrgScopes.READ_ORG_AGASTYA_API_KEY_LOGS,
+      "organization",
+      organizationId
+    )
+  )
+    return await getAgastyaApiKeyLogs(organizationId, agastyaApiKeyId, query);
   throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
 };

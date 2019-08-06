@@ -124,7 +124,11 @@ const canUserOrganization = async (
       action != OrgScopes.CREATE_ORG_API_KEYS &&
       action != OrgScopes.DELETE_ORG_API_KEYS &&
       action != OrgScopes.UPDATE_ORG_API_KEYS &&
-      action != OrgScopes.READ_ORG_API_KEY_LOGS
+      action != OrgScopes.READ_ORG_API_KEY_LOGS &&
+      action != OrgScopes.CREATE_ORG_AGASTYA_API_KEYS &&
+      action != OrgScopes.DELETE_ORG_AGASTYA_API_KEYS &&
+      action != OrgScopes.UPDATE_ORG_AGASTYA_API_KEYS &&
+      action != OrgScopes.READ_ORG_AGASTYA_API_KEY_LOGS
     )
       allowed = true;
 

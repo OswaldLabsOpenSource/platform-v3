@@ -55,7 +55,8 @@ import {
   updateOrganizationMembershipForUser,
   cancelAgastyaApiKeySubscriptionForUser,
   revertAgastyaApiKeySubscriptionForUser,
-  getOrganizationApiKeyLogsForUser
+  getOrganizationApiKeyLogsForUser,
+  getOrganizationAgastyaApiKeyLogsForUser
 } from "../../rest/organization";
 import {
   Get,
@@ -1397,6 +1398,27 @@ export class OrganizationController {
         localsToTokenOrKey(res),
         organizationId,
         req.params.agastyaApiKeyId
+      )
+    );
+  }
+
+  @Get(":id/agastya-api-keys/:agastyaApiKeyId/logs")
+  async getAgastyaApiKeyLogs(req: Request, res: Response) {
+    const id = await organizationUsernameToId(req.params.id);
+    const agastyaApiKeyId = req.params.agastyaApiKeyId;
+    joiValidate(
+      {
+        id: [Joi.string().required(), Joi.number().required()],
+        agastyaApiKeyId: Joi.number().required()
+      },
+      { id, agastyaApiKeyId }
+    );
+    res.json(
+      await getOrganizationAgastyaApiKeyLogsForUser(
+        localsToTokenOrKey(res),
+        id,
+        agastyaApiKeyId,
+        req.query
       )
     );
   }
