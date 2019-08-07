@@ -793,6 +793,49 @@ export const getAgastyaApiKeyLogs = async (
   }
 };
 
+/**
+ * Get an API key
+ */
+export const getAgastyaApiKeyLogMonthCount = async (slug: String) => {
+  try {
+    const result = await elasticSearch.search({
+      index: `agastya-${slug}`,
+      body: {
+        query: {
+          bool: {
+            must: [
+              {
+                range: {
+                  date: {
+                    gte: new Date(
+                      new Date().getFullYear(),
+                      new Date().getMonth(),
+                      1
+                    )
+                  }
+                }
+              }
+            ]
+          }
+        },
+        sort: [
+          {
+            date: { order: "desc" }
+          }
+        ],
+        size: 0
+      }
+    });
+    return cleanElasticSearchQueryResponse(result, 0);
+  } catch (error) {
+    return {
+      data: [],
+      hasMore: false,
+      count: 0
+    };
+  }
+};
+
 /*
  * Get a detailed list of all members in an organization
  */

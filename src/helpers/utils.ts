@@ -144,7 +144,8 @@ export const dateValues = [
   "createdAt",
   "updatedAt",
   "lastFiredAt",
-  "expiresAt"
+  "expiresAt",
+  "eventsUpdatedAt"
 ];
 
 /**

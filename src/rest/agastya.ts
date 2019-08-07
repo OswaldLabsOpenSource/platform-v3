@@ -157,6 +157,7 @@ export const collect = async (
 
   // Add fingerprints
   data.ua_fp = md5(userAgent.toString());
+  data.user_fp = md5(data.ua_fp + data.ip);
   data.combined_fp = md5(
     data.session_id +
       data.ua_fp +

@@ -63,6 +63,8 @@ export interface AgastyaApiKey extends IdRow {
   organizationId: number;
   subscriptionId?: string;
   subscription?: subscriptions.ISubscription;
+  eventsConsumed?: number;
+  eventsUpdatedAt?: Date;
   name: string;
   slug: string;
   backgroundColor?: string;
