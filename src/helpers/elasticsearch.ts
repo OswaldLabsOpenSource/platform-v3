@@ -21,7 +21,10 @@ export const elasticSearch = new Client({
   connectionClass
 });
 
-export const cleanElasticSearchQueryResponse = (response: any) => {
+export const cleanElasticSearchQueryResponse = (
+  response: any,
+  size: number
+) => {
   if (response.hits && response.hits.hits) {
     const count = response.hits.total;
     const data = response.hits.hits;
@@ -29,7 +32,7 @@ export const cleanElasticSearchQueryResponse = (response: any) => {
       data,
       count
     };
-    if (count > data.length) {
+    if (count > data.length && data.length === size) {
       newResponse.hasMore = true;
     } else {
       newResponse.hasMore = false;

@@ -181,6 +181,7 @@ export const getApiKeyLogs = async (
 ) => {
   await getApiKey(organizationId, apiKeyId);
   const range: string = query.range || "7d";
+  const size = parseInt(query.size) || 10;
   const from = query.from ? parseInt(query.from) : 0;
   const result = await elasticSearch.search({
     index: `staart-logs-*`,
@@ -209,10 +210,10 @@ export const getApiKeyLogs = async (
           date: { order: "desc" }
         }
       ],
-      size: 10
+      size
     }
   });
-  return cleanElasticSearchQueryResponse(result);
+  return cleanElasticSearchQueryResponse(result, size);
 };
 
 /**
@@ -754,33 +755,42 @@ export const getAgastyaApiKeyLogs = async (
 ) => {
   const agastyaApiKey = await getAgastyaApiKey(organizationId, apiKeyId);
   const range: string = query.range || "7d";
+  const size = parseInt(query.size) || 10;
   const from = query.from ? parseInt(query.from) : 0;
-  const result = await elasticSearch.search({
-    index: `agastya-${agastyaApiKey.slug}`,
-    from,
-    body: {
-      query: {
-        bool: {
-          must: [
-            {
-              range: {
-                date: {
-                  gte: new Date(new Date().getTime() - ms(range))
+  try {
+    const result = await elasticSearch.search({
+      index: `agastya-${agastyaApiKey.slug}`,
+      from,
+      body: {
+        query: {
+          bool: {
+            must: [
+              {
+                range: {
+                  date: {
+                    gte: new Date(new Date().getTime() - ms(range))
+                  }
                 }
               }
-            }
-          ]
-        }
-      },
-      sort: [
-        {
-          date: { order: "desc" }
-        }
-      ],
-      size: 10
-    }
-  });
-  return cleanElasticSearchQueryResponse(result);
+            ]
+          }
+        },
+        sort: [
+          {
+            date: { order: "desc" }
+          }
+        ],
+        size
+      }
+    });
+    return cleanElasticSearchQueryResponse(result, size);
+  } catch (error) {
+    return {
+      data: [],
+      hasMore: false,
+      count: 0
+    };
+  }
 };
 
 /*
