@@ -818,11 +818,6 @@ export const getAgastyaApiKeyLogMonthCount = async (slug: String) => {
             ]
           }
         },
-        sort: [
-          {
-            date: { order: "desc" }
-          }
-        ],
         size: 0
       }
     });

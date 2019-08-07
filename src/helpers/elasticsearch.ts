@@ -41,3 +41,41 @@ export const cleanElasticSearchQueryResponse = (
   }
   throw new Error(ErrorCode.NOT_FOUND);
 };
+
+/**
+ * Get an API key
+ */
+export const getLogMonthCount = async (index: string) => {
+  try {
+    const result = await elasticSearch.search({
+      index,
+      body: {
+        query: {
+          bool: {
+            must: [
+              {
+                range: {
+                  date: {
+                    gte: new Date(
+                      new Date().getFullYear(),
+                      new Date().getMonth(),
+                      1
+                    )
+                  }
+                }
+              }
+            ]
+          }
+        },
+        size: 0
+      }
+    });
+    return cleanElasticSearchQueryResponse(result, 0);
+  } catch (error) {
+    return {
+      data: [],
+      hasMore: false,
+      count: 0
+    };
+  }
+};

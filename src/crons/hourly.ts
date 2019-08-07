@@ -6,6 +6,7 @@ import { query, tableName, setValues } from "../helpers/mysql";
 import ms from "ms";
 import { TOKEN_EXPIRY_REFRESH } from "../config";
 import { getAgastyaApiKeyLogMonthCount } from "../crud/organization";
+import { getLogMonthCount } from "../helpers/elasticsearch";
 
 export default () => {
   new CronJob(
@@ -64,16 +65,30 @@ const updateQuotas = async () => {
       [...Object.values(updateValues), agastyaApiKey.id]
     );
   }
-  const updateMetaValues = {
+  const updateMetaEventsValues = {
     value: totalAgastyaEvents.toString(),
     updatedAt: new Date()
   };
-  const q = await query(
+  await query(
     `UPDATE ${tableName("metadata")} SET ${setValues(
-      updateMetaValues
+      updateMetaEventsValues
     )} WHERE name = ?`,
-    [...Object.values(updateMetaValues), "agastya-events-month"]
+    [...Object.values(updateMetaEventsValues), "agastya-events-month"]
+  );
+  const totalCount = (await getLogMonthCount("staart-*")).count;
+  const updateMetaCountValues = {
+    /**
+     * This 200,000 number is temporarily here because of all the events
+     * we missed out on in the first week of August which are in the other
+     * ElasticSearch index. There are ~265,000 events from Aug 1-6.
+     */
+    value: (200000 + totalCount + totalAgastyaEvents).toString(),
+    updatedAt: new Date()
+  };
+  await query(
+    `UPDATE ${tableName("metadata")} SET ${setValues(
+      updateMetaCountValues
+    )} WHERE name = ?`,
+    [...Object.values(updateMetaCountValues), "eventsThisMonth"]
   );
 };
-
-updateQuotas();
