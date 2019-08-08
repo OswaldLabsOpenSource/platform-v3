@@ -18,7 +18,11 @@ import { Audit } from "../interfaces/tables/organization";
 import { uploadToS3, getFromS3, temporaryStorage } from "../helpers/s3";
 import { getAuditWebpage } from "./organization";
 import { getPaginatedData } from "./data";
-import { average, getVoiceFromLanguage } from "../helpers/utils";
+import {
+  average,
+  getVoiceFromLanguage,
+  detectTextLanguage
+} from "../helpers/utils";
 import Polly from "aws-sdk/clients/polly";
 import md5 from "md5";
 import Rekognition from "aws-sdk/clients/rekognition";
@@ -42,7 +46,11 @@ const translate = new Translate({
 
 export const readAloudText = (text: string, language: string) =>
   new Promise((resolve, reject) => {
-    const voice = getVoiceFromLanguage(language);
+    let voice = getVoiceFromLanguage(language);
+    if (detectTextLanguage(text) === "hi") {
+      voice = "Aditi";
+      language = "hi-IN";
+    }
     const key = `read-aloud/${md5(`${text}${voice}${language}`)}.mp3`;
     getFromS3("oswald-labs-platform-cache", key)
       .then(result => resolve(result))
@@ -53,7 +61,7 @@ export const readAloudText = (text: string, language: string) =>
             Text: text,
             VoiceId: voice,
             LanguageCode:
-              language === "en-IN" || language === "hi-IN"
+              language === "en-IN" || language === "hi-IN" || language === "hi"
                 ? language
                 : undefined
           },
