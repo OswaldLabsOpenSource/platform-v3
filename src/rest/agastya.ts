@@ -85,7 +85,7 @@ export const collect = async (
   if (typeof data.event === "object") {
     data.event = data.event || {};
   } else {
-    data.event = data.event || "pageview";
+    data.event = data.event || "";
   }
 
   // Set referer
