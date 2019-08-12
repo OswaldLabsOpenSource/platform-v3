@@ -1,6 +1,6 @@
 {
   "name": "platform",
-  "version": "3.1.88",
+  "version": "3.1.89",
   "repository": "git@github.com:OswaldLabsOpenSource/platform-v3.git",
   "author": "Anand Chowdhary <mail@anandchowdhary.com>",
   "license": "MIT",
@@ -155,5 +155,5 @@
     "setup"
   ],
   "snyk": true,
-  "staart-version": "1.0.128"
+  "staart-version": "1.0.129"
 }
