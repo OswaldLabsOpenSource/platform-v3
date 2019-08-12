@@ -43,7 +43,8 @@ import {
   getDomainByDomainName,
   getOrganizationMembershipDetailed,
   getApiKeyLogs,
-  getAgastyaApiKeyLogs
+  getAgastyaApiKeyLogs,
+  getAgastyaApiKeyGraphs
 } from "../crud/organization";
 import { InsertResult } from "../interfaces/mysql";
 import {
@@ -1398,5 +1399,29 @@ export const getOrganizationAgastyaApiKeyLogsForUser = async (
     )
   )
     return await getAgastyaApiKeyLogs(organizationId, agastyaApiKeyId, query);
+  throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
+};
+
+export const getOrganizationAgastyaApiKeyGraphsForUser = async (
+  userId: number | ApiKeyResponse,
+  organizationId: number,
+  agastyaApiKeyId: number,
+  field: string,
+  query: KeyValue
+) => {
+  if (
+    await can(
+      userId,
+      OrgScopes.READ_ORG_AGASTYA_API_KEY_LOGS,
+      "organization",
+      organizationId
+    )
+  )
+    return await getAgastyaApiKeyGraphs(
+      organizationId,
+      agastyaApiKeyId,
+      field,
+      query
+    );
   throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
 };

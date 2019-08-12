@@ -798,6 +798,70 @@ export const getAgastyaApiKeyLogs = async (
 /**
  * Get an API key
  */
+export const getAgastyaApiKeyGraphs = async (
+  organizationId: number,
+  apiKeyId: number,
+  field: string,
+  query: KeyValue
+) => {
+  const agastyaApiKey = await getAgastyaApiKey(organizationId, apiKeyId);
+  const range: string = query.range || "7d";
+  const size = parseInt(query.size) || 10;
+  const from = query.from ? parseInt(query.from) : 0;
+  try {
+    const result = await elasticSearch.search({
+      index: `agastya-${agastyaApiKey.slug}`,
+      from,
+      body: {
+        size: 0,
+        aggs: {
+          result: {
+            terms: {
+              field: `${field}.keyword`,
+              size,
+              order: {
+                _count: "desc"
+              }
+            }
+          }
+        },
+        query: {
+          bool: {
+            must: [
+              {
+                range: {
+                  date: {
+                    gte: new Date(new Date().getTime() - ms(range))
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    });
+    if (
+      result &&
+      result.aggregations &&
+      result.aggregations.result &&
+      result.aggregations.result.buckets
+    ) {
+      return result.aggregations.result.buckets;
+    } else {
+      throw new Error();
+    }
+  } catch (error) {
+    return {
+      data: [],
+      hasMore: false,
+      count: 0
+    };
+  }
+};
+
+/**
+ * Get an API key
+ */
 export const getAgastyaApiKeyLogMonthCount = async (slug: String) => {
   try {
     const result = await elasticSearch.search({

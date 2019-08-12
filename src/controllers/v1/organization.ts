@@ -56,7 +56,8 @@ import {
   cancelAgastyaApiKeySubscriptionForUser,
   revertAgastyaApiKeySubscriptionForUser,
   getOrganizationApiKeyLogsForUser,
-  getOrganizationAgastyaApiKeyLogsForUser
+  getOrganizationAgastyaApiKeyLogsForUser,
+  getOrganizationAgastyaApiKeyGraphsForUser
 } from "../../rest/organization";
 import {
   Get,
@@ -1418,6 +1419,30 @@ export class OrganizationController {
         localsToTokenOrKey(res),
         id,
         agastyaApiKeyId,
+        req.query
+      )
+    );
+  }
+
+  @Get(":id/agastya-api-keys/:agastyaApiKeyId/graphs/:field")
+  async getAgastyaApiKeyGraphs(req: Request, res: Response) {
+    const id = await organizationUsernameToId(req.params.id);
+    const agastyaApiKeyId = req.params.agastyaApiKeyId;
+    const field = req.params.field;
+    joiValidate(
+      {
+        id: [Joi.string().required(), Joi.number().required()],
+        agastyaApiKeyId: Joi.number().required(),
+        field: Joi.string().required()
+      },
+      { id, agastyaApiKeyId, field }
+    );
+    res.json(
+      await getOrganizationAgastyaApiKeyGraphsForUser(
+        localsToTokenOrKey(res),
+        id,
+        agastyaApiKeyId,
+        field,
         req.query
       )
     );
