@@ -26,7 +26,8 @@ import {
   getFaviconForSite,
   getReadingModeForUrl,
   getLabelsForImage,
-  getOcrForImage
+  getOcrForImage,
+  getWordDefinitions
 } from "../../crud/api";
 import multer from "multer";
 import { cacheForever } from "../../helpers/middleware";
@@ -144,5 +145,13 @@ export class ApiController {
         await getFaviconForSite(req.query.url || "https://oswaldlabs.com"),
         "binary"
       );
+  }
+
+  @Get("dictionary")
+  @Middleware(cacheForever)
+  async getDictionaryDefinition(req: Request, res: Response) {
+    const word = req.query.q;
+    joiValidate({ word: Joi.string().required() }, { word });
+    res.json(await getWordDefinitions(word));
   }
 }

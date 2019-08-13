@@ -9,7 +9,8 @@ import {
   AWS_POLLY_ACCESS_KEY,
   AWS_POLLY_SECRET_KEY,
   AWS_REKOGNITION_ACCESS_KEY,
-  AWS_REKOGNITION_SECRET_KEY
+  AWS_REKOGNITION_SECRET_KEY,
+  RAPID_API_KEY
 } from "../config";
 import { getItemFromCache, storeItemInCache } from "../helpers/cache";
 import { CacheCategories, AuditStatuses, ErrorCode } from "../interfaces/enum";
@@ -301,3 +302,22 @@ export const getOcrForImage = (image: Buffer) =>
       resolve(data);
     });
   });
+
+export const getWordDefinitions = async (word: string) => {
+  const slug = `dictionary-${word}`;
+  try {
+    return await temporaryStorage.read(slug);
+  } catch (error) {
+    const result = (await axios.get(
+      `https://wordsapiv1.p.rapidapi.com/words/${word}`,
+      {
+        headers: {
+          "X-RapidAPI-Host": "wordsapiv1.p.rapidapi.com",
+          "X-RapidAPI-Key": RAPID_API_KEY
+        }
+      }
+    )).data;
+    temporaryStorage.create(slug, result);
+    return result;
+  }
+};
