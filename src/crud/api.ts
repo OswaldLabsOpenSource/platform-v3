@@ -308,16 +308,20 @@ export const getWordDefinitions = async (word: string) => {
   try {
     return await temporaryStorage.read(slug);
   } catch (error) {
-    const result = (await axios.get(
-      `https://wordsapiv1.p.rapidapi.com/words/${word}`,
-      {
-        headers: {
-          "X-RapidAPI-Host": "wordsapiv1.p.rapidapi.com",
-          "X-RapidAPI-Key": RAPID_API_KEY
+    try {
+      const result = (await axios.get(
+        `https://wordsapiv1.p.rapidapi.com/words/${word}`,
+        {
+          headers: {
+            "X-RapidAPI-Host": "wordsapiv1.p.rapidapi.com",
+            "X-RapidAPI-Key": RAPID_API_KEY
+          }
         }
-      }
-    )).data;
-    temporaryStorage.create(slug, result);
-    return result;
+      )).data;
+      temporaryStorage.create(slug, result);
+      return result;
+    } catch (error) {
+      throw new Error(ErrorCode.NOT_FOUND);
+    }
   }
 };
