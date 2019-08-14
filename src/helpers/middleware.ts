@@ -240,6 +240,11 @@ export const cachedResponse = (time: string) => {
   };
 };
 
+export const neverCache = (req: Request, res: Response, next: NextFunction) => {
+  res.set("Cache-Control", "max-age=0, no-cache, no-store, must-revalidate");
+  return next();
+};
+
 export const validator = (
   schemaMap: Joi.SchemaMap,
   type: "body" | "params" | "query"

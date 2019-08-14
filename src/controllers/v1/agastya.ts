@@ -10,7 +10,7 @@ import asyncHandler from "express-async-handler";
 import Joi from "@hapi/joi";
 import { joiValidate } from "../../helpers/utils";
 import { collect, agastyaConfigResponse } from "../../rest/agastya";
-import { cachedResponse } from "../../helpers/middleware";
+import { cachedResponse, neverCache } from "../../helpers/middleware";
 import { NO_CONTENT } from "http-status-codes";
 
 @Controller("v1/agastya")
@@ -39,6 +39,22 @@ export class AgastyaController {
     collect(apiKey, req.query, res.locals, req.headers)
       .then(() => {})
       .catch(error => console.log("Wasn't able to track event", error));
+  }
+
+  @Get("collect.gif")
+  @Middleware(neverCache)
+  getCollectGif(req: Request, res: Response) {
+    const img =
+      "47494638396101000100800000dbdfef00000021f90401000000002c00000000010001000002024401003b";
+    res.setHeader("Content-Type", "image/gif");
+    const query = { ...req.query };
+    delete query.apiKey;
+    if (req.query.apiKey) {
+      collect(req.query.apiKey, query, res.locals, req.headers)
+        .then(() => {})
+        .catch(error => console.log("Wasn't able to track event", error));
+    }
+    res.end(Buffer.from(img, "hex"), "binary");
   }
 
   @Get("config/:apiKey")
