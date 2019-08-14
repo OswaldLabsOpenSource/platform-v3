@@ -125,16 +125,18 @@ export const collect = async (
   // Set user agent
   const userAgent = new WhichBrowser(headers || locals.userAgent);
   try {
-    data.browser_name = userAgent.browser.name;
-    data.browser_subversion = userAgent.browser.version.value;
-    data.browser_stock = userAgent.browser.stock;
-    data.os_name = userAgent.os.name;
-    data.os_subversion = userAgent.os.version.value;
-    data.browser_engine = userAgent.engine.name;
-    data.device_manufacturer = userAgent.device.manufacturer;
-    data.device_model = userAgent.device.model;
-    data.device_type = userAgent.device.type;
-    data.device_subtype = userAgent.device.subtype;
+    data.browser_name = data.browser_name || userAgent.browser.name;
+    data.browser_subversion =
+      data.browser_subversion || userAgent.browser.version.value;
+    data.browser_stock = data.browser_stock || userAgent.browser.stock;
+    data.os_name = data.os_name || userAgent.os.name;
+    data.os_subversion = data.os_subversion || userAgent.os.version.value;
+    data.browser_engine = data.browser_engine || userAgent.engine.name;
+    data.device_manufacturer =
+      data.device_manufacturer || userAgent.device.manufacturer;
+    data.device_model = data.device_model || userAgent.device.model;
+    data.device_type = data.device_type || userAgent.device.type;
+    data.device_subtype = data.device_subtype || userAgent.device.subtype;
   } catch (error) {}
   // Keeping error-prone values in a separate try/catch
   try {
@@ -157,7 +159,7 @@ export const collect = async (
 
   // Add fingerprints
   data.ua_fp = md5(userAgent.toString());
-  data.user_fp = md5(data.ua_fp + data.ip);
+  data.user_fp = data.user_fp || md5(data.ua_fp + data.ip);
   data.combined_fp = md5(
     data.session_id +
       data.ua_fp +
