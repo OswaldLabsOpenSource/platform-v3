@@ -66,6 +66,7 @@ export const getServerLogsForUser = async (
   if (!(await can(tokenUserId, Authorizations.READ, "general")))
     throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
   const range: string = query.range || "7d";
+  const size = query.size || 10;
   const from = query.from ? parseInt(query.from) : 0;
   const result = await elasticSearch.search({
     index: `staart-logs-*`,
@@ -89,8 +90,8 @@ export const getServerLogsForUser = async (
           date: { order: "desc" }
         }
       ],
-      size: 10
+      size
     }
   });
-  return cleanElasticSearchQueryResponse(result);
+  return cleanElasticSearchQueryResponse(result, size);
 };
