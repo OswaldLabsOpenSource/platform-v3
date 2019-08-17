@@ -188,6 +188,22 @@ export const collect = async (
     if (geoLocation.region_name) data.region_name = geoLocation.region_name;
   }
 
+  // Clean responses
+  if (data.zip_code && data.country_code)
+    data.zip_code = `${data.country_code}:${data.zip_code}`;
+  if (data.region_name && data.country_code)
+    data.region_name = `${data.country_code}:${data.region_name}`;
+  if (data.device_model && data.device_manufacturer)
+    data.device_model = `${data.device_manufacturer}:${data.device_model}`;
+  if (data.browser_subversion && data.browser_name)
+    data.browser_subversion = `${data.browser_name}:${data.browser_subversion}`;
+  if (data.browser_version && data.browser_name)
+    data.browser_version = `${data.browser_name}:${data.browser_version}`;
+  if (data.os_subversion && data.os_name)
+    data.os_subversion = `${data.os_name}:${data.os_subversion}`;
+  if (data.os_version && data.os_name)
+    data.os_version = `${data.os_name}:${data.os_version}`;
+
   // Store in ElasticSearch
   client
     .index({
