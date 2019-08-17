@@ -106,7 +106,7 @@ export class ApiController {
 
   @Get("audit/:id")
   async getAudit(req: Request, res: Response) {
-    res.json(await getLighthouseAudit(req.params.id));
+    res.json(await getLighthouseAudit((req.params as any).id));
   }
 
   @Get("audit/:id/html")
@@ -115,24 +115,24 @@ export class ApiController {
       .header({
         "Content-Type": "text/html"
       })
-      .send(await getLighthouseAuditHtml(req.params.id));
+      .send(await getLighthouseAuditHtml((req.params as any).id));
   }
 
   @Get("audit-badge/:type/:organizationId/:id")
   async getAuditBadge(req: Request, res: Response) {
     const organizationId = await organizationUsernameToId(
-      req.params.organizationId
+      (req.params as any).organizationId
     );
     const { color, score } = await auditBadgeInfo(
-      req.params.type,
+      (req.params as any).type,
       organizationId,
-      req.params.id
+      (req.params as any).id
     );
     safeRedirect(
       req,
       res,
       `https://img.shields.io/badge/${req.query.label ||
-        req.params.type}-${score}%2F100-${color}.svg`
+        (req.params as any).type}-${score}%2F100-${color}.svg`
     );
   }
 
