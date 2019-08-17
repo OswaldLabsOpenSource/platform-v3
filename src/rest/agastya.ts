@@ -189,6 +189,8 @@ export const collect = async (
   }
 
   // Clean responses
+  if (data.city && data.country_code)
+    data.city = `${data.country_code}:${data.city}`;
   if (data.zip_code && data.country_code)
     data.zip_code = `${data.country_code}:${data.zip_code}`;
   if (data.region_name && data.country_code)
