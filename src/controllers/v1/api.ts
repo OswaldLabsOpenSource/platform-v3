@@ -106,7 +106,7 @@ export class ApiController {
 
   @Get("audit/:id")
   async getAudit(req: Request, res: Response) {
-    res.json(await getLighthouseAudit(req.params.id));
+    res.json(await getLighthouseAudit(parseInt(req.params.id)));
   }
 
   @Get("audit/:id/html")
@@ -115,7 +115,7 @@ export class ApiController {
       .header({
         "Content-Type": "text/html"
       })
-      .send(await getLighthouseAuditHtml(req.params.id));
+      .send(await getLighthouseAuditHtml(parseInt(req.params.id)));
   }
 
   @Get("audit-badge/:type/:organizationId/:id")
@@ -126,7 +126,7 @@ export class ApiController {
     const { color, score } = await auditBadgeInfo(
       req.params.type,
       organizationId,
-      req.params.id
+      parseInt(req.params.id)
     );
     safeRedirect(
       req,

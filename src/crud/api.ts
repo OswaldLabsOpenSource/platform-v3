@@ -211,7 +211,7 @@ export const scheduleAudit = async (
 };
 
 export const auditBadgeInfo = async (
-  badgeType: "performance" | "accessibility" | "best-practices" | "seo" | "pwa",
+  badgeType: string,
   organizationId: number,
   id: number
 ) => {
