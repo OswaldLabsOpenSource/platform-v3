@@ -207,21 +207,17 @@ export const collect = async (
     data.os_version = `${data.os_name}:${data.os_version}`;
 
   // Store in ElasticSearch
-  client
-    .index({
-      index: `agastya-${apiKey}`,
-      body: data,
-      type: "collect"
-    })
-    .then(() => {})
-    .catch((error: any) => captureException(error))
-    .then(() => {
-      return {
-        status: "success",
-        response: data,
-        constants: {
-          eu_laws: !!isEuMember(data.country_code || "")
-        }
-      };
-    });
+  await client.index({
+    index: `agastya-${apiKey}`,
+    body: data,
+    type: "collect"
+  });
+
+  return {
+    status: "success",
+    response: data,
+    constants: {
+      eu_laws: !!isEuMember(data.country_code || "")
+    }
+  };
 };
