@@ -11,7 +11,6 @@ import Joi from "@hapi/joi";
 import { joiValidate } from "../../helpers/utils";
 import { collect, agastyaConfigResponse } from "../../rest/agastya";
 import { cachedResponse, neverCache } from "../../helpers/middleware";
-import { NO_CONTENT } from "http-status-codes";
 
 @Controller("v1/agastya")
 @ClassWrapper(asyncHandler)
@@ -20,7 +19,7 @@ export class AgastyaController {
   postCollect(req: Request, res: Response) {
     const apiKey = req.params.apiKey;
     joiValidate({ apiKey: Joi.string().required() }, { apiKey });
-    res.status(NO_CONTENT).send();
+    res.send();
     if (typeof req.body === "string") {
       try {
         req.body = JSON.parse(req.body);
@@ -35,7 +34,7 @@ export class AgastyaController {
   getCollect(req: Request, res: Response) {
     const apiKey = req.params.apiKey;
     joiValidate({ apiKey: Joi.string().required() }, { apiKey });
-    res.status(NO_CONTENT).send();
+    res.send();
     collect(apiKey, req.query, res.locals, req.headers)
       .then(() => {})
       .catch(error => console.log("Wasn't able to track event", error));
