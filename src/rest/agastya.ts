@@ -214,13 +214,14 @@ export const collect = async (
       type: "collect"
     })
     .then(() => {})
-    .catch((error: any) => captureException(error));
-
-  return {
-    status: "success",
-    response: data,
-    constants: {
-      eu_laws: !!isEuMember(data.country_code || "")
-    }
-  };
+    .catch((error: any) => captureException(error))
+    .then(() => {
+      return {
+        status: "success",
+        response: data,
+        constants: {
+          eu_laws: !!isEuMember(data.country_code || "")
+        }
+      };
+    });
 };
