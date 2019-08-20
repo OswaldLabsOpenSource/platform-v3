@@ -166,7 +166,11 @@ export const authHandler = async (
 /**
  * Brute force middleware
  */
-export const bruteForceHandler = bruteForce.prevent;
+export const bruteForceHandler = bruteForce.prevent as (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => RequestHandler;
 
 /**
  * Rate limiting middleware
