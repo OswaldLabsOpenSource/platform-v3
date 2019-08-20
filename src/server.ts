@@ -52,10 +52,7 @@ export class Staart extends Server {
       res.redirect("https://oswaldlabs.com/platform/")
     );
     this.app.get("/_/:apiKey", (req: Request, res: Response) =>
-      res.redirect(
-        MOVED_PERMANENTLY,
-        `/v1/agastya/loader/${(req.params as any).apiKey}`
-      )
+      res.redirect(MOVED_PERMANENTLY, `/v1/agastya/loader/${req.params.apiKey}`)
     );
 
     // staart:setup/controllers

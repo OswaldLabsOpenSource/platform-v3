@@ -18,7 +18,7 @@ import { NO_CONTENT } from "http-status-codes";
 export class AgastyaController {
   @Post("collect/:apiKey")
   postCollect(req: Request, res: Response) {
-    const apiKey = (req.params as any).apiKey;
+    const apiKey = req.params.apiKey;
     joiValidate({ apiKey: Joi.string().required() }, { apiKey });
     res.status(NO_CONTENT).send();
     if (typeof req.body === "string") {
@@ -33,7 +33,7 @@ export class AgastyaController {
 
   @Get("collect/:apiKey")
   getCollect(req: Request, res: Response) {
-    const apiKey = (req.params as any).apiKey;
+    const apiKey = req.params.apiKey;
     joiValidate({ apiKey: Joi.string().required() }, { apiKey });
     res.status(NO_CONTENT).send();
     collect(apiKey, req.query, res.locals, req.headers)
@@ -60,7 +60,7 @@ export class AgastyaController {
   @Get("config/:apiKey")
   @Middleware(cachedResponse("10m"))
   async getConfig(req: Request, res: Response) {
-    const apiKey = (req.params as any).apiKey;
+    const apiKey = req.params.apiKey;
     const domain = req.query.domain;
     joiValidate(
       { apiKey: Joi.string().required(), domain: Joi.string() },
@@ -73,7 +73,7 @@ export class AgastyaController {
   @Middleware(cachedResponse("1d"))
   getLoader(req: Request, res: Response) {
     const environment = req.query.env || "production";
-    const apiKey = ((req.params as any).apiKey || "").replace(".js", "");
+    const apiKey = (req.params.apiKey || "").replace(".js", "");
     joiValidate(
       {
         apiKey: Joi.string().required(),
