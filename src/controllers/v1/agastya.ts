@@ -26,7 +26,7 @@ export class AgastyaController {
       } catch (error) {}
     }
     collect(apiKey, req.body, res.locals, req.headers)
-      .then(() => console.log("Collected", apiKey, new Date()))
+      .then((r: any) => console.log(r, "Collected", apiKey, new Date()))
       .catch(error => console.log("Wasn't able to track event", error));
   }
 
@@ -36,7 +36,7 @@ export class AgastyaController {
     joiValidate({ apiKey: Joi.string().required() }, { apiKey });
     res.send();
     collect(apiKey, req.query, res.locals, req.headers)
-      .then(() => console.log("Collected", apiKey, new Date()))
+      .then((r: any) => console.log(r, "Collected", apiKey, new Date()))
       .catch(error => console.log("Wasn't able to track event", error));
   }
 
@@ -50,7 +50,9 @@ export class AgastyaController {
     delete query.apiKey;
     if (req.query.apiKey) {
       collect(req.query.apiKey, query, res.locals, req.headers)
-        .then(() => console.log("Collected", req.query.apiKey, new Date()))
+        .then((r: any) =>
+          console.log(r, "Collected", req.query.apiKey, new Date())
+        )
         .catch(error => console.log("Wasn't able to track event", error));
     }
     res.end(Buffer.from(img, "hex"), "binary");
