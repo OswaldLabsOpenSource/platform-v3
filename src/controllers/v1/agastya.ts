@@ -50,7 +50,7 @@ export class AgastyaController {
     delete query.apiKey;
     if (req.query.apiKey) {
       collect(req.query.apiKey, query, res.locals, req.headers)
-        .then(() => console.log("Collected", apiKey, new Date()))
+        .then(() => console.log("Collected", req.query.apiKey, new Date()))
         .catch(error => console.log("Wasn't able to track event", error));
     }
     res.end(Buffer.from(img, "hex"), "binary");
