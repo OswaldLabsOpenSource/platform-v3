@@ -762,6 +762,7 @@ export const getAgastyaApiKeyLogs = async (
   const filter = ((query.filter as string) || "")
     .split(",")
     .map(i => i.trim())
+    .filter(i => !!i)
     .map(i => {
       let key = i;
       let value = i;
@@ -801,7 +802,8 @@ export const getAgastyaApiKeyLogs = async (
                     gte: new Date(new Date().getTime() - ms(range))
                   }
                 }
-              }
+              },
+              ...filter
             ]
           }
         },
