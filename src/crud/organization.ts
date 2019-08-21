@@ -775,6 +775,18 @@ export const getAgastyaApiKeyLogs = async (
       match[key] = value;
       return { match };
     });
+  console.log(
+    JSON.stringify([
+      {
+        range: {
+          date: {
+            gte: new Date(new Date().getTime() - ms(range))
+          }
+        }
+      },
+      ...filter
+    ])
+  );
   try {
     const result = await elasticSearch.search({
       index: `agastya-${agastyaApiKey.slug}`,
@@ -789,8 +801,7 @@ export const getAgastyaApiKeyLogs = async (
                     gte: new Date(new Date().getTime() - ms(range))
                   }
                 }
-              },
-              ...filter
+              }
             ]
           }
         },
@@ -807,7 +818,8 @@ export const getAgastyaApiKeyLogs = async (
     return {
       data: [],
       hasMore: false,
-      count: 0
+      count: 0,
+      backup: true
     };
   }
 };
