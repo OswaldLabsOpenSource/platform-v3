@@ -249,6 +249,16 @@ export const neverCache = (req: Request, res: Response, next: NextFunction) => {
   return next();
 };
 
+export const noCloudflareCache = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  // If there is a cookie in the response, Cloudflare will not cache it
+  res.cookie("No-Cloudflare-Cache", `Please-${Math.random().toString()}`);
+  return next();
+};
+
 export const validator = (
   schemaMap: Joi.SchemaMap,
   type: "body" | "params" | "query"

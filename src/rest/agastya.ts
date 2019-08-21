@@ -48,10 +48,13 @@ export const agastyaConfigResponse = async (
     if (!includesDomainInCommaList(allowedDomains, domain)) allowed = false;
   }
   if (!allowed) throw new Error(ErrorCode.INVALID_DOMAIN);
+  const ipCountry = (req.get("Cf-Ipcountry") || "").toLowerCase();
   const result = {
     ...apiKeyDetails,
     requestUserInfo: {
-      ipCountry: (req.get("Cf-Ipcountry") || "").toLowerCase()
+      ipCountry,
+      isEuCountry: !!isEuMember(ipCountry),
+      sessionId: cryptoRandomString({ length: 20, type: "hex" })
     }
   };
   return result;

@@ -10,7 +10,11 @@ import asyncHandler from "express-async-handler";
 import Joi from "@hapi/joi";
 import { joiValidate } from "../../helpers/utils";
 import { collect, agastyaConfigResponse } from "../../rest/agastya";
-import { cachedResponse, neverCache } from "../../helpers/middleware";
+import {
+  cachedResponse,
+  neverCache,
+  noCloudflareCache
+} from "../../helpers/middleware";
 
 @Controller("v1/agastya")
 @ClassWrapper(asyncHandler)
@@ -58,6 +62,7 @@ export class AgastyaController {
 
   @Get("config/:apiKey")
   @Middleware(cachedResponse("10m"))
+  @Middleware(noCloudflareCache)
   async getConfig(req: Request, res: Response) {
     const apiKey = req.params.apiKey;
     const domain = req.query.domain;
