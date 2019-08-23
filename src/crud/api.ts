@@ -10,7 +10,8 @@ import {
   AWS_POLLY_SECRET_KEY,
   AWS_REKOGNITION_ACCESS_KEY,
   AWS_REKOGNITION_SECRET_KEY,
-  RAPID_API_KEY
+  RAPID_API_KEY,
+  DIALOGFLOW_SERVICE_ACCOUNT
 } from "../config";
 import { getItemFromCache, storeItemInCache } from "../helpers/cache";
 import { CacheCategories, AuditStatuses, ErrorCode } from "../interfaces/enum";
@@ -19,6 +20,7 @@ import { Audit } from "../interfaces/tables/organization";
 import { uploadToS3, getFromS3, temporaryStorage } from "../helpers/s3";
 import { getAuditWebpage } from "./organization";
 import { getPaginatedData } from "./data";
+import { SessionsClient } from "dialogflow";
 import {
   average,
   getVoiceFromLanguage,
@@ -324,4 +326,30 @@ export const getWordDefinitions = async (word: string) => {
       throw new Error(ErrorCode.NOT_FOUND);
     }
   }
+};
+
+export const getDialogflowResponse = async () => {
+  try {
+    const sessionId = "f90bf622-671b-41dd-a689-331e397bc109";
+    const sessionClient = new SessionsClient({
+      credentials: DIALOGFLOW_SERVICE_ACCOUNT
+    });
+    const sessionPath = sessionClient.sessionPath(
+      "oefenenonboarding",
+      sessionId
+    );
+    const responses = await sessionClient.detectIntent({
+      session: sessionPath,
+      queryInput: {
+        text: {
+          text: "Hoi",
+          languageCode: "nl-NL"
+        }
+      }
+    });
+    console.log(responses);
+  } catch (error) {
+    console.log("Got error", error);
+  }
+  return { hello: "world " };
 };
