@@ -729,6 +729,8 @@ export const updateAgastyaApiKey = async (
       throw new Error(ErrorCode.USERNAME_EXISTS);
   }
   if (data.customCss) data.customCss = JSON.stringify(data.customCss);
+  if (data.protectedInfo)
+    data.protectedInfo = JSON.stringify(data.protectedInfo);
   if (data.variables) data.variables = JSON.stringify(data.variables);
   if (data.links) data.links = JSON.stringify(data.links);
   if (data.layout) data.layout = JSON.stringify(data.layout);

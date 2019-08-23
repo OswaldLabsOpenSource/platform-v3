@@ -17,7 +17,11 @@ import { CacheCategories, AuditStatuses, ErrorCode } from "../interfaces/enum";
 import { tableValues, query, setValues } from "../helpers/mysql";
 import { Audit } from "../interfaces/tables/organization";
 import { uploadToS3, getFromS3, temporaryStorage } from "../helpers/s3";
-import { getAuditWebpage } from "./organization";
+import {
+  getAuditWebpage,
+  getAgastyaApiKey,
+  getAgastyaApiKeyFromSlug
+} from "./organization";
 import { getPaginatedData } from "./data";
 import { SessionsClient, Credentials } from "dialogflow";
 import {
@@ -334,6 +338,18 @@ export const getDialogflowResponse = async (
   text: string
 ) => {
   let credentials = "";
+  const agastya = await getAgastyaApiKeyFromSlug(agastyaApiKey);
+  if (agastya.id && agastya.organizationId) {
+    const agastyaDetails = await getAgastyaApiKey(
+      agastya.organizationId,
+      agastya.id
+    );
+    if (typeof agastyaDetails.protectedInfo === "object") {
+      credentials = agastyaDetails.protectedInfo
+        .dialogflowServiceAccount as string;
+    }
+  }
+  if (!credentials) throw new Error(ErrorCode.NOT_FOUND);
   const sessionClient = new SessionsClient({
     credentials: JSON.parse(credentials) as Credentials
   });

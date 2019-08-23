@@ -1294,6 +1294,7 @@ export class OrganizationController {
         domains: Joi.string().allow(""),
         customCss: Joi.any(),
         variables: Joi.any(),
+        protectedInfo: Joi.any(),
         links: Joi.any(),
         layout: Joi.any(),
         integrations: Joi.any()
