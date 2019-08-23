@@ -49,6 +49,13 @@ export const agastyaConfigResponse = async (
   }
   if (!allowed) throw new Error(ErrorCode.INVALID_DOMAIN);
   const ipCountry = (req.get("Cf-Ipcountry") || "").toLowerCase();
+  // Delete EU cookie law integration if country is not an EU member
+  if (
+    typeof apiKeyDetails.integrations === "object" &&
+    !isEuMember(ipCountry)
+  ) {
+    delete apiKeyDetails.integrations["eu-cookie-law"];
+  }
   const result = {
     ...apiKeyDetails,
     requestUserInfo: {
