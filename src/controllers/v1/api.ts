@@ -27,10 +27,11 @@ import {
   getReadingModeForUrl,
   getLabelsForImage,
   getOcrForImage,
-  getWordDefinitions
+  getWordDefinitions,
+  getDialogflowResponse
 } from "../../crud/api";
 import multer from "multer";
-import { cacheForever } from "../../helpers/middleware";
+import { cacheForever, validator } from "../../helpers/middleware";
 
 @Controller("v1/api")
 @ClassWrapper(asyncHandler)
@@ -153,5 +154,25 @@ export class ApiController {
     const word = req.query.q;
     joiValidate({ word: Joi.string().required() }, { word });
     res.json(await getWordDefinitions(word));
+  }
+
+  @Get("dialogflow/:agastyaApiKey")
+  @Middleware(
+    validator(
+      {
+        q: Joi.string().required(),
+        lang: Joi.string().required(),
+        sessionId: Joi.string().required()
+      },
+      "query"
+    )
+  )
+  async getDialogflowChatbot(req: Request, res: Response) {
+    const agastyaApiKey = req.params.agastyaApiKey;
+    const sessionId = req.query.sessionId;
+    const text = req.query.q;
+    const lang = req.query.lang;
+    joiValidate({ agastyaApiKey: Joi.string().required() }, { agastyaApiKey });
+    res.json(await getDialogflowResponse(agastyaApiKey, sessionId, lang, text));
   }
 }

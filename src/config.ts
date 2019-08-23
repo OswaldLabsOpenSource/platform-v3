@@ -1,4 +1,5 @@
 import { config } from "dotenv";
+import { Credentials } from "dialogflow";
 config();
 
 // Server

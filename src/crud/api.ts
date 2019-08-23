@@ -17,8 +17,13 @@ import { CacheCategories, AuditStatuses, ErrorCode } from "../interfaces/enum";
 import { tableValues, query, setValues } from "../helpers/mysql";
 import { Audit } from "../interfaces/tables/organization";
 import { uploadToS3, getFromS3, temporaryStorage } from "../helpers/s3";
-import { getAuditWebpage } from "./organization";
+import {
+  getAuditWebpage,
+  getAgastyaApiKey,
+  getAgastyaApiKeyFromSlug
+} from "./organization";
 import { getPaginatedData } from "./data";
+import { SessionsClient, Credentials } from "dialogflow";
 import {
   average,
   getVoiceFromLanguage,
@@ -324,4 +329,38 @@ export const getWordDefinitions = async (word: string) => {
       throw new Error(ErrorCode.NOT_FOUND);
     }
   }
+};
+
+export const getDialogflowResponse = async (
+  agastyaApiKey: string,
+  sessionId: string,
+  lang: string,
+  text: string
+) => {
+  let credentials = "";
+  const agastya = await getAgastyaApiKeyFromSlug(agastyaApiKey);
+  if (agastya.id && agastya.organizationId) {
+    const agastyaDetails = await getAgastyaApiKey(
+      agastya.organizationId,
+      agastya.id
+    );
+    if (typeof agastyaDetails.protectedInfo === "object") {
+      credentials = agastyaDetails.protectedInfo
+        .dialogflowServiceAccount as string;
+    }
+  }
+  if (!credentials) throw new Error(ErrorCode.NOT_FOUND);
+  const sessionClient = new SessionsClient({
+    credentials: JSON.parse(credentials) as Credentials
+  });
+  const sessionPath = sessionClient.sessionPath("oefenenonboarding", sessionId);
+  return await sessionClient.detectIntent({
+    session: sessionPath,
+    queryInput: {
+      text: {
+        text,
+        languageCode: lang
+      }
+    }
+  });
 };

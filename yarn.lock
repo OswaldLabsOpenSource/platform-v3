@@ -1243,6 +1243,11 @@
   resolved "https://registry.yarnpkg.com/@types/debug/-/debug-4.1.5.tgz#b14efa8852b7768d898906613c23f688713e02cd"
   integrity sha512-Q1y515GcOdTHgagaVFhHnIFQ38ygs/kmxdNpvpou+raI9UO3YZcHDngBSYKQklcKlvA7iuQlmIKbzvmxcOE9CQ==
 
+"@types/dialogflow@^0.9.4":
+  version "0.9.4"
+  resolved "https://registry.yarnpkg.com/@types/dialogflow/-/dialogflow-0.9.4.tgz#0cc93e69eaf93c3aec106047024a0de0b1c91062"
+  integrity sha512-9Vtyvql1Ukm+1lFRVdAqRKVqfnEtPl2vSbv5RZ0qcrPxXe43tP3wKTlRC2UALkgB/LZP7fwwJNYPzrNBmYxhZw==
+
 "@types/dotenv@^6.1.1":
   version "6.1.1"
   resolved "https://registry.yarnpkg.com/@types/dotenv/-/dotenv-6.1.1.tgz#f7ce1cc4fe34f0a4373ba99fefa437b0bec54b46"
@@ -2897,6 +2902,14 @@ detect-newline@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/detect-newline/-/detect-newline-2.1.0.tgz#f41f1c10be4b00e87b5f13da680759f2c5bfd3e2"
   integrity sha1-9B8cEL5LAOh7XxPaaAdZ8sW/0+I=
+
+dialogflow@^0.10.3:
+  version "0.10.3"
+  resolved "https://registry.yarnpkg.com/dialogflow/-/dialogflow-0.10.3.tgz#42ea902ffd467fd7ea70474bce32561a4d501bde"
+  integrity sha512-TRglNfkF4Rfpc45fDyx1pdqza8t7qx/ZU1+YDWMXJgEbxSnuhqG7JwMitteNiMWnLjnm2MlP14P7Ro6/GTqb3A==
+  dependencies:
+    google-gax "^1.0.0"
+    protobufjs "^6.8.0"
 
 dicer@0.2.5:
   version "0.2.5"
@@ -7038,7 +7051,7 @@ prompts@^2.0.1:
     kleur "^3.0.3"
     sisteransi "^1.0.3"
 
-protobufjs@^6.8.6, protobufjs@^6.8.8:
+protobufjs@^6.8.0, protobufjs@^6.8.6, protobufjs@^6.8.8:
   version "6.8.8"
   resolved "https://registry.yarnpkg.com/protobufjs/-/protobufjs-6.8.8.tgz#c8b4f1282fd7a90e6f5b109ed11c84af82908e7c"
   integrity sha512-AAmHtD5pXgZfi7GMpllpO3q1Xw1OYldr+dMUlAnffGTAhqkg72WdmSY71uKBF/JuyiKs8psYbtKrhi0ASCD8qw==

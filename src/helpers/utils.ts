@@ -157,7 +157,8 @@ export const jsonValues = [
   "variables",
   "links",
   "layout",
-  "integrations"
+  "integrations",
+  "protectedInfo"
 ];
 
 /**
@@ -176,6 +177,27 @@ export const joiValidate = (schemaMap: Joi.SchemaMap, data: any) => {
   const result = Joi.validate(data, schema);
   if (result.error) throw new Error(`joi:${JSON.stringify(result.error)}`);
   return true;
+};
+
+export const getElasticSearchFilterFromValue = (value: string) => {
+  const filter = (value || "")
+    .split(",")
+    .map(i => i.trim())
+    .filter(i => !!i)
+    .map(i => {
+      let key = i;
+      let value = i;
+      if (i.includes(":")) {
+        key = i.split(":")[0].trim();
+        value = i.split(":")[1].trim();
+      }
+      const match: {
+        [index: string]: string;
+      } = {};
+      match[key] = value;
+      return { match };
+    });
+  return filter;
 };
 
 /**

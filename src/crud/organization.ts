@@ -183,6 +183,23 @@ export const getApiKeyLogs = async (
   const range: string = query.range || "7d";
   const size = parseInt(query.size) || 10;
   const from = query.from ? parseInt(query.from) : 0;
+  const filter = ((query.filter as string) || "")
+    .split(",")
+    .map(i => i.trim())
+    .filter(i => !!i)
+    .map(i => {
+      let key = i;
+      let value = i;
+      if (i.includes(":")) {
+        key = i.split(":")[0].trim();
+        value = i.split(":")[1].trim();
+      }
+      const match: {
+        [index: string]: string;
+      } = {};
+      match[key] = value;
+      return { match };
+    });
   const result = await elasticSearch.search({
     index: `staart-logs-*`,
     from,
@@ -201,7 +218,8 @@ export const getApiKeyLogs = async (
                   gte: new Date(new Date().getTime() - ms(range))
                 }
               }
-            }
+            },
+            ...filter
           ]
         }
       },
@@ -650,7 +668,10 @@ export const getAgastyaApiKeyFromSlug = async (slug: string) => {
       [slug]
     )
   ))[0];
-  if (result) return result;
+  if (result) {
+    delete result.protectedInfo;
+    return result;
+  }
   throw new Error(ErrorCode.NOT_FOUND);
 };
 
@@ -664,6 +685,7 @@ export const createAgastyaApiKey = async (
   agastya.backgroundColor = agastya.backgroundColor || "#3742fa";
   agastya.foregroundColor = agastya.foregroundColor || "#ffffff";
   agastya.customCss = "{}";
+  agastya.protectedInfo = "{}";
   agastya.variables = JSON.stringify({
     headingText: "Help & Accessibility",
     subheadingText: agastya.name,
@@ -707,6 +729,8 @@ export const updateAgastyaApiKey = async (
       throw new Error(ErrorCode.USERNAME_EXISTS);
   }
   if (data.customCss) data.customCss = JSON.stringify(data.customCss);
+  if (data.protectedInfo)
+    data.protectedInfo = JSON.stringify(data.protectedInfo);
   if (data.variables) data.variables = JSON.stringify(data.variables);
   if (data.links) data.links = JSON.stringify(data.links);
   if (data.layout) data.layout = JSON.stringify(data.layout);
@@ -776,18 +800,6 @@ export const getAgastyaApiKeyLogs = async (
       match[key] = value;
       return { match };
     });
-  console.log(
-    JSON.stringify([
-      {
-        range: {
-          date: {
-            gte: new Date(new Date().getTime() - ms(range))
-          }
-        }
-      },
-      ...filter
-    ])
-  );
   try {
     const result = await elasticSearch.search({
       index: `agastya-${agastyaApiKey.slug}`,
