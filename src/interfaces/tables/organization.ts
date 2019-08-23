@@ -102,4 +102,13 @@ export interface AgastyaApiKey extends IdRow {
               [index: string]: string | number | boolean;
             };
       };
+  protectedInfo?:
+    | string
+    | {
+        [index: string]:
+          | string
+          | {
+              [index: string]: string | number | boolean;
+            };
+      };
 }

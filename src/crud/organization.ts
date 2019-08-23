@@ -668,7 +668,10 @@ export const getAgastyaApiKeyFromSlug = async (slug: string) => {
       [slug]
     )
   ))[0];
-  if (result) return result;
+  if (result) {
+    delete result.protectedInfo;
+    return result;
+  }
   throw new Error(ErrorCode.NOT_FOUND);
 };
 
@@ -682,6 +685,7 @@ export const createAgastyaApiKey = async (
   agastya.backgroundColor = agastya.backgroundColor || "#3742fa";
   agastya.foregroundColor = agastya.foregroundColor || "#ffffff";
   agastya.customCss = "{}";
+  agastya.protectedInfo = "{}";
   agastya.variables = JSON.stringify({
     headingText: "Help & Accessibility",
     subheadingText: agastya.name,

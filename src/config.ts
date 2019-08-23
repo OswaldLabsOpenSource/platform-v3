@@ -115,10 +115,6 @@ export const STRIPE_PRODUCT_ID = process.env.STRIPE_PRODUCT_ID || "";
 
 // Other APIs
 export const RAPID_API_KEY = process.env.RAPID_API_KEY || "";
-export const DIALOGFLOW_SERVICE_ACCOUNT: Credentials = process.env
-  .DIALOGFLOW_SERVICE_ACCOUNT
-  ? JSON.parse(process.env.DIALOGFLOW_SERVICE_ACCOUNT)
-  : { client_email: "", private_key: "" };
 
 // Tracking
 export const AWS_ELASTIC_ACCESS_KEY = process.env.AWS_ELASTIC_ACCESS_KEY || "";

@@ -157,7 +157,8 @@ export const jsonValues = [
   "variables",
   "links",
   "layout",
-  "integrations"
+  "integrations",
+  "protectedInfo"
 ];
 
 /**

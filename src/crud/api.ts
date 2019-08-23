@@ -10,8 +10,7 @@ import {
   AWS_POLLY_SECRET_KEY,
   AWS_REKOGNITION_ACCESS_KEY,
   AWS_REKOGNITION_SECRET_KEY,
-  RAPID_API_KEY,
-  DIALOGFLOW_SERVICE_ACCOUNT
+  RAPID_API_KEY
 } from "../config";
 import { getItemFromCache, storeItemInCache } from "../helpers/cache";
 import { CacheCategories, AuditStatuses, ErrorCode } from "../interfaces/enum";
@@ -20,7 +19,7 @@ import { Audit } from "../interfaces/tables/organization";
 import { uploadToS3, getFromS3, temporaryStorage } from "../helpers/s3";
 import { getAuditWebpage } from "./organization";
 import { getPaginatedData } from "./data";
-import { SessionsClient } from "dialogflow";
+import { SessionsClient, Credentials } from "dialogflow";
 import {
   average,
   getVoiceFromLanguage,
@@ -328,28 +327,24 @@ export const getWordDefinitions = async (word: string) => {
   }
 };
 
-export const getDialogflowResponse = async () => {
-  try {
-    const sessionId = "f90bf622-671b-41dd-a689-331e397bc109";
-    const sessionClient = new SessionsClient({
-      credentials: DIALOGFLOW_SERVICE_ACCOUNT
-    });
-    const sessionPath = sessionClient.sessionPath(
-      "oefenenonboarding",
-      sessionId
-    );
-    const responses = await sessionClient.detectIntent({
-      session: sessionPath,
-      queryInput: {
-        text: {
-          text: "Hoi",
-          languageCode: "nl-NL"
-        }
+export const getDialogflowResponse = async (
+  agastyaApiKey: string,
+  sessionId: string,
+  lang: string,
+  text: string
+) => {
+  let credentials = "";
+  const sessionClient = new SessionsClient({
+    credentials: JSON.parse(credentials) as Credentials
+  });
+  const sessionPath = sessionClient.sessionPath("oefenenonboarding", sessionId);
+  return await sessionClient.detectIntent({
+    session: sessionPath,
+    queryInput: {
+      text: {
+        text,
+        languageCode: lang
       }
-    });
-    console.log(responses);
-  } catch (error) {
-    console.log("Got error", error);
-  }
-  return { hello: "world " };
+    }
+  });
 };
