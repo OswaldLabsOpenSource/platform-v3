@@ -53,7 +53,12 @@ export const getPublicData = async () => {
     data.storedAt = new Date();
     await temporaryStorage.create(fileName, data);
   }
-  return data;
+  return data as {
+    name: string;
+    value: string;
+    updatedAt: string;
+    storedAt: string;
+  };
 };
 
 /**
