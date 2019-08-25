@@ -1,6 +1,6 @@
 {
   "name": "platform",
-  "version": "3.1.120",
+  "version": "3.1.121",
   "repository": "git@github.com:OswaldLabsOpenSource/platform-v3.git",
   "author": "Anand Chowdhary <mail@anandchowdhary.com>",
   "license": "MIT",
@@ -20,8 +20,7 @@
     "check-update": "node setup/update.js",
     "update": "git pull git@github.com:o15y/staart",
     "postinstall": "npm run check-update",
-    "snyk-protect": "snyk protect",
-    "prepublish": "npm run snyk-protect"
+    "snyk-protect": "snyk protect"
   },
   "husky": {
     "hooks": {
@@ -89,7 +88,7 @@
     "prettier": "^1.18.2",
     "recursive-readdir": "^2.2.2",
     "shelljs": "^0.8.3",
-    "staart-manager": "^1.1.1",
+    "staart-manager": "^1.1.2",
     "ts-jest": "^24.0.2",
     "typedoc": "^0.15.0",
     "typescript": "^3.5.3",
@@ -159,5 +158,5 @@
     "setup"
   ],
   "snyk": true,
-  "staart-version": "1.1.1"
+  "staart-version": "1.1.2"
 }
