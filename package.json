@@ -1,6 +1,6 @@
 {
   "name": "platform",
-  "version": "3.1.119",
+  "version": "3.1.120",
   "repository": "git@github.com:OswaldLabsOpenSource/platform-v3.git",
   "author": "Anand Chowdhary <mail@anandchowdhary.com>",
   "license": "MIT",
@@ -29,7 +29,7 @@
     }
   },
   "engines": {
-    "node": "10.16.0"
+    "node": ">= 10.16.0"
   },
   "jest": {
     "roots": [
@@ -89,7 +89,7 @@
     "prettier": "^1.18.2",
     "recursive-readdir": "^2.2.2",
     "shelljs": "^0.8.3",
-    "staart-manager": "^1.0.47",
+    "staart-manager": "^1.1.1",
     "ts-jest": "^24.0.2",
     "typedoc": "^0.15.0",
     "typescript": "^3.5.3",
@@ -99,7 +99,7 @@
     "@google-cloud/translate": "^4.1.3",
     "@hapi/joi": "^15.1.1",
     "@sentry/node": "^5.6.2",
-    "aws-sdk": "^2.513.0",
+    "aws-sdk": "^2.516.0",
     "axios": "^0.19.0",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",
@@ -138,7 +138,7 @@
     "morgan": "^1.9.1",
     "ms": "^2.1.2",
     "multer": "^1.4.2",
-    "mustache": "^3.0.1",
+    "mustache": "^3.0.2",
     "mysql": "^2.17.1",
     "node-cache": "^4.2.1",
     "node-emoji": "^1.10.0",
@@ -159,5 +159,5 @@
     "setup"
   ],
   "snyk": true,
-  "staart-version": "1.0.136"
+  "staart-version": "1.1.1"
 }

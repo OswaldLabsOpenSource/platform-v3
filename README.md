@@ -22,6 +22,12 @@ There are different types of caching used:
 
 Fraud is used because we don't want reading mode data to be cached forever. It's cached in the container and would be deleted as soon as we create a new image or restart the container, which happens often enough.
 
+## 🏗️ Built with Staart
+
+- [Oswald Labs Platform](https://github.com/OswaldLabsOpenSource/platform-v3)
+- [Speakup Developer](https://github.com/speakupnl/staart)
+- [**Add your Staart-based project**](https://github.com/o15y/staart/edit/master/README.md)
+
 ## 📄 License
 
 - Code: [MIT](https://github.com/o15y/staart/blob/master/LICENSE)
