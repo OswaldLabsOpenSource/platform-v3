@@ -1,5 +1,8 @@
 FROM node:10.16.0-alpine
 RUN apk add --no-cache udev ttf-freefont chromium
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y git
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 COPY ./package.json /usr/src/app/
