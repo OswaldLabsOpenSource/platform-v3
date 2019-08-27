@@ -11,6 +11,7 @@ export interface Organization extends IdRow {
   onlyAllowDomain?: boolean;
   ipRestrictions?: string;
   stripeCustomerId?: string;
+  profilePicture?: string;
 }
 
 export interface ApiKey extends IdRow {
