@@ -279,7 +279,8 @@ export const getReadingModeForUrl = async (url: string) => {
     file = await parse(url);
     await temporaryStorage.create(slug, file);
   }
-  if (!file || file.word_count < 20) throw new Error(ErrorCode.NOT_FOUND);
+  if (!file || !file.word_count || file.word_count < 20 || file.error)
+    throw new Error(ErrorCode.NOT_FOUND);
   return file;
 };
 
