@@ -49,6 +49,7 @@ export const createOrganization = async (organization: Organization) => {
   organization.name = capitalizeFirstAndLastLetter(organization.name);
   organization.createdAt = new Date();
   organization.updatedAt = organization.createdAt;
+  organization.profilePicture = "demo";
   organization.username = createSlug(organization.name);
   // Create organization
   return await query(
