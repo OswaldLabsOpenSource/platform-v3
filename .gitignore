@@ -135,3 +135,6 @@ typings/
 dist/
 docs/
 src/app.ts
+
+# Ignore .env
+*.env

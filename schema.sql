@@ -4,18 +4,18 @@
  Source Server         : A11Y New
  Source Server Type    : MariaDB
  Source Server Version : 100221
- Source Host           : platform.c9ffpdgdnmej.eu-central-1.rds.amazonaws.com:3306
  Source Schema         : platform
 
  Target Server Type    : MariaDB
  Target Server Version : 100221
  File Encoding         : 65001
 
- Date: 28/07/2019 19:10:06
+ Date: 29/08/2019 12:26:46
 */
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
+SET sql_mode = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER';
 
 -- ----------------------------
 -- Table structure for platform-access-tokens
@@ -132,22 +132,6 @@ CREATE TABLE `platform-emails` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 -- ----------------------------
--- Table structure for platform-events
--- ----------------------------
-DROP TABLE IF EXISTS `platform-events`;
-CREATE TABLE `platform-events` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `userId` int(11) DEFAULT NULL,
-  `organizationId` int(11) DEFAULT NULL,
-  `type` varchar(100) COLLATE utf8mb4_bin NOT NULL,
-  `data` text COLLATE utf8mb4_bin DEFAULT NULL,
-  `ipAddress` varchar(255) COLLATE utf8mb4_bin DEFAULT NULL,
-  `userAgent` text COLLATE utf8mb4_bin DEFAULT NULL,
-  `createdAt` datetime NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
-
--- ----------------------------
 -- Table structure for platform-memberships
 -- ----------------------------
 DROP TABLE IF EXISTS `platform-memberships`;
@@ -161,22 +145,6 @@ CREATE TABLE `platform-memberships` (
   PRIMARY KEY (`id`),
   KEY `org` (`organizationId`),
   KEY `user` (`userId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
-
--- ----------------------------
--- Table structure for platform-notifications
--- ----------------------------
-DROP TABLE IF EXISTS `platform-notifications`;
-CREATE TABLE `platform-notifications` (
-  `id` int(12) NOT NULL AUTO_INCREMENT,
-  `userId` int(12) NOT NULL,
-  `category` varchar(255) COLLATE utf8mb4_bin NOT NULL,
-  `text` varchar(255) COLLATE utf8mb4_bin NOT NULL,
-  `link` varchar(255) COLLATE utf8mb4_bin DEFAULT NULL,
-  `read` int(1) NOT NULL DEFAULT 0,
-  `createdAt` datetime NOT NULL,
-  `updatedAt` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE current_timestamp(),
-  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 -- ----------------------------
@@ -194,6 +162,7 @@ CREATE TABLE `platform-organizations` (
   `onlyAllowDomain` int(1) NOT NULL DEFAULT 0,
   `createdAt` datetime NOT NULL,
   `updatedAt` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE current_timestamp(),
+  `profilePicture` varchar(255) COLLATE utf8mb4_bin NOT NULL DEFAULT 'https://unavatar.now.sh/fallback.png',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
@@ -231,6 +200,7 @@ CREATE TABLE `platform-users` (
   `preferredLanguage` varchar(5) COLLATE utf8mb4_bin NOT NULL DEFAULT 'en-us',
   `prefersReducedMotion` int(1) NOT NULL DEFAULT 0,
   `prefersColorSchemeDark` int(1) NOT NULL DEFAULT 0,
+  `checkLocationOnLogin` int(1) NOT NULL DEFAULT 0,
   `role` int(1) NOT NULL DEFAULT 1,
   `gender` varchar(1) COLLATE utf8mb4_bin NOT NULL DEFAULT 'x',
   `profilePicture` varchar(255) COLLATE utf8mb4_bin NOT NULL,

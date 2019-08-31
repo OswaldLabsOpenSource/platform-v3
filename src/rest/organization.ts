@@ -61,10 +61,6 @@ import {
   CacheCategories,
   Templates
 } from "../interfaces/enum";
-import {
-  getOrganizationEvents,
-  getOrganizationRecentEvents
-} from "../crud/event";
 import { Locals, KeyValue } from "../interfaces/general";
 import { can } from "../helpers/authorization";
 import {
@@ -535,7 +531,6 @@ export const getAllOrganizationDataForUser = async (
   ) {
     const organization = await getOrganization(organizationId);
     const memberships = await getOrganizationMemberships(organizationId);
-    const events = await getOrganizationEvents(organizationId);
     let billing = {} as any;
     let subscriptions = {} as any;
     let invoices = {} as any;
@@ -552,29 +547,12 @@ export const getAllOrganizationDataForUser = async (
     return {
       organization,
       memberships,
-      events,
       billing,
       subscriptions,
       invoices,
       sources
     };
   }
-  throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
-};
-
-export const getOrganizationRecentEventsForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number
-) => {
-  if (
-    await can(
-      userId,
-      Authorizations.READ_SECURE,
-      "organization",
-      organizationId
-    )
-  )
-    return await getOrganizationRecentEvents(organizationId);
   throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
 };
 

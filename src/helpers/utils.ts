@@ -134,7 +134,8 @@ export const boolValues = [
   "forceTwoFactor",
   "autoJoinDomain",
   "onlyAllowDomain",
-  "isActive"
+  "isActive",
+  "checkLocationOnLogin"
 ];
 
 /**

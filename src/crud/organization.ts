@@ -59,7 +59,10 @@ export const createOrganization = async (organization: Organization) => {
   }).replace("#", "");
   organization.profilePicture = `https://ui-avatars.com/api/?name=${encodeURIComponent(
     organization.name || "XX"
-  ).replace(/\'/g, "%27")}&background=${backgroundColor}&color=fff`;
+  ).replace(
+    /^([a-zA-Z0-9 _-]+)$/gi,
+    ""
+  )}&background=${backgroundColor}&color=fff`;
   return await query(
     `INSERT INTO ${tableName("organizations")} ${tableValues(organization)}`,
     Object.values(organization)
@@ -364,7 +367,10 @@ export const updateOrganizationProfilePicture = async (
   }).replace("#", "");
   const profilePicture = `https://ui-avatars.com/api/?name=${encodeURIComponent(
     organization.name || organization.username || "XX"
-  ).replace(/\'/g, "%27")}&background=${backgroundColor}&color=fff`;
+  ).replace(
+    /^([a-zA-Z0-9 _-]+)$/gi,
+    ""
+  )}&background=${backgroundColor}&color=fff`;
   await updateOrganization(organizationId, { profilePicture });
 };
 
