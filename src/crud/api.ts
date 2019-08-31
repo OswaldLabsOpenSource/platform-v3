@@ -14,7 +14,7 @@ import {
 } from "../config";
 import { getItemFromCache, storeItemInCache } from "../helpers/cache";
 import { CacheCategories, AuditStatuses, ErrorCode } from "../interfaces/enum";
-import { tableValues, query, setValues } from "../helpers/mysql";
+import { tableValues, query, setValues, tableName } from "../helpers/mysql";
 import { Audit } from "../interfaces/tables/organization";
 import { uploadToS3, getFromS3, temporaryStorage } from "../helpers/s3";
 import {
@@ -132,7 +132,7 @@ export const lighthouseStart = async (auditUrlId?: number) => {
     auditUrlId
   };
   const result = await query(
-    `INSERT INTO audits ${tableValues(audit)}`,
+    `INSERT INTO ${tableName("audits")} ${tableValues(audit)}`,
     Object.values(audit)
   );
   return (result as any).insertId as number;
@@ -165,10 +165,10 @@ export const lighthouseAudit = async (id: number, url: string) => {
     scorePwa: lhr.categories.pwa.score * 100,
     updatedAt: currentTime
   };
-  await query(`UPDATE audits SET ${setValues(audit)} WHERE id = ?`, [
-    ...Object.values(audit),
-    id
-  ]);
+  await query(
+    `UPDATE ${tableName("audits")} SET ${setValues(audit)} WHERE id = ?`,
+    [...Object.values(audit), id]
+  );
   await uploadToS3("dai11y", `reports/${id}.html`, report);
   const currentAudit = await getLighthouseAudit(id);
   if (currentAudit.auditUrlId) {
@@ -187,16 +187,17 @@ export const lighthouseError = async (id: number) => {
   const audit = {
     status: AuditStatuses.ERROR
   };
-  return await query(`UPDATE audits SET ${setValues(audit)} WHERE id = ?`, [
-    ...Object.values(audit),
-    id
-  ]);
+  return await query(
+    `UPDATE ${tableName("audits")} SET ${setValues(audit)} WHERE id = ?`,
+    [...Object.values(audit), id]
+  );
 };
 
 export const getLighthouseAudit = async (id: number) => {
-  return ((await query(`SELECT * FROM audits WHERE id = ? LIMIT 1`, [
-    id
-  ])) as Audit[])[0];
+  return ((await query(
+    `SELECT * FROM ${tableName("audits")} WHERE id = ? LIMIT 1`,
+    [id]
+  )) as Audit[])[0];
 };
 
 export const getLighthouseAuditHtml = async (id: number) => {

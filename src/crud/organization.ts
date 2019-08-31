@@ -646,7 +646,9 @@ export const getOrganizationAudit = async (
 ) => {
   const audit = (<Audit[]>(
     await query(
-      "SELECT * FROM `audits` WHERE id = ? AND auditUrlId = ? LIMIT 1",
+      `SELECT * FROM ${tableName(
+        "audits"
+      )} WHERE id = ? AND auditUrlId = ? LIMIT 1`,
       [id, webpageId]
     )
   ))[0];

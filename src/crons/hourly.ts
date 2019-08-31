@@ -13,7 +13,9 @@ export default () => {
     "0 * * * *",
     async () => {
       const incompleteAudits = (await query(
-        "SELECT * FROM audits WHERE status = ? AND DATE_SUB(NOW(), INTERVAL 1 HOUR) < createdAt",
+        `SELECT * FROM ${tableName(
+          "audits"
+        )} WHERE status = ? AND DATE_SUB(NOW(), INTERVAL 1 HOUR) < createdAt`,
         [AuditStatuses.PENDING]
       )) as AuditWebpage[];
       for await (const incompleteAudit of incompleteAudits) {
