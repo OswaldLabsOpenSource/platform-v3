@@ -1,5 +1,5 @@
 import { CronJob } from "cron";
-import { query } from "../helpers/mysql";
+import { query, tableName } from "../helpers/mysql";
 import { AuditWebpage } from "../interfaces/tables/organization";
 import { lighthouseStart, lighthouseAudit, lighthouseError } from "../crud/api";
 import { AuditRepeat } from "../interfaces/enum";
@@ -12,7 +12,7 @@ export default () => {
     "0 0 * * *",
     async () => {
       const dailyAudits = (await query(
-        "SELECT * FROM `audit-webpages` WHERE repeatEvery = ?",
+        `SELECT * FROM ${tableName("audit-webpages")} WHERE repeatEvery = ?`,
         [AuditRepeat.DAILY]
       )) as AuditWebpage[];
       for await (const auditWebpage of dailyAudits) {

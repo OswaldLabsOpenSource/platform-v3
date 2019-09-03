@@ -43,7 +43,7 @@ export interface Webhook extends IdRow {
 
 export interface Audit extends IdRow {
   status?: AuditStatuses;
-  auditUrlId?: number;
+  auditUrlId?: string;
   finalUrl?: string;
   timing: number;
   scorePerformance: number;
@@ -54,14 +54,14 @@ export interface Audit extends IdRow {
 }
 
 export interface AuditWebpage extends IdRow {
-  organizationId: number;
+  organizationId: string;
   url: string;
   repeatEvery?: AuditRepeat;
   lastAuditAt?: Date;
 }
 
 export interface AgastyaApiKey extends IdRow {
-  organizationId: number;
+  organizationId: string;
   subscriptionId?: string;
   subscription?: subscriptions.ISubscription;
   eventsConsumed?: number;

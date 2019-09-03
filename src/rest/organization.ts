@@ -377,7 +377,7 @@ export const createOrganizationSubscriptionForUser = async (
   userId: string | ApiKeyResponse,
   organizationId: string,
   params: { plan: string; [index: string]: any },
-  agastyaApiKey?: number,
+  agastyaApiKey?: string,
   locals?: Locals
 ) => {
   if (
@@ -1090,8 +1090,8 @@ export const deleteWebhookForUser = async (
 };
 
 export const getOrganizationAuditWebpagesForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
+  userId: string | ApiKeyResponse,
+  organizationId: string,
   query: KeyValue
 ) => {
   if (await can(userId, Authorizations.READ, "organization", organizationId))
@@ -1100,9 +1100,9 @@ export const getOrganizationAuditWebpagesForUser = async (
 };
 
 export const getOrganizationAuditWebpageForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
-  webpage: number
+  userId: string | ApiKeyResponse,
+  organizationId: string,
+  webpage: string
 ) => {
   if (await can(userId, Authorizations.READ, "organization", organizationId))
     return await getAuditWebpage(organizationId, webpage);
@@ -1110,9 +1110,9 @@ export const getOrganizationAuditWebpageForUser = async (
 };
 
 export const updateAuditWebpageForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
-  webpage: number,
+  userId: string | ApiKeyResponse,
+  organizationId: string,
+  webpage: string,
   data: KeyValue,
   locals: Locals
 ) => {
@@ -1126,8 +1126,8 @@ export const updateAuditWebpageForUser = async (
 };
 
 export const createAuditWebpageForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
+  userId: string | ApiKeyResponse,
+  organizationId: string,
   webpage: KeyValue,
   locals: Locals
 ) => {
@@ -1145,9 +1145,9 @@ export const createAuditWebpageForUser = async (
 };
 
 export const deleteAuditWebpageForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
-  webpage: number,
+  userId: string | ApiKeyResponse,
+  organizationId: string,
+  webpage: string,
   locals: Locals
 ) => {
   if (
@@ -1160,9 +1160,9 @@ export const deleteAuditWebpageForUser = async (
 };
 
 export const getOrganizationAuditsForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
-  auditUrlId: number,
+  userId: string | ApiKeyResponse,
+  organizationId: string,
+  auditUrlId: string,
   query: KeyValue
 ) => {
   if (await can(userId, Authorizations.READ, "organization", organizationId))
@@ -1171,10 +1171,10 @@ export const getOrganizationAuditsForUser = async (
 };
 
 export const getOrganizationAuditForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
-  webpageId: number,
-  id: number
+  userId: string | ApiKeyResponse,
+  organizationId: string,
+  webpageId: string,
+  id: string
 ) => {
   if (await can(userId, Authorizations.READ, "organization", organizationId))
     return await getOrganizationAudit(organizationId, webpageId, id);
@@ -1182,8 +1182,8 @@ export const getOrganizationAuditForUser = async (
 };
 
 export const getAgastyaApiKeysForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
+  userId: string | ApiKeyResponse,
+  organizationId: string,
   query: KeyValue
 ) => {
   if (
@@ -1199,9 +1199,9 @@ export const getAgastyaApiKeysForUser = async (
 };
 
 export const getAgastyaApiKeyForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
-  agastyaApiKeyId: number
+  userId: string | ApiKeyResponse,
+  organizationId: string,
+  agastyaApiKeyId: string
 ) => {
   if (
     await can(
@@ -1216,9 +1216,9 @@ export const getAgastyaApiKeyForUser = async (
 };
 
 export const cancelAgastyaApiKeySubscriptionForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
-  agastyaApiKeyId: number
+  userId: string | ApiKeyResponse,
+  organizationId: string,
+  agastyaApiKeyId: string
 ) => {
   if (
     await can(
@@ -1252,9 +1252,9 @@ export const cancelAgastyaApiKeySubscriptionForUser = async (
 };
 
 export const revertAgastyaApiKeySubscriptionForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
-  agastyaApiKeyId: number
+  userId: string | ApiKeyResponse,
+  organizationId: string,
+  agastyaApiKeyId: string
 ) => {
   if (
     await can(
@@ -1288,9 +1288,9 @@ export const revertAgastyaApiKeySubscriptionForUser = async (
 };
 
 export const updateAgastyaApiKeyForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
-  agastyaApiKeyId: number,
+  userId: string | ApiKeyResponse,
+  organizationId: string,
+  agastyaApiKeyId: string,
   data: KeyValue,
   locals: Locals
 ) => {
@@ -1314,8 +1314,8 @@ export const updateAgastyaApiKeyForUser = async (
 };
 
 export const createAgastyaApiKeyForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
+  userId: string | ApiKeyResponse,
+  organizationId: string,
   agastyaApiKey: KeyValue,
   locals: Locals
 ) => {
@@ -1338,9 +1338,9 @@ export const createAgastyaApiKeyForUser = async (
 };
 
 export const deleteAgastyaApiKeyForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
-  agastyaApiKeyId: number,
+  userId: string | ApiKeyResponse,
+  organizationId: string,
+  agastyaApiKeyId: string,
   locals: Locals
 ) => {
   if (
@@ -1359,9 +1359,9 @@ export const deleteAgastyaApiKeyForUser = async (
 };
 
 export const getOrganizationAgastyaApiKeyLogsForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
-  agastyaApiKeyId: number,
+  userId: string | ApiKeyResponse,
+  organizationId: string,
+  agastyaApiKeyId: string,
   query: KeyValue
 ) => {
   if (
@@ -1377,9 +1377,9 @@ export const getOrganizationAgastyaApiKeyLogsForUser = async (
 };
 
 export const getOrganizationAgastyaApiKeyGraphsForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
-  agastyaApiKeyId: number,
+  userId: string | ApiKeyResponse,
+  organizationId: string,
+  agastyaApiKeyId: string,
   field: string,
   query: KeyValue
 ) => {

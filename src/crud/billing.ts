@@ -175,8 +175,8 @@ export const createStripeSubscription = async (
     billing?: subscriptions.SubscriptionBilling;
     number_of_seats?: number;
   },
-  agastyaApiKey?: number,
-  organizationId?: number
+  agastyaApiKey?: string,
+  organizationId?: string
 ) => {
   const result = await stripe.subscriptions.create({
     customer: id,

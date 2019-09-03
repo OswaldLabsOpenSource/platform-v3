@@ -1071,7 +1071,7 @@ export class OrganizationController {
   @Get(":id/audit-webpages/:auditWebpage")
   async getOrgAuditWebpage(req: Request, res: Response) {
     const id = await organizationUsernameToId(req.params.id);
-    const auditWebpage = parseInt(req.params.auditWebpage);
+    const auditWebpage = hashIdToId(req.params.auditWebpage);
     joiValidate(
       {
         id: [Joi.string().required(), Joi.number().required()],
@@ -1091,7 +1091,7 @@ export class OrganizationController {
   @Patch(":id/audit-webpages/:auditWebpage")
   async patchOrgAuditWebpage(req: Request, res: Response) {
     const id = await organizationUsernameToId(req.params.id);
-    const auditWebpage = parseInt(req.params.auditWebpage);
+    const auditWebpage = hashIdToId(req.params.auditWebpage);
     joiValidate(
       {
         id: [Joi.string().required(), Joi.number().required()],
@@ -1120,7 +1120,7 @@ export class OrganizationController {
   @Delete(":id/audit-webpages/:auditWebpage")
   async deleteOrgAuditWebpage(req: Request, res: Response) {
     const id = await organizationUsernameToId(req.params.id);
-    const auditWebpage = parseInt(req.params.auditWebpage);
+    const auditWebpage = hashIdToId(req.params.auditWebpage);
     joiValidate(
       {
         id: [Joi.string().required(), Joi.number().required()],
@@ -1141,7 +1141,7 @@ export class OrganizationController {
   @Get(":id/audit-webpages/:auditWebpage/audits")
   async getOrgAudits(req: Request, res: Response) {
     const id = await organizationUsernameToId(req.params.id);
-    const auditWebpage = parseInt(req.params.auditWebpage);
+    const auditWebpage = hashIdToId(req.params.auditWebpage);
     joiValidate(
       {
         id: [Joi.string().required(), Joi.number().required()],
@@ -1173,8 +1173,8 @@ export class OrganizationController {
   @Get(":id/audit-webpages/:auditWebpage/audits/:auditId")
   async getOrgAudit(req: Request, res: Response) {
     const id = await organizationUsernameToId(req.params.id);
-    const auditId = parseInt(req.params.auditId);
-    const auditWebpage = parseInt(req.params.auditWebpage);
+    const auditId = hashIdToId(req.params.auditId);
+    const auditWebpage = hashIdToId(req.params.auditWebpage);
     joiValidate(
       {
         id: [Joi.string().required(), Joi.number().required()],
@@ -1248,7 +1248,7 @@ export class OrganizationController {
   @Get(":id/agastya-api-keys/:agastyaApiKeyId")
   async getUserAgastyaApiKey(req: Request, res: Response) {
     const id = await organizationUsernameToId(req.params.id);
-    const agastyaApiKeyId = parseInt(req.params.agastyaApiKeyId);
+    const agastyaApiKeyId = hashIdToId(req.params.agastyaApiKeyId);
     joiValidate(
       {
         id: [Joi.string().required(), Joi.number().required()],
@@ -1290,7 +1290,7 @@ export class OrganizationController {
   )
   async patchUserAgastyaApiKey(req: Request, res: Response) {
     const id = await organizationUsernameToId(req.params.id);
-    const agastyaApiKeyId = parseInt(req.params.agastyaApiKeyId);
+    const agastyaApiKeyId = hashIdToId(req.params.agastyaApiKeyId);
     joiValidate(
       {
         id: [Joi.string().required(), Joi.number().required()],
@@ -1312,7 +1312,7 @@ export class OrganizationController {
   @Delete(":id/agastya-api-keys/:agastyaApiKeyId")
   async deleteUserAgastyaApiKey(req: Request, res: Response) {
     const id = await organizationUsernameToId(req.params.id);
-    const agastyaApiKeyId = parseInt(req.params.agastyaApiKeyId);
+    const agastyaApiKeyId = hashIdToId(req.params.agastyaApiKeyId);
     joiValidate(
       {
         id: [Joi.string().required(), Joi.number().required()],
@@ -1352,7 +1352,7 @@ export class OrganizationController {
         localsToTokenOrKey(res),
         organizationId,
         subscriptionParams,
-        parseInt(req.params.agastyaApiKeyId),
+        hashIdToId(req.params.agastyaApiKeyId),
         res.locals
       )
     );
@@ -1369,7 +1369,7 @@ export class OrganizationController {
       await cancelAgastyaApiKeySubscriptionForUser(
         localsToTokenOrKey(res),
         organizationId,
-        parseInt(req.params.agastyaApiKeyId)
+        hashIdToId(req.params.agastyaApiKeyId)
       )
     );
   }
@@ -1385,7 +1385,7 @@ export class OrganizationController {
       await revertAgastyaApiKeySubscriptionForUser(
         localsToTokenOrKey(res),
         organizationId,
-        parseInt(req.params.agastyaApiKeyId)
+        hashIdToId(req.params.agastyaApiKeyId)
       )
     );
   }
@@ -1393,7 +1393,7 @@ export class OrganizationController {
   @Get(":id/agastya-api-keys/:agastyaApiKeyId/logs")
   async getAgastyaApiKeyLogs(req: Request, res: Response) {
     const id = await organizationUsernameToId(req.params.id);
-    const agastyaApiKeyId = parseInt(req.params.agastyaApiKeyId);
+    const agastyaApiKeyId = hashIdToId(req.params.agastyaApiKeyId);
     joiValidate(
       {
         id: [Joi.string().required(), Joi.number().required()],
@@ -1414,7 +1414,7 @@ export class OrganizationController {
   @Get(":id/agastya-api-keys/:agastyaApiKeyId/graphs/:field")
   async getAgastyaApiKeyGraphs(req: Request, res: Response) {
     const id = await organizationUsernameToId(req.params.id);
-    const agastyaApiKeyId = parseInt(req.params.agastyaApiKeyId);
+    const agastyaApiKeyId = hashIdToId(req.params.agastyaApiKeyId);
     const field = req.params.field;
     joiValidate(
       {

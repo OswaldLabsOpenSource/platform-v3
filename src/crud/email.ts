@@ -17,6 +17,7 @@ import { mail } from "../helpers/mail";
 import { InsertResult } from "../interfaces/mysql";
 import { sendNewPassword } from "../rest/auth";
 import { hash } from "bcryptjs";
+import { generateHashId } from "../helpers/utils";
 
 /**
  * Create a new email for a user
@@ -38,7 +39,7 @@ export const createEmail = async (
   );
   if (sendVerification) {
     await sendEmailVerification(
-      result.insertId,
+      generateHashId(result.insertId),
       email.email,
       await getUser(email.userId)
     );

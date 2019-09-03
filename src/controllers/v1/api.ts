@@ -12,7 +12,8 @@ import {
   joiValidate,
   detectTextLanguage,
   organizationUsernameToId,
-  safeRedirect
+  safeRedirect,
+  hashIdToId
 } from "../../helpers/utils";
 import {
   translateText,
@@ -107,7 +108,7 @@ export class ApiController {
 
   @Get("audit/:id")
   async getAudit(req: Request, res: Response) {
-    res.json(await getLighthouseAudit(parseInt(req.params.id)));
+    res.json(await getLighthouseAudit(hashIdToId(req.params.id)));
   }
 
   @Get("audit/:id/html")
@@ -116,7 +117,7 @@ export class ApiController {
       .header({
         "Content-Type": "text/html"
       })
-      .send(await getLighthouseAuditHtml(parseInt(req.params.id)));
+      .send(await getLighthouseAuditHtml(hashIdToId(req.params.id)));
   }
 
   @Get("audit-badge/:type/:organizationId/:id")
@@ -127,7 +128,7 @@ export class ApiController {
     const { color, score } = await auditBadgeInfo(
       req.params.type,
       organizationId,
-      parseInt(req.params.id)
+      hashIdToId(req.params.id)
     );
     safeRedirect(
       req,

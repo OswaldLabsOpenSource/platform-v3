@@ -27,7 +27,8 @@ import { SessionsClient, Credentials } from "dialogflow";
 import {
   average,
   getVoiceFromLanguage,
-  detectTextLanguage
+  detectTextLanguage,
+  generateHashId
 } from "../helpers/utils";
 import Polly from "aws-sdk/clients/polly";
 import md5 from "md5";
@@ -117,7 +118,7 @@ export const translateText = (
       });
   });
 
-export const lighthouseStart = async (auditUrlId?: number) => {
+export const lighthouseStart = async (auditUrlId?: string) => {
   const currentDate = new Date();
   const audit: Audit = {
     status: AuditStatuses.PENDING,
@@ -135,10 +136,10 @@ export const lighthouseStart = async (auditUrlId?: number) => {
     `INSERT INTO ${tableName("audits")} ${tableValues(audit)}`,
     Object.values(audit)
   );
-  return (result as any).insertId as number;
+  return generateHashId((result as any).insertId);
 };
 
-export const lighthouseAudit = async (id: number, url: string) => {
+export const lighthouseAudit = async (id: string, url: string) => {
   const chrome = await launch({
     chromeFlags: [
       "--headless",
@@ -183,7 +184,7 @@ export const lighthouseAudit = async (id: number, url: string) => {
   return audit;
 };
 
-export const lighthouseError = async (id: number) => {
+export const lighthouseError = async (id: string) => {
   const audit = {
     status: AuditStatuses.ERROR
   };
@@ -193,20 +194,20 @@ export const lighthouseError = async (id: number) => {
   );
 };
 
-export const getLighthouseAudit = async (id: number) => {
+export const getLighthouseAudit = async (id: string) => {
   return ((await query(
     `SELECT * FROM ${tableName("audits")} WHERE id = ? LIMIT 1`,
     [id]
   )) as Audit[])[0];
 };
 
-export const getLighthouseAuditHtml = async (id: number) => {
+export const getLighthouseAuditHtml = async (id: string) => {
   return (await getFromS3("dai11y", `reports/${id}.html`)) as string;
 };
 
 export const scheduleAudit = async (
-  organizationId: number,
-  auditUrlId: number
+  organizationId: string,
+  auditUrlId: string
 ) => {
   const newId = await lighthouseStart(auditUrlId);
   const webpageDetails = await getAuditWebpage(organizationId, auditUrlId);
@@ -219,8 +220,8 @@ export const scheduleAudit = async (
 
 export const auditBadgeInfo = async (
   badgeType: string,
-  organizationId: number,
-  id: number
+  organizationId: string,
+  id: string
 ) => {
   const site = await getAuditWebpage(organizationId, id);
   if (site.id) {

@@ -15,7 +15,8 @@ import {
 import {
   capitalizeFirstAndLastLetter,
   createSlug,
-  dateToDateTime
+  dateToDateTime,
+  generateHashId
 } from "../helpers/utils";
 import ms from "ms";
 import { KeyValue } from "../interfaces/general";
@@ -545,7 +546,7 @@ export const deleteWebhook = async (
  * Get a list of all webpages of an organization
  */
 export const getOrganizationAuditWebpages = async (
-  organizationId: number,
+  organizationId: string,
   query: KeyValue
 ) => {
   return await getPaginatedData({
@@ -561,7 +562,7 @@ export const getOrganizationAuditWebpages = async (
 /**
  * Get an audit webpage
  */
-export const getAuditWebpage = async (organizationId: number, id: number) => {
+export const getAuditWebpage = async (organizationId: string, id: string) => {
   return (<AuditWebpage[]>(
     await query(
       "SELECT * FROM `audit-webpages` WHERE id = ? AND organizationId = ? LIMIT 1",
@@ -581,7 +582,7 @@ export const createAuditWebpage = async (webpage: AuditWebpage) => {
     `INSERT INTO \`audit-webpages\` ${tableValues(webpage)}`,
     Object.values(webpage)
   );
-  const id = (result as any).insertId;
+  const id = generateHashId((result as any).insertId);
   try {
     scheduleAudit(webpage.organizationId, id);
   } catch (error) {}
@@ -592,8 +593,8 @@ export const createAuditWebpage = async (webpage: AuditWebpage) => {
  * Update a user's details
  */
 export const updateAuditWebpage = async (
-  organizationId: number,
-  id: number,
+  organizationId: string,
+  id: string,
   data: KeyValue
 ) => {
   data.updatedAt = dateToDateTime(new Date());
@@ -610,8 +611,8 @@ export const updateAuditWebpage = async (
  * Delete an audit webpage
  */
 export const deleteAuditWebpage = async (
-  organizationId: number,
-  id: number
+  organizationId: string,
+  id: string
 ) => {
   return await query(
     "DELETE FROM `audit-webpages` WHERE id = ? AND organizationId = ? LIMIT 1",
@@ -623,8 +624,8 @@ export const deleteAuditWebpage = async (
  * Get a list of all audits of a URL
  */
 export const getOrganizationAudits = async (
-  organizationId: number,
-  auditUrlId: number,
+  organizationId: string,
+  auditUrlId: string,
   query: KeyValue
 ) => {
   const webpageDetails = await getAuditWebpage(organizationId, auditUrlId);
@@ -644,9 +645,9 @@ export const getOrganizationAudits = async (
  * Get an audit webpage
  */
 export const getOrganizationAudit = async (
-  organizationId: number,
-  webpageId: number,
-  id: number
+  organizationId: string,
+  webpageId: string,
+  id: string
 ) => {
   const audit = (<Audit[]>(
     await query(
@@ -668,7 +669,7 @@ export const getOrganizationAudit = async (
  * Get a list of Agastya API keys
  */
 export const getAgastyaApiKeys = async (
-  organizationId: number,
+  organizationId: string,
   query: KeyValue
 ) => {
   return await getPaginatedData({
@@ -684,8 +685,8 @@ export const getAgastyaApiKeys = async (
  * Get a single Agastya API key
  */
 export const getAgastyaApiKey = async (
-  organizationId: number,
-  agastyaApiKeyId: number
+  organizationId: string,
+  agastyaApiKeyId: string
 ) => {
   const apiKey = (<AgastyaApiKey[]>(
     await query(
@@ -761,8 +762,8 @@ export const createAgastyaApiKey = async (
  * Update an Agastya API key
  */
 export const updateAgastyaApiKey = async (
-  organizationId: number,
-  agastyaApiKeyId: number,
+  organizationId: string,
+  agastyaApiKeyId: string,
   data: KeyValue
 ) => {
   data.updatedAt = new Date();
@@ -806,8 +807,8 @@ export const updateAgastyaApiKey = async (
  * Delete an Agastya API ket
  */
 export const deleteAgastyaApiKey = async (
-  organizationId: number,
-  agastyaApiKeyId: number
+  organizationId: string,
+  agastyaApiKeyId: string
 ) => {
   const currentAgastyaApiKey = await getAgastyaApiKey(
     organizationId,
@@ -829,8 +830,8 @@ export const deleteAgastyaApiKey = async (
  * Get an API key
  */
 export const getAgastyaApiKeyLogs = async (
-  organizationId: number,
-  apiKeyId: number,
+  organizationId: string,
+  apiKeyId: string,
   query: KeyValue
 ) => {
   const agastyaApiKey = await getAgastyaApiKey(organizationId, apiKeyId);
@@ -896,8 +897,8 @@ export const getAgastyaApiKeyLogs = async (
  * Get an API key
  */
 export const getAgastyaApiKeyGraphs = async (
-  organizationId: number,
-  apiKeyId: number,
+  organizationId: string,
+  apiKeyId: string,
   field: string,
   query: KeyValue
 ) => {
