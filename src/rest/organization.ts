@@ -96,8 +96,8 @@ import { trackEvent } from "../helpers/tracking";
 import { mail } from "../helpers/mail";
 
 export const getOrganizationForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number
+  userId: string | ApiKeyResponse,
+  organizationId: string
 ) => {
   if (await can(userId, OrgScopes.READ_ORG, "organization", organizationId))
     return await getOrganization(organizationId);
@@ -105,7 +105,7 @@ export const getOrganizationForUser = async (
 };
 
 export const newOrganizationForUser = async (
-  userId: number,
+  userId: string,
   organization: Organization,
   locals: Locals
 ) => {
@@ -124,8 +124,8 @@ export const newOrganizationForUser = async (
 };
 
 export const updateOrganizationForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
+  userId: string | ApiKeyResponse,
+  organizationId: string,
   data: Organization,
   locals: Locals
 ) => {
@@ -139,8 +139,8 @@ export const updateOrganizationForUser = async (
 };
 
 export const deleteOrganizationForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
+  userId: string | ApiKeyResponse,
+  organizationId: string,
   locals: Locals
 ) => {
   if (await can(userId, OrgScopes.DELETE_ORG, "organization", organizationId)) {
@@ -157,8 +157,8 @@ export const deleteOrganizationForUser = async (
 };
 
 export const getOrganizationBillingForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number
+  userId: string | ApiKeyResponse,
+  organizationId: string
 ) => {
   if (
     await can(
@@ -177,8 +177,8 @@ export const getOrganizationBillingForUser = async (
 };
 
 export const updateOrganizationBillingForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
+  userId: string | ApiKeyResponse,
+  organizationId: string,
   data: any,
   locals: Locals
 ) => {
@@ -208,8 +208,8 @@ export const updateOrganizationBillingForUser = async (
 };
 
 export const getOrganizationInvoicesForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
+  userId: string | ApiKeyResponse,
+  organizationId: string,
   params: KeyValue
 ) => {
   if (
@@ -229,8 +229,8 @@ export const getOrganizationInvoicesForUser = async (
 };
 
 export const getOrganizationInvoiceForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
+  userId: string | ApiKeyResponse,
+  organizationId: string,
   invoiceId: string
 ) => {
   if (
@@ -250,8 +250,8 @@ export const getOrganizationInvoiceForUser = async (
 };
 
 export const getOrganizationSourcesForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
+  userId: string | ApiKeyResponse,
+  organizationId: string,
   params: KeyValue
 ) => {
   if (
@@ -271,8 +271,8 @@ export const getOrganizationSourcesForUser = async (
 };
 
 export const getOrganizationSourceForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
+  userId: string | ApiKeyResponse,
+  organizationId: string,
   sourceId: string
 ) => {
   if (
@@ -292,8 +292,8 @@ export const getOrganizationSourceForUser = async (
 };
 
 export const getOrganizationSubscriptionsForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
+  userId: string | ApiKeyResponse,
+  organizationId: string,
   params: KeyValue
 ) => {
   if (
@@ -316,8 +316,8 @@ export const getOrganizationSubscriptionsForUser = async (
 };
 
 export const getOrganizationSubscriptionForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
+  userId: string | ApiKeyResponse,
+  organizationId: string,
   subscriptionId: string
 ) => {
   if (
@@ -340,8 +340,8 @@ export const getOrganizationSubscriptionForUser = async (
 };
 
 export const updateOrganizationSubscriptionForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
+  userId: string | ApiKeyResponse,
+  organizationId: string,
   subscriptionId: string,
   data: KeyValue,
   locals?: Locals
@@ -374,8 +374,8 @@ export const updateOrganizationSubscriptionForUser = async (
 };
 
 export const createOrganizationSubscriptionForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
+  userId: string | ApiKeyResponse,
+  organizationId: string,
   params: { plan: string; [index: string]: any },
   agastyaApiKey?: number,
   locals?: Locals
@@ -409,8 +409,8 @@ export const createOrganizationSubscriptionForUser = async (
 };
 
 export const getOrganizationPricingPlansForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number
+  userId: string | ApiKeyResponse,
+  organizationId: string
 ) => {
   if (
     await can(userId, OrgScopes.READ_ORG_PLANS, "organization", organizationId)
@@ -420,8 +420,8 @@ export const getOrganizationPricingPlansForUser = async (
 };
 
 export const deleteOrganizationSourceForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
+  userId: string | ApiKeyResponse,
+  organizationId: string,
   sourceId: string,
   locals?: Locals
 ) => {
@@ -452,8 +452,8 @@ export const deleteOrganizationSourceForUser = async (
 };
 
 export const updateOrganizationSourceForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
+  userId: string | ApiKeyResponse,
+  organizationId: string,
   sourceId: string,
   data: any,
   locals?: Locals
@@ -486,8 +486,8 @@ export const updateOrganizationSourceForUser = async (
 };
 
 export const createOrganizationSourceForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
+  userId: string | ApiKeyResponse,
+  organizationId: string,
   card: any,
   locals?: Locals
 ) => {
@@ -518,8 +518,8 @@ export const createOrganizationSourceForUser = async (
 };
 
 export const getAllOrganizationDataForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number
+  userId: string | ApiKeyResponse,
+  organizationId: string
 ) => {
   if (
     await can(
@@ -557,8 +557,8 @@ export const getAllOrganizationDataForUser = async (
 };
 
 export const getOrganizationMembershipsForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
+  userId: string | ApiKeyResponse,
+  organizationId: string,
   query?: KeyValue
 ) => {
   if (
@@ -574,9 +574,9 @@ export const getOrganizationMembershipsForUser = async (
 };
 
 export const getOrganizationMembershipForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
-  membershipId: number
+  userId: string | ApiKeyResponse,
+  organizationId: string,
+  membershipId: string
 ) => {
   if (
     await can(
@@ -594,9 +594,9 @@ export const getOrganizationMembershipForUser = async (
 };
 
 export const updateOrganizationMembershipForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
-  membershipId: number,
+  userId: string | ApiKeyResponse,
+  organizationId: string,
+  membershipId: string,
   data: KeyValue
 ) => {
   if (
@@ -616,9 +616,9 @@ export const updateOrganizationMembershipForUser = async (
 };
 
 export const deleteOrganizationMembershipForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
-  membershipId: number
+  userId: string | ApiKeyResponse,
+  organizationId: string,
+  membershipId: string
 ) => {
   if (
     await can(
@@ -633,8 +633,8 @@ export const deleteOrganizationMembershipForUser = async (
 };
 
 export const inviteMemberToOrganization = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
+  userId: string | ApiKeyResponse,
+  organizationId: string,
   newMemberName: string,
   newMemberEmail: string,
   role: MembershipRole,
@@ -661,7 +661,7 @@ export const inviteMemberToOrganization = async (
     }
     let newUser: User;
     let userExists = false;
-    let createdUserId = 0;
+    let createdUserId: string;
     try {
       newUser = await getUserByEmail(newMemberEmail);
       userExists = true;
@@ -707,8 +707,8 @@ export const inviteMemberToOrganization = async (
 };
 
 export const getOrganizationApiKeysForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
+  userId: string | ApiKeyResponse,
+  organizationId: string,
   query: KeyValue
 ) => {
   if (
@@ -724,9 +724,9 @@ export const getOrganizationApiKeysForUser = async (
 };
 
 export const getOrganizationApiKeyForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
-  apiKeyId: number
+  userId: string | ApiKeyResponse,
+  organizationId: string,
+  apiKeyId: string
 ) => {
   if (
     await can(
@@ -741,9 +741,9 @@ export const getOrganizationApiKeyForUser = async (
 };
 
 export const getOrganizationApiKeyLogsForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
-  apiKeyId: number,
+  userId: string | ApiKeyResponse,
+  organizationId: string,
+  apiKeyId: string,
   query: KeyValue
 ) => {
   if (
@@ -759,9 +759,9 @@ export const getOrganizationApiKeyLogsForUser = async (
 };
 
 export const updateApiKeyForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
-  apiKeyId: number,
+  userId: string | ApiKeyResponse,
+  organizationId: string,
+  apiKeyId: string,
   data: KeyValue,
   locals: Locals
 ) => {
@@ -782,8 +782,8 @@ export const updateApiKeyForUser = async (
 };
 
 export const createApiKeyForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
+  userId: string | ApiKeyResponse,
+  organizationId: string,
   apiKey: KeyValue,
   locals: Locals
 ) => {
@@ -804,9 +804,9 @@ export const createApiKeyForUser = async (
 };
 
 export const deleteApiKeyForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
-  apiKeyId: number,
+  userId: string | ApiKeyResponse,
+  organizationId: string,
+  apiKeyId: string,
   locals: Locals
 ) => {
   if (
@@ -826,8 +826,8 @@ export const deleteApiKeyForUser = async (
 };
 
 export const getOrganizationDomainsForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
+  userId: string | ApiKeyResponse,
+  organizationId: string,
   query: KeyValue
 ) => {
   if (
@@ -843,9 +843,9 @@ export const getOrganizationDomainsForUser = async (
 };
 
 export const getOrganizationDomainForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
-  domainId: number
+  userId: string | ApiKeyResponse,
+  organizationId: string,
+  domainId: string
 ) => {
   if (
     await can(
@@ -860,9 +860,9 @@ export const getOrganizationDomainForUser = async (
 };
 
 export const updateDomainForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
-  domainId: number,
+  userId: string | ApiKeyResponse,
+  organizationId: string,
+  domainId: string,
   data: KeyValue,
   locals: Locals
 ) => {
@@ -883,8 +883,8 @@ export const updateDomainForUser = async (
 };
 
 export const createDomainForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
+  userId: string | ApiKeyResponse,
+  organizationId: string,
   domain: KeyValue,
   locals: Locals
 ) => {
@@ -911,9 +911,9 @@ export const createDomainForUser = async (
 };
 
 export const deleteDomainForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
-  domainId: number,
+  userId: string | ApiKeyResponse,
+  organizationId: string,
+  domainId: string,
   locals: Locals
 ) => {
   if (
@@ -933,9 +933,9 @@ export const deleteDomainForUser = async (
 };
 
 export const verifyDomainForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
-  domainId: number,
+  userId: string | ApiKeyResponse,
+  organizationId: string,
+  domainId: string,
   method: "dns" | "file",
   locals: Locals
 ) => {
@@ -986,8 +986,8 @@ export const verifyDomainForUser = async (
 };
 
 export const getOrganizationWebhooksForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
+  userId: string | ApiKeyResponse,
+  organizationId: string,
   query: KeyValue
 ) => {
   if (
@@ -1003,9 +1003,9 @@ export const getOrganizationWebhooksForUser = async (
 };
 
 export const getOrganizationWebhookForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
-  webhookId: number
+  userId: string | ApiKeyResponse,
+  organizationId: string,
+  webhookId: string
 ) => {
   if (
     await can(
@@ -1020,9 +1020,9 @@ export const getOrganizationWebhookForUser = async (
 };
 
 export const updateWebhookForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
-  webhookId: number,
+  userId: string | ApiKeyResponse,
+  organizationId: string,
+  webhookId: string,
   data: KeyValue,
   locals: Locals
 ) => {
@@ -1043,8 +1043,8 @@ export const updateWebhookForUser = async (
 };
 
 export const createWebhookForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
+  userId: string | ApiKeyResponse,
+  organizationId: string,
   webhook: KeyValue,
   locals: Locals
 ) => {
@@ -1068,9 +1068,9 @@ export const createWebhookForUser = async (
 };
 
 export const deleteWebhookForUser = async (
-  userId: number | ApiKeyResponse,
-  organizationId: number,
-  webhookId: number,
+  userId: string | ApiKeyResponse,
+  organizationId: string,
+  webhookId: string,
   locals: Locals
 ) => {
   if (

@@ -11,9 +11,10 @@ import {
   elasticSearch
 } from "../helpers/elasticsearch";
 import ms from "ms";
+import { ELASTIC_LOGS_PREFIX } from "../config";
 
 export const getAllOrganizationForUser = async (
-  tokenUserId: number,
+  tokenUserId: string,
   query: KeyValue
 ) => {
   if (await can(tokenUserId, Authorizations.READ, "general"))
@@ -25,7 +26,7 @@ export const getAllOrganizationForUser = async (
 };
 
 export const getAllUsersForUser = async (
-  tokenUserId: number,
+  tokenUserId: string,
   query: KeyValue
 ) => {
   if (await can(tokenUserId, Authorizations.READ, "general"))
@@ -65,7 +66,7 @@ export const getPublicData = async () => {
  * Get an API key
  */
 export const getServerLogsForUser = async (
-  tokenUserId: number,
+  tokenUserId: string,
   query: KeyValue
 ) => {
   if (!(await can(tokenUserId, Authorizations.READ, "general")))
@@ -74,7 +75,7 @@ export const getServerLogsForUser = async (
   const size = query.size || 10;
   const from = query.from ? parseInt(query.from) : 0;
   const result = await elasticSearch.search({
-    index: `staart-logs-*`,
+    index: `${ELASTIC_LOGS_PREFIX}*`,
     from,
     body: {
       query: {

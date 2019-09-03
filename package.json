@@ -1,6 +1,6 @@
 {
   "name": "platform",
-  "version": "3.1.129",
+  "version": "3.1.130",
   "repository": "git@github.com:OswaldLabsOpenSource/platform-v3.git",
   "author": "Anand Chowdhary <mail@anandchowdhary.com>",
   "license": "MIT",
@@ -17,7 +17,7 @@
     "generate-docs": "yarn generate-routes && typedoc --out docs ./src",
     "generate-routes": "node setup/controllers.js",
     "increment-package": "node setup/increment.js",
-    "check-update": "node setup/update.js",
+    "check-update": "node setup/check-update.js",
     "update": "git pull git@github.com:o15y/staart",
     "postinstall": "npm run check-update",
     "snyk-protect": "snyk protect"
@@ -84,7 +84,7 @@
     "coveralls": "^3.0.6",
     "dotenv": "^8.1.0",
     "has-yarn": "^2.1.0",
-    "husky": "^3.0.4",
+    "husky": "^3.0.5",
     "jest": "^24.9.0",
     "onchange": "^6.0.0",
     "prettier": "^1.18.2",
@@ -123,6 +123,7 @@
     "geolite2": "^1.2.1",
     "googleapis": "^42.0.0",
     "handy-redis": "^1.6.2",
+    "hashids": "^2.0.0",
     "helmet": "^3.20.1",
     "http-aws-es": "^6.0.0",
     "http-status-codes": "^1.3.2",
@@ -156,11 +157,11 @@
     "slugify": "^1.3.4",
     "stripe": "^7.8.0",
     "which-browser": "^0.4.2",
-    "snyk": "^1.222.1"
+    "snyk": "^1.223.0"
   },
   "files": [
     "setup"
   ],
   "snyk": true,
-  "staart-version": "1.1.9"
+  "staart-version": "1.1.24"
 }

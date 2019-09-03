@@ -7,7 +7,8 @@ import {
   addApprovedLocation,
   getUserBackupCode,
   updateBackupCode,
-  checkUsernameAvailability
+  checkUsernameAvailability,
+  deleteSessionByJwt
 } from "../crud/user";
 import { InsertResult } from "../interfaces/mysql";
 import {
@@ -64,6 +65,12 @@ export const validateRefreshToken = async (token: string, locals: Locals) => {
   return await postLoginTokens(user, locals, token);
 };
 
+export const invalidateRefreshToken = async (token: string, locals: Locals) => {
+  const data = <User>await verifyToken(token, Tokens.REFRESH);
+  if (!data.id) throw new Error(ErrorCode.USER_NOT_FOUND);
+  await deleteSessionByJwt(data.id, token);
+};
+
 export const login = async (
   email: string,
   password: string,
@@ -98,7 +105,7 @@ export const register = async (
   user: User,
   locals?: Locals,
   email?: string,
-  organizationId?: number,
+  organizationId?: string,
   role?: MembershipRole,
   emailVerified?: boolean
 ) => {
@@ -168,7 +175,7 @@ export const sendPasswordReset = async (email: string, locals?: Locals) => {
   return;
 };
 
-export const sendNewPassword = async (userId: number, email: string) => {
+export const sendNewPassword = async (userId: string, email: string) => {
   const user = await getUser(userId);
   const userEmails = await getUserEmails(userId);
   if (!userEmails.filter(userEmail => userEmail.email === email).length)
@@ -211,8 +218,8 @@ export const updatePassword = async (
 };
 
 export const impersonate = async (
-  tokenUserId: number,
-  impersonateUserId: number,
+  tokenUserId: string,
+  impersonateUserId: string,
   locals: Locals
 ) => {
   if (
