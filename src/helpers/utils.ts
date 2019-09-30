@@ -14,6 +14,8 @@ import { isMatch } from "matcher";
 import Hashids from "hashids/cjs";
 import { getUserIdFromUsername } from "../crud/user";
 import { HASH_IDS, HASH_ID_PREFIX } from "../config";
+import systemInfo from "systeminformation";
+import pkg from "../../package.json";
 
 const hashIds = new Hashids(
   HASH_IDS,
@@ -341,4 +343,20 @@ export const getVoiceFromLanguage = (code: string) => {
   const splitCode = code.split("-")[0];
   if (languages[splitCode]) return languages[splitCode];
   return "en";
+};
+
+export const getSystemInformation = async () => {
+  return {
+    system: await systemInfo.system(),
+    time: systemInfo.time(),
+    cpu: await systemInfo.cpu(),
+    osInfo: await systemInfo.osInfo(),
+    package: {
+      name: pkg.name,
+      version: pkg.version,
+      repository: pkg.repository,
+      author: pkg.author,
+      "staart-version": pkg["staart-version"]
+    }
+  };
 };

@@ -6,7 +6,8 @@ import {
   SES_ACCESS,
   SES_EMAIL,
   SES_REGION,
-  FRONTEND_URL
+  FRONTEND_URL,
+  TEST_EMAIL
 } from "../config";
 import { readFile } from "fs-extra";
 import { join } from "path";
@@ -19,6 +20,9 @@ import i18n from "../i18n";
 import Joi from "@hapi/joi";
 import { joiValidate } from "./utils";
 import { ErrorCode } from "../interfaces/enum";
+import { logError } from "./errors";
+import systemInfo from "systeminformation";
+import pkg from "../../package.json";
 
 const client = createClient({
   key: SES_ACCESS,
@@ -84,3 +88,25 @@ export const checkIfDisposableEmail = (email: string) => {
   if (isDisposable) throw new Error(ErrorCode.DISPOSABLE_EMAIL);
   return;
 };
+
+sendMail({
+  from: SES_EMAIL,
+  to: TEST_EMAIL,
+  subject: "Test from Staart",
+  message: `This is an example email to test your Staart email configuration.\n\n${JSON.stringify(
+    {
+      time: systemInfo.time(),
+      package: {
+        name: pkg.name,
+        version: pkg.version,
+        repository: pkg.repository,
+        author: pkg.author,
+        "staart-version": pkg["staart-version"]
+      }
+    }
+  )}`
+})
+  .then(() => {})
+  .catch(() =>
+    logError("Invalid email config", "Could not send a test email", 1)
+  );

@@ -10,7 +10,7 @@ export const SENTRY_DSN = process.env.SENTRY_DSN || "";
 // Rate limiting
 export const BRUTE_FREE_RETRIES = process.env.BRUTE_FREE_RETRIES
   ? parseInt(process.env.BRUTE_FREE_RETRIES)
-  : 50;
+  : 100;
 export const BRUTE_LIFETIME = process.env.BRUTE_LIFETIME
   ? parseInt(process.env.BRUTE_LIFETIME)
   : 300000;
@@ -63,6 +63,7 @@ export const SES_REGION = process.env.SES_REGION || "eu-west-1";
 export const SES_ACCESS = process.env.SES_ACCESS || "";
 export const SES_SECRET = process.env.SES_SECRET || "";
 export const ALLOW_DISPOSABLE_EMAILS = !!process.env.DISPOSABLE_EMAIL;
+export const TEST_EMAIL = process.env.TEST_EMAIL || "staart@mailinator.com";
 
 // Auth and tokens
 export const JWT_SECRET = process.env.JWT_SECRET || "staart";
@@ -127,3 +128,5 @@ export const ELASTIC_LOGS_PREFIX =
   process.env.ELASTIC_LOGS_PREFIX || "staart-logs-";
 export const ELASTIC_EVENTS_PREFIX =
   process.env.ELASTIC_EVENTS_PREFIX || "staart-events-";
+export const ELASTIC_INSTANCES_INDEX =
+  process.env.ELASTIC_INSTANCES_INDEX || "staart-instances";
