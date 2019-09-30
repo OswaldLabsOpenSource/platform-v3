@@ -1,7 +1,5 @@
 import { can } from "../helpers/authorization";
 import { Authorizations, ErrorCode } from "../interfaces/enum";
-import { getAllOrganizations } from "../crud/organization";
-import { getAllUsers } from "../crud/user";
 import { query, tableName } from "../helpers/mysql";
 import { temporaryStorage } from "../helpers/s3";
 import { getPaginatedData } from "../crud/data";
@@ -32,6 +30,18 @@ export const getAllUsersForUser = async (
   if (await can(tokenUserId, Authorizations.READ, "general"))
     return await getPaginatedData({
       table: "users",
+      ...query
+    });
+  throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);
+};
+
+export const getAllAgastyaApiKeysForUser = async (
+  tokenUserId: string,
+  query: KeyValue
+) => {
+  if (await can(tokenUserId, Authorizations.READ, "general"))
+    return await getPaginatedData({
+      table: "agastya-api-keys",
       ...query
     });
   throw new Error(ErrorCode.INSUFFICIENT_PERMISSION);

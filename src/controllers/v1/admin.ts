@@ -3,7 +3,8 @@ import { ErrorCode } from "../../interfaces/enum";
 import {
   getAllOrganizationForUser,
   getAllUsersForUser,
-  getServerLogsForUser
+  getServerLogsForUser,
+  getAllAgastyaApiKeysForUser
 } from "../../rest/admin";
 import {
   Get,
@@ -30,6 +31,13 @@ export class AdminController {
     const userId = res.locals.token.id;
     if (!userId) throw new Error(ErrorCode.MISSING_FIELD);
     res.json(await getAllUsersForUser(userId, req.query));
+  }
+
+  @Get("agastya-api-keys")
+  async getAgastyaApiKeys(req: Request, res: Response) {
+    const userId = res.locals.token.id;
+    if (!userId) throw new Error(ErrorCode.MISSING_FIELD);
+    res.json(await getAllAgastyaApiKeysForUser(userId, req.query));
   }
 
   @Get("server-logs")
