@@ -62,3 +62,10 @@ export interface Session extends IdRow {
   userAgent: string;
   location?: GeoLocation;
 }
+
+export interface Identity extends IdRow {
+  userId: string;
+  type: string;
+  identityId: string;
+  loginName?: string;
+}

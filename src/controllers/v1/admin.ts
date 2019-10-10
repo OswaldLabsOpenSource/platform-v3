@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { ErrorCode } from "../../interfaces/enum";
+import { MISSING_FIELD } from "@staart/errors";
 import {
   getAllOrganizationForUser,
   getAllUsersForUser,
@@ -22,28 +22,28 @@ export class AdminController {
   @Get("organizations")
   async getOrganizations(req: Request, res: Response) {
     const userId = res.locals.token.id;
-    if (!userId) throw new Error(ErrorCode.MISSING_FIELD);
+    if (!userId) throw new Error(MISSING_FIELD);
     res.json(await getAllOrganizationForUser(userId, req.query));
   }
 
   @Get("users")
   async getUsers(req: Request, res: Response) {
     const userId = res.locals.token.id;
-    if (!userId) throw new Error(ErrorCode.MISSING_FIELD);
+    if (!userId) throw new Error(MISSING_FIELD);
     res.json(await getAllUsersForUser(userId, req.query));
   }
 
   @Get("agastya-api-keys")
   async getAgastyaApiKeys(req: Request, res: Response) {
     const userId = res.locals.token.id;
-    if (!userId) throw new Error(ErrorCode.MISSING_FIELD);
+    if (!userId) throw new Error(MISSING_FIELD);
     res.json(await getAllAgastyaApiKeysForUser(userId, req.query));
   }
 
   @Get("server-logs")
   async getServerLogs(req: Request, res: Response) {
     const userId = res.locals.token.id;
-    if (!userId) throw new Error(ErrorCode.MISSING_FIELD);
+    if (!userId) throw new Error(MISSING_FIELD);
     res.json(await getServerLogsForUser(userId, req.query));
   }
 

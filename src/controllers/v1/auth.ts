@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction, RequestHandler } from "express";
-import { ErrorCode, UserRole, Tokens } from "../../interfaces/enum";
+import { UserRole, Tokens } from "../../interfaces/enum";
+import { INVALID_TOKEN } from "@staart/errors";
 import {
   sendPasswordReset,
   login,
@@ -19,7 +20,6 @@ import {
   Controller,
   Middleware,
   ClassWrapper,
-  ClassMiddleware,
   Wrapper
 } from "@overnightjs/core";
 import {
@@ -72,10 +72,10 @@ const OAuthRedirect = (
 };
 
 @Controller("v1/auth")
-@ClassMiddleware(bruteForceHandler)
 @ClassWrapper(asyncHandler)
 export class AuthController {
   @Post("register")
+  @Middleware(bruteForceHandler)
   @Middleware(
     validator(
       {
@@ -117,6 +117,7 @@ export class AuthController {
   }
 
   @Post("login")
+  @Middleware(bruteForceHandler)
   @Middleware(
     validator(
       {
@@ -170,7 +171,7 @@ export class AuthController {
       const data = await verifyToken(token, subject);
       res.json({ verified: true, data });
     } catch (error) {
-      throw new Error(ErrorCode.INVALID_TOKEN);
+      throw new Error(INVALID_TOKEN);
     }
   }
 

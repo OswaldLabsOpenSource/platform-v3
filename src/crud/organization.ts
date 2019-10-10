@@ -21,14 +21,16 @@ import {
 import ms from "ms";
 import { KeyValue } from "../interfaces/general";
 import { cachedQuery, deleteItemFromCache } from "../helpers/cache";
+import { CacheCategories, AuditRepeat, Webhooks } from "../interfaces/enum";
 import {
-  CacheCategories,
-  ErrorCode,
-  AuditRepeat,
-  Webhooks
-} from "../interfaces/enum";
-import cryptoRandomString from "crypto-random-string";
+  INVALID_INPUT,
+  ORGANIZATION_NOT_FOUND,
+  USERNAME_EXISTS,
+  MEMBERSHIP_NOT_FOUND,
+  RESOURCE_NOT_FOUND
+} from "@staart/errors";
 import { getPaginatedData } from "./data";
+import cryptoRandomString from "crypto-random-string";
 import { scheduleAudit } from "./api";
 import { ApiKey, AuditWebpage } from "../interfaces/tables/organization";
 import { apiKeyToken, invalidateToken } from "../helpers/jwt";
@@ -52,7 +54,7 @@ import axios from "axios";
  * Create a new organization for a user
  */
 export const createOrganization = async (organization: Organization) => {
-  if (!organization.name) throw new Error(ErrorCode.INVALID_INPUT);
+  if (!organization.name) throw new Error(INVALID_INPUT);
   organization.name = capitalizeFirstAndLastLetter(organization.name);
   organization.createdAt = new Date();
   organization.updatedAt = organization.createdAt;
@@ -63,10 +65,7 @@ export const createOrganization = async (organization: Organization) => {
     format: "hex"
   }).replace("#", "");
   organization.profilePicture = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-    organization.name || "XX"
-  ).replace(
-    /^([a-zA-Z0-9 _-]+)$/gi,
-    ""
+    (organization.name || "XX").substring(0, 2).toUpperCase()
   )}&background=${backgroundColor}&color=fff`;
   return await query(
     `INSERT INTO ${tableName("organizations")} ${tableValues(organization)}`,
@@ -87,7 +86,7 @@ export const getOrganization = async (id: string) => {
     )
   ))[0];
   if (org) return org;
-  throw new Error(ErrorCode.ORGANIZATION_NOT_FOUND);
+  throw new Error(ORGANIZATION_NOT_FOUND);
 };
 
 /*
@@ -103,7 +102,7 @@ export const getOrganizationIdFromUsername = async (username: string) => {
     )
   ))[0];
   if (org && org.id) return org.id;
-  throw new Error(ErrorCode.ORGANIZATION_NOT_FOUND);
+  throw new Error(ORGANIZATION_NOT_FOUND);
 };
 
 /*
@@ -124,7 +123,7 @@ export const updateOrganization = async (
     const currentOwner = await getOrganizationIdFromUsername(
       originalOrganization.username
     );
-    if (currentOwner != id) throw new Error(ErrorCode.USERNAME_EXISTS);
+    if (currentOwner != id) throw new Error(USERNAME_EXISTS);
     deleteItemFromCache(
       CacheCategories.ORGANIZATION_USERNAME,
       originalOrganization.username
@@ -638,7 +637,7 @@ export const getOrganizationAudits = async (
       },
       ...query
     });
-  throw new Error(ErrorCode.NOT_FOUND);
+  throw new Error(RESOURCE_NOT_FOUND);
 };
 
 /**
@@ -657,13 +656,13 @@ export const getOrganizationAudit = async (
       [id, webpageId]
     )
   ))[0];
-  if (!audit || !audit.auditUrlId) throw new Error(ErrorCode.NOT_FOUND);
+  if (!audit || !audit.auditUrlId) throw new Error(RESOURCE_NOT_FOUND);
   const webpageDetails = await getAuditWebpage(
     organizationId,
     audit.auditUrlId
   );
   if (webpageDetails && webpageDetails.id) return audit;
-  throw new Error(ErrorCode.NOT_FOUND);
+  throw new Error(RESOURCE_NOT_FOUND);
 };
 /**
  * Get a list of Agastya API keys
@@ -727,7 +726,7 @@ export const getAgastyaApiKeyFromSlug = async (slug: string) => {
     delete result.protectedInfo;
     return result;
   }
-  throw new Error(ErrorCode.NOT_FOUND);
+  throw new Error(RESOURCE_NOT_FOUND);
 };
 
 /**
@@ -781,7 +780,7 @@ export const updateAgastyaApiKey = async (
       originalAgastyaApiKey.slug
     );
     if (currentOwner && currentOwner.organizationId != organizationId)
-      throw new Error(ErrorCode.USERNAME_EXISTS);
+      throw new Error(USERNAME_EXISTS);
   }
   if (data.customCss) data.customCss = JSON.stringify(data.customCss);
   if (data.protectedInfo)
@@ -1043,8 +1042,7 @@ export const getOrganizationMembershipDetailed = async (
     organizationId,
     id
   )) as any;
-  if (!membership || !membership.id)
-    throw new Error(ErrorCode.MEMBERSHIP_NOT_FOUND);
+  if (!membership || !membership.id) throw new Error(MEMBERSHIP_NOT_FOUND);
   membership.organization = await getOrganization(membership.organizationId);
   membership.user = await getUser(membership.userId);
   return membership;

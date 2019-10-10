@@ -19,9 +19,9 @@ import {
 } from "../config";
 import connectionClass from "http-aws-es";
 import { init, captureException } from "@sentry/node";
+const INVALID_DOMAIN = "400/invalid-domain";
 import { getAgastyaApiKeyFromSlug } from "../crud/organization";
 import { includesDomainInCommaList } from "../helpers/utils";
-import { ErrorCode } from "../interfaces/enum";
 init({ dsn: SENTRY_DSN });
 
 AWS.config.update({
@@ -47,7 +47,7 @@ export const agastyaConfigResponse = async (
   if (allowedDomains && domain) {
     if (!includesDomainInCommaList(allowedDomains, domain)) allowed = false;
   }
-  if (!allowed) throw new Error(ErrorCode.INVALID_DOMAIN);
+  if (!allowed) throw new Error(INVALID_DOMAIN);
   const ipCountry = (req.get("Cf-Ipcountry") || "").toLowerCase();
   // Delete EU cookie law integration if country is not an EU member
   if (

@@ -47,52 +47,6 @@ export enum EventType {
   API_KEY_DELETED = "apiKey.deleted"
 }
 
-export enum ErrorCode {
-  NOT_FOUND = "404/not-found",
-  MISSING_TOKEN = "422/missing-token",
-  REVOKED_TOKEN = "401/revoked-token",
-  INVALID_TOKEN = "401/invalid-token",
-  EXPIRED_TOKEN = "401/expired-token",
-  MISSING_PRIMARY_EMAIL = "422/missing-primary-email",
-  MISSING_PASSWORD = "422/missing-password",
-  MISSING_FIELD = "422/missing-field",
-  INVALID_INPUT = "422/invalid-input",
-  EMAIL_EXISTS = "409/email-exists",
-  USERNAME_EXISTS = "409/username-exists",
-  USER_NOT_FOUND = "404/user-not-found",
-  MEMBERSHIP_NOT_FOUND = "404/membership-not-found",
-  ORGANIZATION_NOT_FOUND = "404/organization-not-found",
-  SUBSCRIPTION_NOT_FOUND = "404/subscription-not-found",
-  INVOICE_NOT_FOUND = "404/invoice-not-found",
-  INVALID_LOGIN = "401/invalid-login",
-  INCORRECT_PASSWORD = "401/incorrect-password",
-  INSUFFICIENT_PERMISSION = "403/insufficient-permission",
-  DEFAULT = "500/server-error",
-  EMAIL_CANNOT_DELETE = "400/cannot-delete-email",
-  UNVERIFIED_EMAIL = "401/unverified-email",
-  GOOGLE_AUTH_ERROR = "401/google-auth-error",
-  UNAPPROVED_LOCATION = "401/unapproved-location",
-  CANNOT_DELETE_SOLE_OWNER = "400/cannot-delete-sole-owner",
-  CANNOT_UPDATE_SOLE_OWNER = "400/cannot-update-sole-owner",
-  USER_IS_MEMBER_ALREADY = "400/user-is-member-already",
-  STRIPE_NO_CUSTOMER = "404/no-customer",
-  NOT_ENABLED_2FA = "400/invalid-2fa-token",
-  INVALID_2FA_TOKEN = "401/invalid-2fa-token",
-  OAUTH_NO_NAME = "422/oauth-no-name",
-  OAUTH_NO_EMAIL = "404/oauth-no-email",
-  INVALID_API_KEY_SECRET = "401/invalid-api-key-secret",
-  IP_RANGE_CHECK_FAIL = "401/ip-range-check-fail",
-  REFERRER_CHECK_FAIL = "401/referrer-check-fail",
-  DISPOSABLE_EMAIL = "422/disposable-email",
-  DOMAIN_UNABLE_TO_VERIFY = "400/domain-unable-to-verify",
-  INVALID_DOMAIN = "401/invalid-domain",
-  DOMAIN_MISSING_FILE = "400/domain-missing-file",
-  DOMAIN_MISSING_DNS = "400/domain-missing-dns",
-  DOMAIN_ALREADY_VERIFIED = "400/domain-already-verified",
-  CANNOT_INVITE_DOMAIN = "400/cannot-invite-domain",
-  UNABLE_TO_SEND_EMAIL = "500/unable-to-email"
-}
-
 export enum Templates {
   EMAIL_VERIFY = "email-verify",
   PASSWORD_RESET = "password-reset",
@@ -234,7 +188,10 @@ export enum UserScopes {
   RESEND_USER_EMAIL_VERIFICATION = "user:emails:resend-verification",
   CREATE_USER_SESSION = "user:sessions:create",
   READ_USER_SESSION = "user:sessions:read",
-  DELETE_USER_SESSION = "user:sessions:delete"
+  DELETE_USER_SESSION = "user:sessions:delete",
+  CREATE_USER_IDENTITY = "user:identities:create",
+  READ_USER_IDENTITY = "user:identities:read",
+  DELETE_USER_IDENTITY = "user:identities:delete"
 }
 
 export enum Webhooks {

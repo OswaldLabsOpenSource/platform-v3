@@ -10,8 +10,10 @@ import {
   ApprovedLocation,
   BackupCode,
   AccessToken,
-  Session
+  Session,
+  Identity
 } from "../interfaces/tables/user";
+import { decode } from "jsonwebtoken";
 import {
   capitalizeFirstAndLastLetter,
   deleteSensitiveInfoUser,
@@ -19,22 +21,36 @@ import {
 } from "../helpers/utils";
 import { hash } from "bcryptjs";
 import { KeyValue } from "../interfaces/general";
+import { NotificationEmails, CacheCategories } from "../interfaces/enum";
 import {
-  ErrorCode,
-  NotificationEmails,
-  CacheCategories
-} from "../interfaces/enum";
+  USER_NOT_FOUND,
+  USERNAME_EXISTS,
+  OAUTH_IDENTITY_TAKEN,
+  OAUTH_ERROR,
+  OAUTH_NO_ID
+} from "@staart/errors";
 import { getEmail, getVerifiedEmailObject } from "./email";
 import { cachedQuery, deleteItemFromCache } from "../helpers/cache";
 import md5 from "md5";
 import randomInt from "random-int";
 import { getPaginatedData } from "./data";
 import { accessToken, invalidateToken } from "../helpers/jwt";
-import { TOKEN_EXPIRY_API_KEY_MAX } from "../config";
+import {
+  TOKEN_EXPIRY_API_KEY_MAX,
+  GITHUB_CLIENT_SECRET,
+  GITHUB_CLIENT_ID,
+  FRONTEND_URL,
+  MICROSOFT_CLIENT_ID,
+  MICROSOFT_CLIENT_SECRET,
+  FACEBOOK_CLIENT_ID,
+  FACEBOOK_CLIENT_SECRET
+} from "../config";
 import {
   addLocationToSession,
   addLocationToSessions
 } from "../helpers/location";
+import ClientOAuth2 from "client-oauth2";
+import Axios from "axios";
 
 /**
  * Get a list of all ${tableName("users")}
@@ -84,7 +100,7 @@ export const getUser = async (id: string, secureOrigin = false) => {
       [id]
     )
   ))[0];
-  if (!user) throw new Error(ErrorCode.USER_NOT_FOUND);
+  if (!user) throw new Error(USER_NOT_FOUND);
   if (!secureOrigin) user = deleteSensitiveInfoUser(user);
   return user;
 };
@@ -94,8 +110,7 @@ export const getUser = async (id: string, secureOrigin = false) => {
  */
 export const getUserByEmail = async (email: string, secureOrigin = false) => {
   const emailObject = await getVerifiedEmailObject(email);
-  if (!emailObject || !emailObject.userId)
-    throw new Error(ErrorCode.USER_NOT_FOUND);
+  if (!emailObject || !emailObject.userId) throw new Error(USER_NOT_FOUND);
   return await getUser(emailObject.userId, secureOrigin);
 };
 
@@ -112,7 +127,7 @@ export const getUserIdFromUsername = async (username: string) => {
     )
   ))[0];
   if (user && user.id) return user.id;
-  throw new Error(ErrorCode.USER_NOT_FOUND);
+  throw new Error(USER_NOT_FOUND);
 };
 
 /**
@@ -146,7 +161,7 @@ export const updateUser = async (id: string, user: KeyValue) => {
       usernameOwner.id &&
       usernameOwner.id != originalUser.id
     )
-      throw new Error(ErrorCode.USERNAME_EXISTS);
+      throw new Error(USERNAME_EXISTS);
     if (originalUser.username && user.username !== originalUser.username)
       deleteItemFromCache(CacheCategories.USER_USERNAME, originalUser.username);
   }
@@ -512,5 +527,215 @@ export const deleteSession = async (userId: string, sessionId: string) => {
   return await query(
     `DELETE FROM ${tableName("sessions")} WHERE id = ? AND userId = ? LIMIT 1`,
     [sessionId, userId]
+  );
+};
+
+/**
+ * Get a list of all identities of a user
+ */
+export const getUserIdentities = async (userId: string, query: KeyValue) => {
+  const data = await getPaginatedData({
+    table: "identities",
+    conditions: {
+      userId
+    },
+    ...query,
+    sort: "desc"
+  });
+  return data;
+};
+
+/**
+ * Get a identity
+ */
+export const getIdentity = async (userId: string, identityId: string) => {
+  const data = (<Identity[]>(
+    await query(
+      `SELECT * FROM ${tableName(
+        "identities"
+      )} WHERE id = ? AND userId = ? LIMIT 1`,
+      [identityId, userId]
+    )
+  ))[0];
+  return data;
+};
+
+/**
+ * Get a identity
+ */
+export const getIdentityByServiceId = async (service: string, id: string) => {
+  const data = (<Identity[]>(
+    await query(
+      `SELECT * FROM ${tableName(
+        "identities"
+      )} WHERE type = ? AND identityId = ? LIMIT 1`,
+      [service, id]
+    )
+  ))[0];
+  return data;
+};
+
+const github = new ClientOAuth2({
+  clientId: GITHUB_CLIENT_ID,
+  clientSecret: GITHUB_CLIENT_SECRET,
+  redirectUri: `${FRONTEND_URL}/auth/connect-identity/github`,
+  authorizationUri: "https://github.com/login/oauth/authorize",
+  accessTokenUri: "https://github.com/login/oauth/access_token",
+  scopes: ["read:user", "user:email"]
+});
+const microsoft = new ClientOAuth2({
+  clientId: MICROSOFT_CLIENT_ID,
+  clientSecret: MICROSOFT_CLIENT_SECRET,
+  redirectUri: `${FRONTEND_URL}/auth/connect-identity/microsoft`,
+  authorizationUri: "https://login.microsoftonline.com/common/oauth2/authorize",
+  accessTokenUri: "https://login.microsoftonline.com/common/oauth2/token",
+  scopes: ["user.read"]
+});
+const facebook = new ClientOAuth2({
+  clientId: FACEBOOK_CLIENT_ID,
+  clientSecret: FACEBOOK_CLIENT_SECRET,
+  redirectUri: `${FRONTEND_URL}/auth/connect-identity/facebook`,
+  authorizationUri: "https://www.facebook.com/v4.0/dialog/oauth",
+  accessTokenUri: "https://graph.facebook.com/v4.0/oauth/access_token",
+  scopes: ["default"]
+});
+
+/**
+ * Create a identity: Get an OAuth link
+ */
+export const createIdentityGetOAuthLink = async (
+  userId: string,
+  newIdentity: KeyValue
+) => {
+  if (newIdentity.service === "github") {
+    return { url: github.code.getUri() };
+  }
+
+  if (newIdentity.service === "microsoft") {
+    return { url: microsoft.code.getUri() };
+  }
+
+  if (newIdentity.service === "facebook") {
+    return {
+      url: facebook.code
+        .getUri()
+        .replace("&scope=default&response_type=code", "")
+    };
+  }
+
+  throw new Error(OAUTH_ERROR);
+};
+
+/**
+ * Create a identity: Check if available
+ */
+export const checkIdentityAvailability = async (
+  service: string,
+  id: string
+) => {
+  let has = false;
+  try {
+    const identity = await getIdentityByServiceId(service, id);
+    if (identity && identity.id) has = true;
+  } catch (error) {}
+  if (has) throw new Error(OAUTH_IDENTITY_TAKEN);
+  return true;
+};
+
+/**
+ * Create a identity: Connect OAuth
+ */
+export const createIdentityConnect = async (
+  userId: string,
+  service: string,
+  url: string
+) => {
+  let data: any;
+  try {
+    if (service === "github") {
+      const token = (await github.code.getToken(url)).accessToken;
+      data = (await Axios.get("https://api.github.com/user", {
+        headers: {
+          Authorization: `token ${token}`
+        }
+      })).data;
+    }
+
+    if (service === "microsoft") {
+      const token = decode((await microsoft.code.getToken(url)).accessToken);
+      if (token && typeof token === "object")
+        data = {
+          id: token.puid,
+          login: token.email
+        };
+    }
+
+    if (service === "facebook") {
+      const token = (await facebook.code.getToken(url)).accessToken;
+      const result = (await Axios.get(
+        `https://graph.facebook.com/v4.0/me?access_token=${token}`
+      )).data;
+      data = {
+        id: result.id,
+        login: result.name
+      };
+    }
+  } catch (error) {
+    throw new Error(OAUTH_ERROR);
+  }
+
+  console.log("I got data", data);
+
+  if (!data || !data.id) throw new Error(OAUTH_NO_ID);
+  await checkIdentityAvailability(service, data.id);
+  await createIdentity({
+    userId,
+    identityId: data.id,
+    type: service,
+    loginName: data.login
+  });
+  return { success: true };
+};
+
+/**
+ * Create a identity
+ */
+export const createIdentity = async (newIdentity: Identity) => {
+  newIdentity.createdAt = new Date();
+  newIdentity.updatedAt = newIdentity.createdAt;
+  return await query(
+    `INSERT INTO ${tableName("identities")} ${tableValues(newIdentity)}`,
+    Object.values(newIdentity)
+  );
+};
+
+/**
+ * Update a user's identity
+ */
+export const updateIdentity = async (
+  userId: string,
+  identityId: string,
+  data: KeyValue
+) => {
+  data.updatedAt = new Date();
+  data = removeReadOnlyValues(data);
+  return await query(
+    `UPDATE ${tableName("identities")} SET ${setValues(
+      data
+    )} WHERE id = ? AND userId = ?`,
+    [...Object.values(data), identityId, userId]
+  );
+};
+
+/**
+ * Delete an identity
+ */
+export const deleteIdentity = async (userId: string, identityId: string) => {
+  await getIdentity(userId, identityId);
+  return await query(
+    `DELETE FROM ${tableName(
+      "identities"
+    )} WHERE id = ? AND userId = ? LIMIT 1`,
+    [identityId, userId]
   );
 };

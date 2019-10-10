@@ -13,7 +13,7 @@ import {
   RAPID_API_KEY
 } from "../config";
 import { getItemFromCache, storeItemInCache } from "../helpers/cache";
-import { CacheCategories, AuditStatuses, ErrorCode } from "../interfaces/enum";
+import { CacheCategories, AuditStatuses } from "../interfaces/enum";
 import { tableValues, query, setValues, tableName } from "../helpers/mysql";
 import { Audit } from "../interfaces/tables/organization";
 import { uploadToS3, getFromS3, temporaryStorage } from "../helpers/s3";
@@ -34,6 +34,7 @@ import Polly from "aws-sdk/clients/polly";
 import md5 from "md5";
 import { parse } from "@postlight/mercury-parser";
 import Rekognition from "aws-sdk/clients/rekognition";
+import { RESOURCE_NOT_FOUND } from "@staart/errors";
 
 const rekognition = new Rekognition({
   accessKeyId: AWS_REKOGNITION_ACCESS_KEY,
@@ -261,7 +262,7 @@ export const auditBadgeInfo = async (
       return { color, score };
     }
   }
-  throw new Error(ErrorCode.NOT_FOUND);
+  throw new Error(RESOURCE_NOT_FOUND);
 };
 
 export const getFaviconForSite = async (site: string, fallback?: string) => {
@@ -282,7 +283,7 @@ export const getReadingModeForUrl = async (url: string) => {
     await temporaryStorage.create(slug, file);
   }
   if (!file || !file.word_count || file.word_count < 20 || file.error)
-    throw new Error(ErrorCode.NOT_FOUND);
+    throw new Error(RESOURCE_NOT_FOUND);
   return file;
 };
 
@@ -330,7 +331,7 @@ export const getWordDefinitions = async (word: string) => {
       temporaryStorage.create(slug, result);
       return result;
     } catch (error) {
-      throw new Error(ErrorCode.NOT_FOUND);
+      throw new Error(RESOURCE_NOT_FOUND);
     }
   }
 };
@@ -353,7 +354,7 @@ export const getDialogflowResponse = async (
         .dialogflowServiceAccount as string;
     }
   }
-  if (!credentials) throw new Error(ErrorCode.NOT_FOUND);
+  if (!credentials) throw new Error(RESOURCE_NOT_FOUND);
   const sessionClient = new SessionsClient({
     credentials: JSON.parse(credentials) as Credentials
   });
