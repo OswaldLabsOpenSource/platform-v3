@@ -22,7 +22,7 @@ export default () => {
         if (incompleteAudit.id) lighthouseError(incompleteAudit.id);
       }
       const hourlyAudits = (await query(
-        "SELECT * FROM `audit-webpages` WHERE repeatEvery = ?",
+        `SELECT * FROM ${tableName("audit-webpages")} WHERE repeatEvery = ?`,
         [AuditRepeat.HOURLY]
       )) as AuditWebpage[];
       for await (const auditWebpage of hourlyAudits) {

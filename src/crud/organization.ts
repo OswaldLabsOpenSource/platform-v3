@@ -564,7 +564,9 @@ export const getOrganizationAuditWebpages = async (
 export const getAuditWebpage = async (organizationId: string, id: string) => {
   return (<AuditWebpage[]>(
     await query(
-      "SELECT * FROM `audit-webpages` WHERE id = ? AND organizationId = ? LIMIT 1",
+      `SELECT * FROM ${tableName(
+        "audit-webpages"
+      )} WHERE id = ? AND organizationId = ? LIMIT 1`,
       [id, organizationId]
     )
   ))[0];
@@ -578,7 +580,7 @@ export const createAuditWebpage = async (webpage: AuditWebpage) => {
   webpage.createdAt = new Date();
   webpage.updatedAt = webpage.createdAt;
   const result = await query(
-    `INSERT INTO \`audit-webpages\` ${tableValues(webpage)}`,
+    `INSERT INTO ${tableName("audit-webpages")} ${tableValues(webpage)}`,
     Object.values(webpage)
   );
   const id = generateHashId((result as any).insertId);
@@ -599,7 +601,7 @@ export const updateAuditWebpage = async (
   data.updatedAt = dateToDateTime(new Date());
   data = removeReadOnlyValues(data);
   return await query(
-    `UPDATE \`audit-webpages\` SET ${setValues(
+    `UPDATE ${tableName("audit-webpages")} SET ${setValues(
       data
     )} WHERE id = ? AND organizationId = ?`,
     [...Object.values(data), id, organizationId]
@@ -614,7 +616,9 @@ export const deleteAuditWebpage = async (
   id: string
 ) => {
   return await query(
-    "DELETE FROM `audit-webpages` WHERE id = ? AND organizationId = ? LIMIT 1",
+    `DELETE FROM ${tableName(
+      "audit-webpages"
+    )} WHERE id = ? AND organizationId = ? LIMIT 1`,
     [id, organizationId]
   );
 };

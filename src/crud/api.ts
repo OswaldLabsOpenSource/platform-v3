@@ -178,7 +178,9 @@ export const lighthouseAudit = async (id: string, url: string) => {
       lastAuditAt: currentTime
     };
     await query(
-      `UPDATE \`audit-webpages\` SET ${setValues(updateObject)} WHERE id = ?`,
+      `UPDATE ${tableName("audit-webpages")} SET ${setValues(
+        updateObject
+      )} WHERE id = ?`,
       [...Object.values(updateObject), currentAudit.auditUrlId]
     );
   }
