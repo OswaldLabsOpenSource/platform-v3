@@ -340,5 +340,5 @@ export const getVoiceFromLanguage = (code: string) => {
   if (languages[code]) return languages[code];
   const splitCode = code.split("-")[0];
   if (languages[splitCode]) return languages[splitCode];
-  return "en";
+  return "Joanna";
 };
