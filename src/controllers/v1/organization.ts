@@ -1044,16 +1044,13 @@ export class OrganizationController {
       },
       req.body
     );
-    res
-      .status(CREATED)
-      .json(
-        await createAuditWebpageForUser(
-          localsToTokenOrKey(res),
-          id,
-          req.body,
-          res.locals
-        )
-      );
+    await createAuditWebpageForUser(
+      localsToTokenOrKey(res),
+      id,
+      req.body,
+      res.locals
+    );
+    return respond(req, res, RESOURCE_CREATED);
   }
 
   @Get(":id/audit-webpages/:auditWebpage")
@@ -1221,16 +1218,13 @@ export class OrganizationController {
       { id: [Joi.string().required(), Joi.number().required()] },
       { id }
     );
-    res
-      .status(CREATED)
-      .json(
-        await createAgastyaApiKeyForUser(
-          localsToTokenOrKey(res),
-          id,
-          req.body,
-          res.locals
-        )
-      );
+    await createAgastyaApiKeyForUser(
+      localsToTokenOrKey(res),
+      id,
+      req.body,
+      res.locals
+    );
+    return respond(req, res, RESOURCE_CREATED);
   }
 
   @Get(":id/agastya-api-keys/:agastyaApiKeyId")
