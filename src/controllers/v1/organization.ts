@@ -58,6 +58,7 @@ import {
   getOrganizationAgastyaApiKeyLogsForUser,
   getOrganizationAgastyaApiKeyGraphsForUser
 } from "../../rest/organization";
+import { RESOURCE_CREATED, respond, RESOURCE_UPDATED } from "@staart/messages";
 import {
   Get,
   Put,
@@ -71,7 +72,6 @@ import {
 } from "@overnightjs/core";
 import { authHandler, validator } from "../../helpers/middleware";
 import { MembershipRole } from "../../interfaces/enum";
-import { CREATED } from "http-status-codes";
 import asyncHandler from "express-async-handler";
 import {
   joiValidate,
@@ -96,9 +96,7 @@ export class OrganizationController {
   )
   async put(req: Request, res: Response) {
     await newOrganizationForUser(res.locals.token.id, req.body, res.locals);
-    res
-      .status(CREATED)
-      .json({ success: true, message: "organization-created" });
+    return respond(req, res, RESOURCE_CREATED);
   }
 
   @Get(":id")
@@ -136,7 +134,7 @@ export class OrganizationController {
       req.body,
       res.locals
     );
-    res.json({ success: true, message: "organization-updated" });
+    return respond(req, res, RESOURCE_UPDATED, { resource: "Team" });
   }
 
   @Delete(":id")
@@ -407,16 +405,13 @@ export class OrganizationController {
       { organizationId: Joi.string().required() },
       { organizationId }
     );
-    res
-      .status(CREATED)
-      .json(
-        await createOrganizationSourceForUser(
-          localsToTokenOrKey(res),
-          organizationId,
-          req.body,
-          res.locals
-        )
-      );
+    await createOrganizationSourceForUser(
+      localsToTokenOrKey(res),
+      organizationId,
+      req.body,
+      res.locals
+    );
+    return respond(req, res, RESOURCE_CREATED);
   }
 
   @Delete(":id/sources/:sourceId")
@@ -525,7 +520,7 @@ export class OrganizationController {
       role || MembershipRole.MEMBER,
       res.locals
     );
-    res.status(CREATED).json({ invited: true });
+    return respond(req, res, RESOURCE_CREATED);
   }
 
   @Get(":id/memberships/:membershipId")
@@ -642,16 +637,13 @@ export class OrganizationController {
       { id: [Joi.string().required(), Joi.string().required()] },
       { id }
     );
-    res
-      .status(CREATED)
-      .json(
-        await createApiKeyForUser(
-          localsToTokenOrKey(res),
-          id,
-          req.body,
-          res.locals
-        )
-      );
+    await createApiKeyForUser(
+      localsToTokenOrKey(res),
+      id,
+      req.body,
+      res.locals
+    );
+    return respond(req, res, RESOURCE_CREATED);
   }
 
   @Get(":id/api-keys/:apiKeyId")
@@ -785,16 +777,13 @@ export class OrganizationController {
       { id: [Joi.string().required(), Joi.string().required()] },
       { id }
     );
-    res
-      .status(CREATED)
-      .json(
-        await createDomainForUser(
-          localsToTokenOrKey(res),
-          id,
-          req.body,
-          res.locals
-        )
-      );
+    await createDomainForUser(
+      localsToTokenOrKey(res),
+      id,
+      req.body,
+      res.locals
+    );
+    return respond(req, res, RESOURCE_CREATED);
   }
 
   @Get(":id/domains/:domainId")
@@ -873,7 +862,9 @@ export class OrganizationController {
       {
         id: [Joi.string().required(), Joi.string().required()],
         domainId: Joi.string().required(),
-        method: Joi.string().only(["file", "dns"])
+        method: Joi.string()
+          .allow(["file", "dns"])
+          .only()
       },
       { id, domainId, method }
     );
@@ -931,16 +922,13 @@ export class OrganizationController {
       { id: [Joi.string().required(), Joi.string().required()] },
       { id }
     );
-    res
-      .status(CREATED)
-      .json(
-        await createWebhookForUser(
-          localsToTokenOrKey(res),
-          id,
-          req.body,
-          res.locals
-        )
-      );
+    await createWebhookForUser(
+      localsToTokenOrKey(res),
+      id,
+      req.body,
+      res.locals
+    );
+    return respond(req, res, RESOURCE_CREATED);
   }
 
   @Get(":id/webhooks/:webhookId")
