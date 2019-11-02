@@ -9,11 +9,16 @@ import {
 import asyncHandler from "express-async-handler";
 import Joi from "@hapi/joi";
 import { joiValidate } from "../../helpers/utils";
-import { collect, agastyaConfigResponse } from "../../rest/agastya";
+import {
+  collect,
+  agastyaConfigResponse,
+  getGdprData
+} from "../../rest/agastya";
 import {
   cachedResponse,
   neverCache,
-  noCloudflareCache
+  noCloudflareCache,
+  bruteForceHandler
 } from "../../helpers/middleware";
 
 @Controller("v1/agastya")
@@ -91,5 +96,12 @@ export class AgastyaController {
     );
     const script = `!function(){"use strict";var s=new XMLHttpRequest;s.onreadystatechange=function(){if(4===s.readyState){var e=JSON.parse(s.responseText),t=e["plugin-url"]+"/agastya."+e["cache-key"]+".js",a=document.createElement("script");a.id="agastya4script",a.setAttribute("data-cache-key",e["cache-key"]),a.setAttribute("data-app-url",e["app-url"]),a.setAttribute("data-api-key","${apiKey}"),a.setAttribute("data-plugin-url",e["plugin-url"]),a.setAttribute("src",t),(document.getElementsByTagName("head")[0]||document.head||document.body||document.documentElement).appendChild(a)}},s.open("GET","https://agastya-version.oswaldlabs.com/meta.${environment}.json",!0),s.setRequestHeader("cache-control","no-cache,must-revalidate,post-check=0,pre-check=0,max-age=0"),s.send()}();`;
     res.type("js").send(script);
+  }
+
+  @Get("gdpr/export")
+  @Middleware(bruteForceHandler)
+  async getGdprExport(req: Request, res: Response) {
+    const result = await getGdprData(res.locals);
+    res.json(result);
   }
 }

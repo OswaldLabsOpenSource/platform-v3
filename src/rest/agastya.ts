@@ -22,6 +22,8 @@ import { init, captureException } from "@sentry/node";
 const INVALID_DOMAIN = "400/invalid-domain";
 import { getAgastyaApiKeyFromSlug } from "../crud/organization";
 import { includesDomainInCommaList } from "../helpers/utils";
+import { elasticSearch } from "../helpers/elasticsearch";
+import ms from "ms";
 init({ dsn: SENTRY_DSN });
 
 AWS.config.update({
@@ -222,4 +224,44 @@ export const collect = async (
       eu_laws: !!isEuMember(data.country_code || "")
     }
   };
+};
+
+export const getGdprData = async (locals: Locals): Promise<any> => {
+  const ipAddress = locals.ipAddress;
+  if (!ipAddress) return [];
+  const userAgent = new WhichBrowser(locals.userAgent);
+  const ua_fp = md5(userAgent.toString());
+  const user_fp = md5(ua_fp + ipAddress);
+  const range = "30d";
+  const size = 1000;
+  const result = await elasticSearch.search({
+    index: "agastya-*",
+    body: {
+      query: {
+        bool: {
+          must: [
+            {
+              range: {
+                date: {
+                  gte: new Date(new Date().getTime() - ms(range))
+                }
+              }
+            },
+            {
+              match: {
+                user_fp
+              }
+            }
+          ]
+        }
+      },
+      sort: [
+        {
+          date: { order: "desc" }
+        }
+      ],
+      size
+    }
+  });
+  return result.hits.hits.map(hit => hit._source);
 };
