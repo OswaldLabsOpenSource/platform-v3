@@ -1,6 +1,6 @@
 {
   "name": "platform",
-  "version": "3.1.141",
+  "version": "3.1.142",
   "repository": "git@github.com:OswaldLabsOpenSource/platform-v3.git",
   "author": "Anand Chowdhary <mail@anandchowdhary.com>",
   "license": "MIT",
@@ -136,7 +136,7 @@
     "is-eu-member": "^1.0.5",
     "iso-639-1": "^2.1.0",
     "jsonwebtoken": "^8.5.1",
-    "languagedetect": "^1.2.0",
+    "languagedetect": "1.2.0",
     "lighthouse": "^5.2.0",
     "marked": "^0.7.0",
     "matcher": "^2.0.0",
