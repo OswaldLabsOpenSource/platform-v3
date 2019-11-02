@@ -863,7 +863,7 @@ export class OrganizationController {
         id: [Joi.string().required(), Joi.string().required()],
         domainId: Joi.string().required(),
         method: Joi.string()
-          .allow(["file", "dns"])
+          .allow("file", "dns")
           .only()
       },
       { id, domainId, method }

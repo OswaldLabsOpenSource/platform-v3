@@ -88,11 +88,11 @@ export class AgastyaController {
     joiValidate(
       {
         apiKey: Joi.string().required(),
-        environment: Joi.string().allow([
+        environment: Joi.string().allow(
           "production",
           "acceptance",
           "development"
-        ])
+        )
       },
       { apiKey, environment }
     );
