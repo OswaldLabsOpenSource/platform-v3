@@ -265,3 +265,38 @@ export const getGdprData = async (locals: Locals): Promise<any> => {
   });
   return result.hits.hits.map(hit => hit._source);
 };
+
+export const deleteGdprData = async (locals: Locals): Promise<any> => {
+  const ipAddress = locals.ipAddress;
+  if (!ipAddress) return [];
+  const userAgent = new WhichBrowser(locals.userAgent);
+  const ua_fp = md5(userAgent.toString());
+  const user_fp = md5(ua_fp + ipAddress);
+  const range = "30d";
+  const result = await elasticSearch.updateByQuery({
+    index: "agastya-*",
+    type: "log",
+    body: {
+      query: {
+        bool: {
+          must: [
+            {
+              range: {
+                date: {
+                  gte: new Date(new Date().getTime() - ms(range))
+                }
+              }
+            },
+            {
+              match: {
+                user_fp
+              }
+            }
+          ]
+        }
+      },
+      script: { inline: "ctx._source.user_fp = 'redacted-as-per-gdpr-request'" }
+    }
+  });
+  return result;
+};

@@ -4,7 +4,8 @@ import {
   Controller,
   ClassWrapper,
   Middleware,
-  Post
+  Post,
+  Delete
 } from "@overnightjs/core";
 import asyncHandler from "express-async-handler";
 import Joi from "@hapi/joi";
@@ -12,7 +13,8 @@ import { joiValidate } from "../../helpers/utils";
 import {
   collect,
   agastyaConfigResponse,
-  getGdprData
+  getGdprData,
+  deleteGdprData
 } from "../../rest/agastya";
 import {
   cachedResponse,
@@ -98,10 +100,17 @@ export class AgastyaController {
     res.type("js").send(script);
   }
 
-  @Get("gdpr/export")
+  @Get("gdpr")
   @Middleware(bruteForceHandler)
   async getGdprExport(req: Request, res: Response) {
     const result = await getGdprData(res.locals);
     res.json(result);
+  }
+
+  @Delete("gdpr")
+  @Middleware(bruteForceHandler)
+  async deleteGdprData(req: Request, res: Response) {
+    await deleteGdprData(res.locals);
+    res.json({ deleted: true });
   }
 }
