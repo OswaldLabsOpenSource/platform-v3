@@ -16,7 +16,7 @@ import {
   speedLimitHandler
 } from "./helpers/middleware";
 import { Request, Response } from "express";
-import { MOVED_PERMANENTLY } from "http-status-codes";
+import { MOVED_PERMANENTLY, MOVED_TEMPORARILY } from "http-status-codes";
 import { DISALLOW_OPEN_CORS } from "./config";
 
 export class Staart extends Server {
@@ -48,6 +48,14 @@ export class Staart extends Server {
     );
     this.app.get("/_/:apiKey", (req: Request, res: Response) =>
       res.redirect(MOVED_PERMANENTLY, `/v1/agastya/loader/${req.params.apiKey}`)
+    );
+    this.app.get("/screenshot", (req: Request, res: Response) =>
+      res.redirect(
+        MOVED_TEMPORARILY,
+        `https://api.microlink.io?url=${encodeURIComponent(
+          req.query.url
+        )}&screenshot=true&meta=false&embed=screenshot.url`
+      )
     );
 
     // staart:setup/controllers
