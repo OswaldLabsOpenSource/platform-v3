@@ -57,6 +57,12 @@ export class Staart extends Server {
         )}&screenshot=true&meta=false&embed=screenshot.url`
       )
     );
+    this.app.get("/agastya-loader/:apiKey", (req: Request, res: Response) =>
+      res.redirect(
+        MOVED_TEMPORARILY,
+        `https://platform-beta.oswaldlabs.com/v1/agastya/load/${req.params.apiKey}`
+      )
+    );
 
     // staart:setup/controllers
   }
