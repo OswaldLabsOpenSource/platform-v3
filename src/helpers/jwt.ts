@@ -41,7 +41,7 @@ import i18n from "../i18n";
 import { ApiKey } from "../interfaces/tables/organization";
 import cryptoRandomString from "crypto-random-string";
 import ipRangeCheck from "ip-range-check";
-import redis from "@staart/redis";
+import redis from "./redis";
 
 /**
  * Generate a new JWT
