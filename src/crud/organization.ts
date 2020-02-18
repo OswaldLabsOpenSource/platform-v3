@@ -940,7 +940,7 @@ export const getAgastyaApiKeyGraphs = async (
           }
         }
       }
-    })) as any;
+    })).body;
     if (
       result &&
       result.aggregations &&
