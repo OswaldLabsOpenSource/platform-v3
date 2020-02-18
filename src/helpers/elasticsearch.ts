@@ -1,11 +1,5 @@
-import connectionClass from "http-aws-es";
-import AWS from "aws-sdk";
 import { Client } from "elasticsearch";
 import {
-  AWS_ELASTIC_ACCESS_KEY,
-  AWS_ELASTIC_SECRET_KEY,
-  AWS_ELASTIC_REGION,
-  AWS_ELASTIC_HOST,
   ELASTIC_INSTANCES_INDEX,
   ELASTIC_HOST,
   ELASTIC_LOG,
@@ -15,27 +9,11 @@ import { RESOURCE_NOT_FOUND } from "@staart/errors";
 import { logError } from "./errors";
 import systemInfo from "systeminformation";
 import pkg from "../../package.json";
-
-if (AWS_ELASTIC_ACCESS_KEY && AWS_ELASTIC_SECRET_KEY)
-  AWS.config.update({
-    credentials: new AWS.Credentials(
-      AWS_ELASTIC_ACCESS_KEY,
-      AWS_ELASTIC_SECRET_KEY
-    ),
-    region: AWS_ELASTIC_REGION
-  });
-
-export const elasticSearch =
-  AWS_ELASTIC_ACCESS_KEY && AWS_ELASTIC_SECRET_KEY && AWS_ELASTIC_HOST
-    ? new Client({
-        host: AWS_ELASTIC_HOST,
-        connectionClass
-      })
-    : new Client({
-        host: ELASTIC_HOST,
-        log: ELASTIC_LOG,
-        apiVersion: ELASTIC_API_VERSION
-      });
+export const elasticSearch = new Client({
+  host: ELASTIC_HOST,
+  log: ELASTIC_LOG,
+  apiVersion: ELASTIC_API_VERSION
+});
 
 const getSystemInformation = async () => {
   return {

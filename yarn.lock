@@ -1497,7 +1497,7 @@
   dependencies:
     dotenv "*"
 
-"@types/elasticsearch@*", "@types/elasticsearch@^5.0.35":
+"@types/elasticsearch@*":
   version "5.0.35"
   resolved "https://registry.yarnpkg.com/@types/elasticsearch/-/elasticsearch-5.0.35.tgz#e0a3d2c2c8239a2cd9fae04360f759c553bc4b7b"
   integrity sha512-oqQylLukPuPtQWPKT7NeTZ23sVNAF9GYAJCMIexxO/Rjmtdv95I1hdfORp7r+eukyqQ3Y5xUS6ZA5mPkKl6JwA==
@@ -3413,7 +3413,7 @@ ee-first@1.1.1:
   resolved "https://registry.yarnpkg.com/ee-first/-/ee-first-1.1.1.tgz#590c61156b0ae2f4f0255732a158b266bc56b21d"
   integrity sha1-WQxhFWsK4vTwJVcyoViyZrxWsh0=
 
-elasticsearch@^16.4.0, elasticsearch@^16.5.0:
+elasticsearch@^16.4.0:
   version "16.5.0"
   resolved "https://registry.yarnpkg.com/elasticsearch/-/elasticsearch-16.5.0.tgz#619a48040be25d345fdddf09fa6042a88c3974d6"
   integrity sha512-9YbmU2AtM/kQdmp96EI5nu2bjxowdarV6IsKmcS+jQowJ3mhG98J1DCVOtEKuFvsnNaLyKD3aPbCAmb72+WX3w==

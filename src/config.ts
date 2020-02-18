@@ -114,10 +114,6 @@ export const STRIPE_PRODUCT_ID = process.env.STRIPE_PRODUCT_ID || "";
 export const RAPID_API_KEY = process.env.RAPID_API_KEY || "";
 
 // Tracking
-export const AWS_ELASTIC_ACCESS_KEY = process.env.AWS_ELASTIC_ACCESS_KEY || "";
-export const AWS_ELASTIC_SECRET_KEY = process.env.AWS_ELASTIC_SECRET_KEY || "";
-export const AWS_ELASTIC_HOST = process.env.AWS_ELASTIC_HOST || "";
-export const AWS_ELASTIC_REGION = process.env.AWS_ELASTIC_REGION || "";
 export const ELASTIC_HOST = process.env.ELASTIC_HOST || "";
 export const ELASTIC_LOG = process.env.ELASTIC_LOG || "";
 export const ELASTIC_API_VERSION = process.env.ELASTIC_API_VERSION || "7.2";
