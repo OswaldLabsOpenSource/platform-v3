@@ -1316,7 +1316,7 @@ export class OrganizationController {
   async addSubscriptionsToAgastya(req: Request, res: Response) {
     const organizationId = await organizationUsernameToId(req.params.id);
     joiValidate(
-      { organizationId: Joi.number().required() },
+      { organizationId: Joi.string().required() },
       { organizationId }
     );
     const subscriptionParams = { ...req.body };
@@ -1344,7 +1344,7 @@ export class OrganizationController {
   async deleteSubscriptionsFromAgastya(req: Request, res: Response) {
     const organizationId = await organizationUsernameToId(req.params.id);
     joiValidate(
-      { organizationId: Joi.number().required() },
+      { organizationId: Joi.string().required() },
       { organizationId }
     );
     res.json(
@@ -1360,7 +1360,7 @@ export class OrganizationController {
   async revertSubscriptionsFromAgastya(req: Request, res: Response) {
     const organizationId = await organizationUsernameToId(req.params.id);
     joiValidate(
-      { organizationId: Joi.number().required() },
+      { organizationId: Joi.string().required() },
       { organizationId }
     );
     res.json(
