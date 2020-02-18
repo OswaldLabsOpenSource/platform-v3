@@ -1,6 +1,6 @@
 {
   "name": "platform",
-  "version": "3.1.148",
+  "version": "3.1.149",
   "repository": "git@github.com:OswaldLabsOpenSource/platform-v3.git",
   "author": "Anand Chowdhary <mail@anandchowdhary.com>",
   "license": "MIT",
@@ -148,7 +148,6 @@
     "mysql": "^2.17.1",
     "node-cache": "^5.0.1",
     "node-emoji": "^1.10.0",
-    "node-ses": "^2.2.1",
     "otplib": "^11.0.1",
     "parse-domain": "^2.3.2",
     "qrcode": "^1.4.2",
