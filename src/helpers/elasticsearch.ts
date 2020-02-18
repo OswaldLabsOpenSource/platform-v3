@@ -1,20 +1,25 @@
-import { Client } from "elasticsearch";
-import {
-  ELASTIC_INSTANCES_INDEX,
-  ELASTIC_HOST,
-  ELASTIC_LOG,
-  ELASTIC_API_VERSION
-} from "../config";
+import { Client } from "@elastic/elasticsearch";
+import { ELASTIC_INSTANCES_INDEX, ELASTIC_HOST } from "../config";
 import { RESOURCE_NOT_FOUND } from "@staart/errors";
 import { logError } from "./errors";
 import systemInfo from "systeminformation";
 import pkg from "../../package.json";
-export const elasticSearch = new Client({
-  host: ELASTIC_HOST,
-  log: ELASTIC_LOG,
-  apiVersion: ELASTIC_API_VERSION
-});
+import { AmazonConnection } from "aws-elasticsearch-connector";
 
+/**
+ * Client doesn't support the "awsConfig" property,
+ * which is part of "aws-elasticsearch-connector"
+ */
+export const elasticSearch = new (Client as any)({
+  node: ELASTIC_HOST,
+  Connection: AmazonConnection,
+  awsConfig: {
+    credentials: {
+      accessKeyId: process.env.AWS_ELASTIC_ACCESS_KEY || "",
+      secretAccessKey: process.env.AWS_ELASTIC_SECRET_KEY || ""
+    }
+  }
+}) as Client;
 const getSystemInformation = async () => {
   return {
     system: await systemInfo.system(),
@@ -35,8 +40,7 @@ getSystemInformation()
   .then(body =>
     elasticSearch.index({
       index: ELASTIC_INSTANCES_INDEX,
-      body,
-      type: "log"
+      body
     })
   )
   .then(() => console.log("System record added to ElasticSearch"))

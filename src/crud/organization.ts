@@ -910,7 +910,7 @@ export const getAgastyaApiKeyGraphs = async (
   const size = parseInt(query.size) || 10;
   const from = query.from ? parseInt(query.from) : 0;
   try {
-    const result = await elasticSearch.search({
+    const result = (await elasticSearch.search({
       index: `agastya-${agastyaApiKey.slug}`,
       from,
       body: {
@@ -940,7 +940,7 @@ export const getAgastyaApiKeyGraphs = async (
           }
         }
       }
-    });
+    })) as any;
     if (
       result &&
       result.aggregations &&

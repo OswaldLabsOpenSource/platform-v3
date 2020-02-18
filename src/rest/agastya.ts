@@ -9,35 +9,11 @@ import parseDomain from "parse-domain";
 import cryptoRandomString from "crypto-random-string";
 import { getGeolocationFromIp } from "../helpers/location";
 import { IncomingHttpHeaders } from "http";
-import AWS from "aws-sdk";
-import { Client } from "elasticsearch";
-import {
-  AWS_ELASTIC_ACCESS_KEY,
-  AWS_ELASTIC_SECRET_KEY,
-  AWS_ELASTIC_HOST,
-  SENTRY_DSN,
-  AWS_ELASTIC_REGION
-} from "../config";
-import connectionClass from "http-aws-es";
-import { init, captureException } from "@sentry/node";
 const INVALID_DOMAIN = "400/invalid-domain";
 import { getAgastyaApiKeyFromSlug } from "../crud/organization";
 import { includesDomainInCommaList } from "../helpers/utils";
 import { elasticSearch } from "../helpers/elasticsearch";
 import ms from "ms";
-init({ dsn: SENTRY_DSN });
-
-AWS.config.update({
-  credentials: new AWS.Credentials(
-    AWS_ELASTIC_ACCESS_KEY,
-    AWS_ELASTIC_SECRET_KEY
-  ),
-  region: AWS_ELASTIC_REGION
-});
-const client = new Client({
-  host: AWS_ELASTIC_HOST,
-  connectionClass
-});
 
 export const agastyaConfigResponse = async (
   apiKey: string,
@@ -215,7 +191,7 @@ export const collect = async (
     data.device_model = `${data.device_manufacturer}_${data.device_model}`;
 
   // Store in ElasticSearch
-  await client.index({
+  await elasticSearch.index({
     index: `agastya-${apiKey}`,
     body: data,
     type: "collect"
@@ -267,7 +243,7 @@ export const getGdprData = async (locals: Locals): Promise<any> => {
       size
     }
   });
-  return result.hits.hits.map(hit => hit._source);
+  return result;
 };
 
 export const deleteGdprData = async (locals: Locals): Promise<any> => {
