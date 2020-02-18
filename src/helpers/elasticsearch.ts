@@ -64,7 +64,6 @@ export const cleanElasticSearchQueryResponse = (
   response: any,
   size: number
 ) => {
-  console.log("Response", response);
   if (response.hits && response.hits.hits) {
     const count = response.hits.total;
     const data = response.hits.hits;

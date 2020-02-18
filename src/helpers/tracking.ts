@@ -27,6 +27,12 @@ export const trackEvent = (event: Event, locals?: Locals) => {
 
 export const trackUrl = async (req: Request, res: Response) => {
   if (req.method === "OPTIONS") return;
+  if (
+    req.url.startsWith("/agastya-loader/") ||
+    req.url.startsWith("/v1/agastya/config/") ||
+    req.url.startsWith("/v1/agastya/load/")
+  )
+    return;
   const trackingObject = {
     date: new Date(),
     apiKey: req.get("X-Api-Key") || req.query.key,
