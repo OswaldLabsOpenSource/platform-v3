@@ -31,7 +31,7 @@ export default () => {
 };
 
 const deleteOldLogs = async () => {
-  return await elasticSearch.deleteByQuery({
+  return (await elasticSearch.deleteByQuery({
     index: `${ELASTIC_LOGS_PREFIX}*`,
     body: {
       query: {
@@ -48,5 +48,5 @@ const deleteOldLogs = async () => {
         }
       }
     }
-  });
+  })).body;
 };

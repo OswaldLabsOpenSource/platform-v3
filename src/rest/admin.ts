@@ -85,7 +85,7 @@ export const getServerLogsForUser = async (
   const range: string = query.range || "7d";
   const size = query.size || 10;
   const from = query.from ? parseInt(query.from) : 0;
-  const result = await elasticSearch.search({
+  const result = (await elasticSearch.search({
     index: `${ELASTIC_LOGS_PREFIX}*`,
     from,
     body: {
@@ -109,6 +109,6 @@ export const getServerLogsForUser = async (
       ],
       size
     }
-  });
+  })).body;
   return cleanElasticSearchQueryResponse(result, size);
 };

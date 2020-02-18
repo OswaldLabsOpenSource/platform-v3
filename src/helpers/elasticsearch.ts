@@ -87,7 +87,7 @@ export const cleanElasticSearchQueryResponse = (
  */
 export const getLogMonthCount = async (index: string) => {
   try {
-    const result = await elasticSearch.search({
+    const result = (await elasticSearch.search({
       index,
       body: {
         query: {
@@ -109,7 +109,7 @@ export const getLogMonthCount = async (index: string) => {
         },
         size: 0
       }
-    });
+    })).body;
     return cleanElasticSearchQueryResponse(result, 0);
   } catch (error) {
     return {

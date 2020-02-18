@@ -216,7 +216,7 @@ export const getApiKeyLogs = async (
       match[key] = value;
       return { match };
     });
-  const result = await elasticSearch.search({
+  const result = (await elasticSearch.search({
     index: `${ELASTIC_LOGS_PREFIX}*`,
     from,
     body: {
@@ -246,7 +246,7 @@ export const getApiKeyLogs = async (
       ],
       size
     }
-  });
+  })).body;
   return cleanElasticSearchQueryResponse(result, size);
 };
 
@@ -859,7 +859,7 @@ export const getAgastyaApiKeyLogs = async (
       return { match };
     });
   try {
-    const result = await elasticSearch.search({
+    const result = (await elasticSearch.search({
       index: `agastya-${agastyaApiKey.slug}`,
       from,
       body: {
@@ -884,7 +884,7 @@ export const getAgastyaApiKeyLogs = async (
         ],
         size
       }
-    });
+    })).body;
     return cleanElasticSearchQueryResponse(result, size);
   } catch (error) {
     return {
@@ -965,7 +965,7 @@ export const getAgastyaApiKeyGraphs = async (
  */
 export const getAgastyaApiKeyLogMonthCount = async (slug: String) => {
   try {
-    const result = await elasticSearch.search({
+    const result = (await elasticSearch.search({
       index: `agastya-${slug}`,
       body: {
         query: {
@@ -987,7 +987,7 @@ export const getAgastyaApiKeyLogMonthCount = async (slug: String) => {
         },
         size: 0
       }
-    });
+    })).body;
     return cleanElasticSearchQueryResponse(result, 0);
   } catch (error) {
     return {
