@@ -15,7 +15,8 @@ import {
   AWS_ELASTIC_ACCESS_KEY,
   AWS_ELASTIC_SECRET_KEY,
   AWS_ELASTIC_HOST,
-  SENTRY_DSN
+  SENTRY_DSN,
+  AWS_ELASTIC_REGION
 } from "../config";
 import connectionClass from "http-aws-es";
 import { init, captureException } from "@sentry/node";
@@ -31,7 +32,7 @@ AWS.config.update({
     AWS_ELASTIC_ACCESS_KEY,
     AWS_ELASTIC_SECRET_KEY
   ),
-  region: "eu-west-3"
+  region: AWS_ELASTIC_REGION
 });
 const client = new Client({
   host: AWS_ELASTIC_HOST,
@@ -126,6 +127,9 @@ export const collect = async (
     }
   }
 
+  // URL params
+  data.cleanUrl = data.url.split("?")[0].split("#")[0];
+
   // Custom event support
   if (data.event && typeof data.event === "object") {
     Object.keys(data.event).forEach(key => {
@@ -202,13 +206,13 @@ export const collect = async (
 
   // Clean responses
   if (data.city && data.country_code)
-    data.city = `${data.country_code}:${data.city}`;
+    data.city = `${data.country_code}_${data.city}`;
   if (data.zip_code && data.country_code)
-    data.zip_code = `${data.country_code}:${data.zip_code}`;
+    data.zip_code = `${data.country_code}_${data.zip_code}`;
   if (data.region_name && data.country_code)
-    data.region_name = `${data.country_code}:${data.region_name}`;
+    data.region_name = `${data.country_code}_${data.region_name}`;
   if (data.device_model && data.device_manufacturer)
-    data.device_model = `${data.device_manufacturer}:${data.device_model}`;
+    data.device_model = `${data.device_manufacturer}_${data.device_model}`;
 
   // Store in ElasticSearch
   await client.index({

@@ -61,10 +61,15 @@ getSystemInformation()
       type: "log"
     })
   )
-  .then(() => {})
-  .catch(() =>
-    logError("ElasticSearch configuration error", "Unable to log event", 1)
-  );
+  .then(() => console.log("System record added to ElasticSearch"))
+  .catch(error => {
+    logError(
+      "ElasticSearch configuration error",
+      "Unable to log system event",
+      1
+    );
+    console.log(error);
+  });
 
 export const cleanElasticSearchQueryResponse = (
   response: any,

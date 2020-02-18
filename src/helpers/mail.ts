@@ -5,7 +5,7 @@ import { readFile } from "fs-extra";
 import { join } from "path";
 import { render } from "mustache";
 import marked from "marked";
-import { success, error } from "signale";
+import { success } from "signale";
 import { isMatch } from "matcher";
 import disposableDomains from "disposable-email-domains/index.json";
 import wildcardDomains from "disposable-email-domains/wildcard.json";
@@ -38,7 +38,7 @@ const transporter = createTransport(
 transporter
   .verify()
   .then(() => success("Email transport works"))
-  .catch(() => error("Unable to verify email transport"));
+  .catch(() => logError("SMTP", "Unable to verify email transport", 1));
 
 /**
  * Send a new email
