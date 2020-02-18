@@ -104,7 +104,7 @@ export const collect = async (
   }
 
   // URL params
-  data.cleanUrl = data.url.split("?")[0].split("#")[0];
+  if (data.url) data.cleanUrl = data.url.split("?")[0].split("#")[0];
 
   // Custom event support
   if (data.event && typeof data.event === "object") {
