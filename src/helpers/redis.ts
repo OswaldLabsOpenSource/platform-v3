@@ -1,4 +1,5 @@
 import { createHandyClient } from "handy-redis";
+import { logError } from "./errors";
 
 const redis = createHandyClient({
   host: "srv-captain--redis",
@@ -6,18 +7,15 @@ const redis = createHandyClient({
   password: process.env.REDIS_PASSWORD,
   retry_strategy: options => {
     if (options.error && options.error.code === "ECONNREFUSED") {
-      console.error("Redis connection failed", "Server refused the connection");
+      logError("Redis connection failed", "Server refused the connection");
     }
 
     if (options.total_retry_time > 1000 * 60 * 60) {
-      console.error("Redis connection failed", "Total retry time exhausted");
+      logError("Redis connection failed", "Total retry time exhausted");
     }
 
     if (options.attempt > 10) {
-      console.error(
-        "Redis connection failed",
-        "Max number of attempts exceeded"
-      );
+      logError("Redis connection failed", "Max number of attempts exceeded");
       return 43200;
     }
 

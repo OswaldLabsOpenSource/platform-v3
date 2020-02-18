@@ -1,10 +1,17 @@
 import { Client } from "@elastic/elasticsearch";
 import { ELASTIC_INSTANCES_INDEX, ELASTIC_HOST } from "../config";
 import { RESOURCE_NOT_FOUND } from "@staart/errors";
+import { success } from "signale";
 import { logError } from "./errors";
 import systemInfo from "systeminformation";
 import pkg from "../../package.json";
 import { AmazonConnection } from "aws-elasticsearch-connector";
+
+import AWS from "aws-sdk";
+AWS.config.update({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+});
 
 /**
  * Client doesn't support the "awsConfig" property,
@@ -15,8 +22,8 @@ export const elasticSearch = new (Client as any)({
   Connection: AmazonConnection,
   awsConfig: {
     credentials: {
-      accessKeyId: process.env.AWS_ELASTIC_ACCESS_KEY || "",
-      secretAccessKey: process.env.AWS_ELASTIC_SECRET_KEY || ""
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID || "",
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || ""
     }
   }
 }) as Client;
@@ -43,7 +50,7 @@ getSystemInformation()
       body
     })
   )
-  .then(() => console.log("System record added to ElasticSearch"))
+  .then(() => success("System record added to ElasticSearch"))
   .catch(error => {
     logError(
       "ElasticSearch configuration error",
