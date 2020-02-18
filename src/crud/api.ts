@@ -77,11 +77,7 @@ export const readAloudText = (text: string, language: string) =>
           (error, data) => {
             if (error) return reject(error);
             resolve(data.AudioStream);
-            uploadToS3(
-              "oswald-labs-platform-cache",
-              key,
-              data.AudioStream as Buffer
-            )
+            uploadToS3("o15y-oswaldlabs", key, data.AudioStream as Buffer)
               .then(() => {})
               .catch(() => {});
           }
@@ -171,7 +167,7 @@ export const lighthouseAudit = async (id: string, url: string) => {
     `UPDATE ${tableName("audits")} SET ${setValues(audit)} WHERE id = ?`,
     [...Object.values(audit), id]
   );
-  await uploadToS3("dai11y", `reports/${id}.html`, report);
+  await uploadToS3("o15y-oswaldlabs", `lighthouse-reports/${id}.html`, report);
   const currentAudit = await getLighthouseAudit(id);
   if (currentAudit.auditUrlId) {
     const updateObject = {
