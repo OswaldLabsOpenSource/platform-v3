@@ -1686,6 +1686,13 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-6.14.7.tgz#2173f79d7a61d97d3aad2feeaac7ac69a3df39af"
   integrity sha512-YbPXbaynBTe0pVExPhL76TsWnxSPeFAvImIsmylpBWn/yfw+lHy+Q68aawvZHsgskT44ZAoeE67GM5f+Brekew==
 
+"@types/nodemailer@^6.4.0":
+  version "6.4.0"
+  resolved "https://registry.yarnpkg.com/@types/nodemailer/-/nodemailer-6.4.0.tgz#d8c039be3ed685c4719a026455555be82c124b74"
+  integrity sha512-KY7bFWB0MahRZvVW4CuW83qcCDny59pJJ0MQ5ifvfcjNwPlIT0vW4uARO4u1gtkYnWdhSvURegecY/tzcukJcA==
+  dependencies:
+    "@types/node" "*"
+
 "@types/normalize-package-data@^2.4.0":
   version "2.4.0"
   resolved "https://registry.yarnpkg.com/@types/normalize-package-data/-/normalize-package-data-2.4.0.tgz#e486d0d97396d79beedd0a6e33f4534ff6b4973e"
@@ -6728,6 +6735,11 @@ node-ses@^2.2.1:
     debug "^2.6.9"
     request "^2.88.0"
     xml2js "^0.4.19"
+
+nodemailer@^6.4.2:
+  version "6.4.2"
+  resolved "https://registry.yarnpkg.com/nodemailer/-/nodemailer-6.4.2.tgz#7147550e32cdc37453380ab78d2074533966090a"
+  integrity sha512-g0n4nH1ONGvqYo1v72uSWvF/MRNnnq1LzmSzXb/6EPF3LFb51akOhgG3K2+aETAsJx90/Q5eFNTntu4vBCwyQQ==
 
 nopt@^4.0.1:
   version "4.0.1"
