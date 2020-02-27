@@ -44,10 +44,10 @@ export class Staart extends Server {
       res.redirect("https://oswaldlabs.com/platform/")
     );
     this.app.get("/_/:envState/:apiKey", (req: Request, res: Response) =>
-      res.redirect(MOVED_PERMANENTLY, `/v1/agastya/loader/${req.params.apiKey}`)
+      res.redirect(MOVED_PERMANENTLY, `/v1/agastya/load/${req.params.apiKey}`)
     );
     this.app.get("/_/:apiKey", (req: Request, res: Response) =>
-      res.redirect(MOVED_PERMANENTLY, `/v1/agastya/loader/${req.params.apiKey}`)
+      res.redirect(MOVED_PERMANENTLY, `/v1/agastya/load/${req.params.apiKey}`)
     );
     this.app.get("/screenshot", (req: Request, res: Response) =>
       res.redirect(
@@ -57,10 +57,13 @@ export class Staart extends Server {
         )}&screenshot=true&meta=false&embed=screenshot.url`
       )
     );
+    this.app.get("/v1/agastya/loader/:apiKey", (req: Request, res: Response) =>
+      res.redirect(MOVED_PERMANENTLY, `/v1/agastya/load/${req.params.apiKey}`)
+    );
     this.app.get("/agastya-loader/:apiKey", (req: Request, res: Response) =>
       res.redirect(
         MOVED_TEMPORARILY,
-        `https://platform-beta.oswaldlabs.com/v1/agastya/load/${req.params.apiKey}`
+        `https://platform.oswaldlabs.com/v1/agastya/load/${req.params.apiKey}`
       )
     );
 
