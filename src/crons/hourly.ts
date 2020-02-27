@@ -54,7 +54,7 @@ const updateQuotas = async () => {
   let totalAgastyaEvents = 0;
   for await (const agastyaApiKey of agastyaApiKeys) {
     const result = await getAgastyaApiKeyLogMonthCount(agastyaApiKey.slug);
-    const count = parseInt(result.count);
+    const count = parseInt(result.count.value);
     totalAgastyaEvents += count;
     const updateValues = {
       eventsConsumed: count,
@@ -77,7 +77,7 @@ const updateQuotas = async () => {
     )} WHERE name = ?`,
     [...Object.values(updateMetaEventsValues), "agastya-events-month"]
   );
-  const totalCount = (await getLogMonthCount("staart-*")).count;
+  const totalCount = (await getLogMonthCount("staart-*")).count.value;
   const updateMetaCountValues = {
     /**
      * This 200,000 number is temporarily here because of all the events
