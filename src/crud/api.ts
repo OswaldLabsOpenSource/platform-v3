@@ -317,15 +317,14 @@ export const getWordDefinitions = async (word: string) => {
     return await temporaryStorage.read(slug);
   } catch (error) {
     try {
-      const result = (await axios.get(
-        `https://wordsapiv1.p.rapidapi.com/words/${word}`,
-        {
+      const result = (
+        await axios.get(`https://wordsapiv1.p.rapidapi.com/words/${word}`, {
           headers: {
             "X-RapidAPI-Host": "wordsapiv1.p.rapidapi.com",
             "X-RapidAPI-Key": RAPID_API_KEY
           }
-        }
-      )).data;
+        })
+      ).data;
       temporaryStorage.create(slug, result);
       return result;
     } catch (error) {

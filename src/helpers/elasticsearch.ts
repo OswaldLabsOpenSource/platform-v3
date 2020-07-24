@@ -86,29 +86,31 @@ export const cleanElasticSearchQueryResponse = (
  */
 export const getLogMonthCount = async (index: string) => {
   try {
-    const result = (await elasticSearch.search({
-      index,
-      body: {
-        query: {
-          bool: {
-            must: [
-              {
-                range: {
-                  date: {
-                    gte: new Date(
-                      new Date().getFullYear(),
-                      new Date().getMonth(),
-                      1
-                    )
+    const result = (
+      await elasticSearch.search({
+        index,
+        body: {
+          query: {
+            bool: {
+              must: [
+                {
+                  range: {
+                    date: {
+                      gte: new Date(
+                        new Date().getFullYear(),
+                        new Date().getMonth(),
+                        1
+                      )
+                    }
                   }
                 }
-              }
-            ]
-          }
-        },
-        size: 0
-      }
-    })).body;
+              ]
+            }
+          },
+          size: 0
+        }
+      })
+    ).body;
     return cleanElasticSearchQueryResponse(result, 0);
   } catch (error) {
     return {

@@ -216,37 +216,39 @@ export const getApiKeyLogs = async (
       match[key] = value;
       return { match };
     });
-  const result = (await elasticSearch.search({
-    index: `${ELASTIC_LOGS_PREFIX}*`,
-    from,
-    body: {
-      query: {
-        bool: {
-          must: [
-            {
-              match: {
-                apiKeyId
-              }
-            },
-            {
-              range: {
-                date: {
-                  gte: new Date(new Date().getTime() - ms(range))
+  const result = (
+    await elasticSearch.search({
+      index: `${ELASTIC_LOGS_PREFIX}*`,
+      from,
+      body: {
+        query: {
+          bool: {
+            must: [
+              {
+                match: {
+                  apiKeyId
                 }
-              }
-            },
-            ...filter
-          ]
-        }
-      },
-      sort: [
-        {
-          date: { order: "desc" }
-        }
-      ],
-      size
-    }
-  })).body;
+              },
+              {
+                range: {
+                  date: {
+                    gte: new Date(new Date().getTime() - ms(range))
+                  }
+                }
+              },
+              ...filter
+            ]
+          }
+        },
+        sort: [
+          {
+            date: { order: "desc" }
+          }
+        ],
+        size
+      }
+    })
+  ).body;
   return cleanElasticSearchQueryResponse(result, size);
 };
 
@@ -859,32 +861,34 @@ export const getAgastyaApiKeyLogs = async (
       return { match };
     });
   try {
-    const result = (await elasticSearch.search({
-      index: `agastya-${agastyaApiKey.slug}`,
-      from,
-      body: {
-        query: {
-          bool: {
-            must: [
-              {
-                range: {
-                  date: {
-                    gte: new Date(new Date().getTime() - ms(range))
+    const result = (
+      await elasticSearch.search({
+        index: `agastya-${agastyaApiKey.slug}`,
+        from,
+        body: {
+          query: {
+            bool: {
+              must: [
+                {
+                  range: {
+                    date: {
+                      gte: new Date(new Date().getTime() - ms(range))
+                    }
                   }
-                }
-              },
-              ...filter
-            ]
-          }
-        },
-        sort: [
-          {
-            date: { order: "desc" }
-          }
-        ],
-        size
-      }
-    })).body;
+                },
+                ...filter
+              ]
+            }
+          },
+          sort: [
+            {
+              date: { order: "desc" }
+            }
+          ],
+          size
+        }
+      })
+    ).body;
     return cleanElasticSearchQueryResponse(result, size);
   } catch (error) {
     return {
@@ -910,37 +914,39 @@ export const getAgastyaApiKeyGraphs = async (
   const size = parseInt(query.size) || 10;
   const from = query.from ? parseInt(query.from) : 0;
   try {
-    const result = (await elasticSearch.search({
-      index: `agastya-${agastyaApiKey.slug}`,
-      from,
-      body: {
-        size: 0,
-        aggs: {
-          result: {
-            terms: {
-              field: `${field}.keyword`,
-              size,
-              order: {
-                _count: "desc"
-              }
-            }
-          }
-        },
-        query: {
-          bool: {
-            must: [
-              {
-                range: {
-                  date: {
-                    gte: new Date(new Date().getTime() - ms(range))
-                  }
+    const result = (
+      await elasticSearch.search({
+        index: `agastya-${agastyaApiKey.slug}`,
+        from,
+        body: {
+          size: 0,
+          aggs: {
+            result: {
+              terms: {
+                field: `${field}.keyword`,
+                size,
+                order: {
+                  _count: "desc"
                 }
               }
-            ]
+            }
+          },
+          query: {
+            bool: {
+              must: [
+                {
+                  range: {
+                    date: {
+                      gte: new Date(new Date().getTime() - ms(range))
+                    }
+                  }
+                }
+              ]
+            }
           }
         }
-      }
-    })).body;
+      })
+    ).body;
     if (
       result &&
       result.aggregations &&
@@ -965,29 +971,31 @@ export const getAgastyaApiKeyGraphs = async (
  */
 export const getAgastyaApiKeyLogMonthCount = async (slug: String) => {
   try {
-    const result = (await elasticSearch.search({
-      index: `agastya-${slug}`,
-      body: {
-        query: {
-          bool: {
-            must: [
-              {
-                range: {
-                  date: {
-                    gte: new Date(
-                      new Date().getFullYear(),
-                      new Date().getMonth(),
-                      1
-                    )
+    const result = (
+      await elasticSearch.search({
+        index: `agastya-${slug}`,
+        body: {
+          query: {
+            bool: {
+              must: [
+                {
+                  range: {
+                    date: {
+                      gte: new Date(
+                        new Date().getFullYear(),
+                        new Date().getMonth(),
+                        1
+                      )
+                    }
                   }
                 }
-              }
-            ]
-          }
-        },
-        size: 0
-      }
-    })).body;
+              ]
+            }
+          },
+          size: 0
+        }
+      })
+    ).body;
     return cleanElasticSearchQueryResponse(result, 0);
   } catch (error) {
     return {

@@ -58,10 +58,11 @@ export const getPublicData = async () => {
     !data ||
     new Date().getTime() - new Date(data.storedAt).getTime() > 3600000
   ) {
-    data = (await query(
-      `SELECT * FROM ${tableName("metadata")} WHERE name = ?`,
-      ["eventsThisMonth"]
-    ))[0];
+    data = (
+      await query(`SELECT * FROM ${tableName("metadata")} WHERE name = ?`, [
+        "eventsThisMonth"
+      ])
+    )[0];
     data.storedAt = new Date();
     await temporaryStorage.create(fileName, data);
   }
@@ -85,30 +86,32 @@ export const getServerLogsForUser = async (
   const range: string = query.range || "7d";
   const size = query.size || 10;
   const from = query.from ? parseInt(query.from) : 0;
-  const result = (await elasticSearch.search({
-    index: `${ELASTIC_LOGS_PREFIX}*`,
-    from,
-    body: {
-      query: {
-        bool: {
-          must: [
-            {
-              range: {
-                date: {
-                  gte: new Date(new Date().getTime() - ms(range))
+  const result = (
+    await elasticSearch.search({
+      index: `${ELASTIC_LOGS_PREFIX}*`,
+      from,
+      body: {
+        query: {
+          bool: {
+            must: [
+              {
+                range: {
+                  date: {
+                    gte: new Date(new Date().getTime() - ms(range))
+                  }
                 }
               }
-            }
-          ]
-        }
-      },
-      sort: [
-        {
-          date: { order: "desc" }
-        }
-      ],
-      size
-    }
-  })).body;
+            ]
+          }
+        },
+        sort: [
+          {
+            date: { order: "desc" }
+          }
+        ],
+        size
+      }
+    })
+  ).body;
   return cleanElasticSearchQueryResponse(result, size);
 };
