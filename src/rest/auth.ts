@@ -87,7 +87,9 @@ export const login = async (
   password: string,
   locals: Locals
 ) => {
+  console.log("Reached login rest");
   const user = await getUserByEmail(email, true);
+  console.log("Found user");
   if (!user.password) throw new Error(MISSING_PASSWORD);
   if (!user.id) throw new Error(USER_NOT_FOUND);
   const correctPassword = await compare(password, user.password);
