@@ -85,6 +85,7 @@ export class AuthController {
     )
   )
   async login(req: Request, res: Response) {
+    console.log("reached controller");
     res.json(
       await login(req.body.email, req.body.password, res.locals as Locals)
     );
