@@ -18,6 +18,7 @@ import { authHandler, validator } from "../../helpers/middleware";
 import asyncHandler from "express-async-handler";
 import Joi from "@hapi/joi";
 import { hashIdToId } from "../../helpers/utils";
+import { Locals } from "../../interfaces/general";
 
 @Controller("v1/memberships")
 @ClassWrapper(asyncHandler)
@@ -36,7 +37,7 @@ export class MembershipController {
   async delete(req: Request, res: Response) {
     const userId = res.locals.token.id;
     const membershipId = hashIdToId(req.params.id);
-    await deleteMembershipForUser(userId, membershipId, res.locals);
+    await deleteMembershipForUser(userId, membershipId, res.locals as Locals);
     res.json({ deleted: true });
   }
 
@@ -47,7 +48,12 @@ export class MembershipController {
     const membershipId = hashIdToId(req.params.id);
     const data = req.body;
     delete req.body.id;
-    await updateMembershipForUser(userId, membershipId, data, res.locals);
+    await updateMembershipForUser(
+      userId,
+      membershipId,
+      data,
+      res.locals as Locals
+    );
     res.json({ success: true, message: "membership-updated" });
   }
 }

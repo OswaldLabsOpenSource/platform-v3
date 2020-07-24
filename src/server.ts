@@ -53,7 +53,7 @@ export class Staart extends Server {
       res.redirect(
         MOVED_TEMPORARILY,
         `https://api.microlink.io?url=${encodeURIComponent(
-          req.query.url
+          req.query.url as string
         )}&screenshot=true&meta=false&embed=screenshot.url`
       )
     );

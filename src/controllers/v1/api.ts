@@ -39,15 +39,15 @@ import { cacheForever, validator } from "../../helpers/middleware";
 export class ApiController {
   @Get("language-detect")
   async detectLanguage(req: Request, res: Response) {
-    const text = req.query.q;
+    const text = req.query.q as string;
     joiValidate({ text: Joi.string().required() }, { text });
     res.json({ language: detectTextLanguage(text) });
   }
 
   @Get("translate")
   async translateText(req: Request, res: Response) {
-    const text = req.query.q;
-    const lang = req.query.lang;
+    const text = req.query.q as string;
+    const lang = req.query.lang as string;
     joiValidate(
       {
         text: Joi.string().required(),
@@ -61,8 +61,8 @@ export class ApiController {
   @Get("read-aloud")
   @Middleware(cacheForever)
   async readAloud(req: Request, res: Response) {
-    const text = req.query.q;
-    const lang = req.query.lang;
+    const text = req.query.q as string;
+    const lang = req.query.lang as string;
     joiValidate(
       {
         text: Joi.string().required(),
@@ -76,7 +76,7 @@ export class ApiController {
 
   @Get("reader")
   async readingMode(req: Request, res: Response) {
-    const url = req.query.url;
+    const url = req.query.url as string;
     joiValidate({ url: Joi.string().required() }, { url });
     res.json(await getReadingModeForUrl(url));
   }
@@ -95,7 +95,7 @@ export class ApiController {
 
   @Get("audit")
   async createAudit(req: Request, res: Response) {
-    const url = req.query.url;
+    const url = req.query.url as string;
     const id = await lighthouseStart();
     res.json({ queued: true, id });
     try {
@@ -144,7 +144,9 @@ export class ApiController {
     res
       .set("Content-Type", "image/png")
       .end(
-        await getFaviconForSite(req.query.url || "https://oswaldlabs.com"),
+        await getFaviconForSite(
+          (req.query.url as string) || "https://oswaldlabs.com"
+        ),
         "binary"
       );
   }
@@ -152,7 +154,7 @@ export class ApiController {
   @Get("dictionary")
   @Middleware(cacheForever)
   async getDictionaryDefinition(req: Request, res: Response) {
-    const word = req.query.q;
+    const word = req.query.q as string;
     joiValidate({ word: Joi.string().required() }, { word });
     res.json(await getWordDefinitions(word));
   }
@@ -170,9 +172,9 @@ export class ApiController {
   )
   async getDialogflowChatbot(req: Request, res: Response) {
     const agastyaApiKey = req.params.agastyaApiKey;
-    const sessionId = req.query.sessionId;
-    const text = req.query.q;
-    const lang = req.query.lang;
+    const sessionId = req.query.sessionId as string;
+    const text = req.query.q as string;
+    const lang = req.query.lang as string;
     joiValidate({ agastyaApiKey: Joi.string().required() }, { agastyaApiKey });
     res.json(await getDialogflowResponse(agastyaApiKey, sessionId, lang, text));
   }

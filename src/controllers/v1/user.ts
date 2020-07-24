@@ -54,6 +54,7 @@ import {
   getMembershipDetailsForUser,
   updateMembershipForUser
 } from "../../rest/membership";
+import { Locals } from "../../interfaces/general";
 
 @Controller("v1/users")
 @ClassMiddleware(authHandler)
@@ -101,7 +102,12 @@ export class UserController {
       { id: [Joi.string().required(), Joi.string().required()] },
       { id }
     );
-    await updateUserForUser(res.locals.token.id, id, req.body, res.locals);
+    await updateUserForUser(
+      res.locals.token.id,
+      id,
+      req.body,
+      (res.locals as Locals) as Locals
+    );
     res.json({ success: true, message: "user-updated" });
   }
 
@@ -112,7 +118,9 @@ export class UserController {
       { id: [Joi.string().required(), Joi.string().required()] },
       { id }
     );
-    res.json(await deleteUserForUser(res.locals.token.id, id, res.locals));
+    res.json(
+      await deleteUserForUser(res.locals.token.id, id, res.locals as Locals)
+    );
   }
 
   @Put(":id/password")
@@ -144,7 +152,7 @@ export class UserController {
       id,
       oldPassword,
       newPassword,
-      res.locals
+      res.locals as Locals
     );
     res.json({ success: true, message: "user-password-updated" });
   }
@@ -194,7 +202,7 @@ export class UserController {
       },
       { id, membershipId }
     );
-    await deleteMembershipForUser(id, membershipId, res.locals);
+    await deleteMembershipForUser(id, membershipId, res.locals as Locals);
     res.json({ deleted: true });
   }
 
@@ -211,7 +219,7 @@ export class UserController {
     );
     const data = req.body;
     delete req.body.id;
-    await updateMembershipForUser(id, membershipId, data, res.locals);
+    await updateMembershipForUser(id, membershipId, data, res.locals as Locals);
     res.json({ success: true, message: "membership-updated" });
   }
 
@@ -248,7 +256,12 @@ export class UserController {
       },
       { id, email }
     );
-    await addEmailToUserForUser(res.locals.token.id, id, email, res.locals);
+    await addEmailToUserForUser(
+      res.locals.token.id,
+      id,
+      email,
+      (res.locals as Locals) as Locals
+    );
     return respond(req, res, RESOURCE_CREATED);
   }
 
@@ -296,7 +309,7 @@ export class UserController {
       res.locals.token.id,
       id,
       emailId,
-      res.locals
+      res.locals as Locals
     );
     res.json({ success: true, message: "user-email-deleted" });
   }
@@ -402,7 +415,7 @@ export class UserController {
       res.locals.token.id,
       id,
       req.body,
-      res.locals
+      res.locals as Locals
     );
     return respond(req, res, RESOURCE_CREATED);
   }
@@ -450,7 +463,7 @@ export class UserController {
         id,
         accessTokenId,
         req.body,
-        res.locals
+        res.locals as Locals
       )
     );
   }
@@ -471,7 +484,7 @@ export class UserController {
         res.locals.token.id,
         id,
         accessTokenId,
-        res.locals
+        res.locals as Locals
       )
     );
   }
@@ -522,7 +535,12 @@ export class UserController {
       { id, sessionId }
     );
     res.json(
-      await deleteSessionForUser(res.locals.token.id, id, sessionId, res.locals)
+      await deleteSessionForUser(
+        res.locals.token.id,
+        id,
+        sessionId,
+        (res.locals as Locals) as Locals
+      )
     );
   }
 
@@ -606,7 +624,7 @@ export class UserController {
         res.locals.token.id,
         id,
         identityId,
-        res.locals
+        res.locals as Locals
       )
     );
   }

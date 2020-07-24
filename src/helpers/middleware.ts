@@ -30,6 +30,7 @@ import {
 import { ApiKey } from "../interfaces/tables/organization";
 import { joiValidate, includesDomainInCommaList } from "./utils";
 import { trackUrl } from "./tracking";
+import { Locals } from "../interfaces/general";
 const store = new Brute.MemoryStore();
 const bruteForce = new Brute(store, {
   freeRetries: BRUTE_FREE_RETRIES,
@@ -76,7 +77,7 @@ export const trackingHandler = (
   next: NextFunction
 ) => {
   res.locals.userAgent = req.get("User-Agent");
-  const originalParamApiKey = req.get("X-Api-Key") || req.query.key;
+  const originalParamApiKey = req.get("X-Api-Key") || (req.query.key as string);
   if (originalParamApiKey) res.locals.originalParamApiKey = originalParamApiKey;
   // We don't want to keep the API key here because lots of controllers
   // use `req.query` for things like pagination and this won't validate
@@ -132,7 +133,7 @@ export const authHandler = async (
         Tokens.API_KEY
       )) as ApiKeyResponse;
       await checkInvalidatedToken(apiKeyJwt);
-      checkIpRestrictions(apiKeyToken, res.locals);
+      checkIpRestrictions(apiKeyToken, res.locals as Locals);
       const origin = req.get("Origin");
       if (origin) {
         const referrerDomain = new URL(origin).hostname;

@@ -80,6 +80,7 @@ import {
   hashIdToId
 } from "../../helpers/utils";
 import Joi from "@hapi/joi";
+import { Locals } from "../../interfaces/general";
 
 @Controller("v1/organizations")
 @ClassWrapper(asyncHandler)
@@ -95,7 +96,11 @@ export class OrganizationController {
     )
   )
   async put(req: Request, res: Response) {
-    await newOrganizationForUser(res.locals.token.id, req.body, res.locals);
+    await newOrganizationForUser(
+      res.locals.token.id,
+      req.body,
+      (res.locals as Locals) as Locals
+    );
     return respond(req, res, RESOURCE_CREATED);
   }
 
@@ -132,7 +137,7 @@ export class OrganizationController {
       localsToTokenOrKey(res),
       id,
       req.body,
-      res.locals
+      res.locals as Locals
     );
     return respond(req, res, RESOURCE_UPDATED, { resource: "Team" });
   }
@@ -147,7 +152,7 @@ export class OrganizationController {
     await deleteOrganizationForUser(
       res.locals.token.id,
       organizationId,
-      res.locals
+      res.locals as Locals
     );
     res.json({ success: true, message: "organization-deleted" });
   }
@@ -178,7 +183,7 @@ export class OrganizationController {
       localsToTokenOrKey(res),
       organizationId,
       req.body,
-      res.locals
+      res.locals as Locals
     );
     res.json({ success: true, message: "organization-billing-updated" });
   }
@@ -348,7 +353,7 @@ export class OrganizationController {
         organizationId,
         subscriptionId,
         data,
-        res.locals
+        res.locals as Locals
       )
     );
   }
@@ -376,7 +381,7 @@ export class OrganizationController {
         organizationId,
         subscriptionParams,
         undefined,
-        res.locals
+        res.locals as Locals
       )
     );
   }
@@ -409,7 +414,7 @@ export class OrganizationController {
       localsToTokenOrKey(res),
       organizationId,
       req.body,
-      res.locals
+      res.locals as Locals
     );
     return respond(req, res, RESOURCE_CREATED);
   }
@@ -430,7 +435,7 @@ export class OrganizationController {
         localsToTokenOrKey(res),
         organizationId,
         sourceId,
-        res.locals
+        res.locals as Locals
       )
     );
   }
@@ -452,7 +457,7 @@ export class OrganizationController {
         organizationId,
         sourceId,
         req.body,
-        res.locals
+        res.locals as Locals
       )
     );
   }
@@ -518,7 +523,7 @@ export class OrganizationController {
       newMemberName,
       newMemberEmail,
       role || MembershipRole.MEMBER,
-      res.locals
+      res.locals as Locals
     );
     return respond(req, res, RESOURCE_CREATED);
   }
@@ -641,7 +646,7 @@ export class OrganizationController {
       localsToTokenOrKey(res),
       id,
       req.body,
-      res.locals
+      res.locals as Locals
     );
     return respond(req, res, RESOURCE_CREATED);
   }
@@ -691,7 +696,7 @@ export class OrganizationController {
         id,
         apiKeyId,
         req.body,
-        res.locals
+        res.locals as Locals
       )
     );
   }
@@ -712,7 +717,7 @@ export class OrganizationController {
         localsToTokenOrKey(res),
         id,
         apiKeyId,
-        res.locals
+        res.locals as Locals
       )
     );
   }
@@ -781,7 +786,7 @@ export class OrganizationController {
       localsToTokenOrKey(res),
       id,
       req.body,
-      res.locals
+      res.locals as Locals
     );
     return respond(req, res, RESOURCE_CREATED);
   }
@@ -827,7 +832,7 @@ export class OrganizationController {
         id,
         domainId,
         req.body,
-        res.locals
+        res.locals as Locals
       )
     );
   }
@@ -848,7 +853,7 @@ export class OrganizationController {
         localsToTokenOrKey(res),
         id,
         domainId,
-        res.locals
+        res.locals as Locals
       )
     );
   }
@@ -857,7 +862,7 @@ export class OrganizationController {
   async verifyOrganizationDomain(req: Request, res: Response) {
     const id = await organizationUsernameToId(req.params.id);
     const domainId = hashIdToId(req.params.domainId);
-    const method = req.body.method || req.query.method;
+    const method = req.body.method || (req.query.method as string);
     joiValidate(
       {
         id: [Joi.string().required(), Joi.string().required()],
@@ -874,7 +879,7 @@ export class OrganizationController {
         id,
         domainId,
         method,
-        res.locals
+        res.locals as Locals
       )
     );
   }
@@ -926,7 +931,7 @@ export class OrganizationController {
       localsToTokenOrKey(res),
       id,
       req.body,
-      res.locals
+      res.locals as Locals
     );
     return respond(req, res, RESOURCE_CREATED);
   }
@@ -980,7 +985,7 @@ export class OrganizationController {
         id,
         webhookId,
         req.body,
-        res.locals
+        res.locals as Locals
       )
     );
   }
@@ -1001,7 +1006,7 @@ export class OrganizationController {
         localsToTokenOrKey(res),
         id,
         webhookId,
-        res.locals
+        res.locals as Locals
       )
     );
   }
@@ -1048,7 +1053,7 @@ export class OrganizationController {
       localsToTokenOrKey(res),
       id,
       req.body,
-      res.locals
+      res.locals as Locals
     );
     return respond(req, res, RESOURCE_CREATED);
   }
@@ -1097,7 +1102,7 @@ export class OrganizationController {
         id,
         auditWebpage,
         req.body,
-        res.locals
+        res.locals as Locals
       )
     );
   }
@@ -1118,7 +1123,7 @@ export class OrganizationController {
         localsToTokenOrKey(res),
         id,
         auditWebpage,
-        res.locals
+        res.locals as Locals
       )
     );
   }
@@ -1222,7 +1227,7 @@ export class OrganizationController {
       localsToTokenOrKey(res),
       id,
       req.body,
-      res.locals
+      res.locals as Locals
     );
     return respond(req, res, RESOURCE_CREATED);
   }
@@ -1286,7 +1291,7 @@ export class OrganizationController {
         id,
         agastyaApiKeyId,
         req.body,
-        res.locals
+        res.locals as Locals
       )
     );
   }
@@ -1307,7 +1312,7 @@ export class OrganizationController {
         localsToTokenOrKey(res),
         id,
         agastyaApiKeyId,
-        res.locals
+        res.locals as Locals
       )
     );
   }
@@ -1335,7 +1340,7 @@ export class OrganizationController {
         organizationId,
         subscriptionParams,
         hashIdToId(req.params.agastyaApiKeyId),
-        res.locals
+        res.locals as Locals
       )
     );
   }

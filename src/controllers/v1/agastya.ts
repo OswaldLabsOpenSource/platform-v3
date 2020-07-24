@@ -22,6 +22,7 @@ import {
   noCloudflareCache,
   bruteForceHandler
 } from "../../helpers/middleware";
+import { Locals } from "../../interfaces/general";
 
 @Controller("v1/agastya")
 @ClassWrapper(asyncHandler)
@@ -36,7 +37,7 @@ export class AgastyaController {
         req.body = JSON.parse(req.body);
       } catch (error) {}
     }
-    collect(apiKey, req.body, res.locals, req.headers)
+    collect(apiKey, req.body, res.locals as Locals, req.headers)
       .then(() => {})
       .catch(error => console.log("Wasn't able to track event", error));
   }
@@ -46,7 +47,7 @@ export class AgastyaController {
     const apiKey = req.params.apiKey;
     joiValidate({ apiKey: Joi.string().required() }, { apiKey });
     res.send();
-    collect(apiKey, req.query, res.locals, req.headers)
+    collect(apiKey, req.query, res.locals as Locals, req.headers)
       .then(() => {})
       .catch(error => console.log("Wasn't able to track event", error));
   }
@@ -60,7 +61,12 @@ export class AgastyaController {
     const query = { ...req.query };
     delete query.apiKey;
     if (req.query.apiKey) {
-      collect(req.query.apiKey, query, res.locals, req.headers)
+      collect(
+        req.query.apiKey as string,
+        query,
+        res.locals as Locals,
+        req.headers
+      )
         .then(() => {})
         .catch(error => console.log("Wasn't able to track event", error));
     }
@@ -72,7 +78,7 @@ export class AgastyaController {
   @Middleware(noCloudflareCache)
   async getConfig(req: Request, res: Response) {
     const apiKey = req.params.apiKey;
-    const domain = req.query.domain;
+    const domain = req.query.domain as string;
     joiValidate(
       { apiKey: Joi.string().required(), domain: Joi.string() },
       { apiKey, domain }
@@ -103,14 +109,14 @@ export class AgastyaController {
   @Get("gdpr")
   @Middleware(bruteForceHandler)
   async getGdprExport(req: Request, res: Response) {
-    const result = await getGdprData(res.locals);
+    const result = await getGdprData(res.locals as Locals);
     res.json(result);
   }
 
   @Delete("gdpr")
   @Middleware(bruteForceHandler)
   async deleteGdprData(req: Request, res: Response) {
-    await deleteGdprData(res.locals);
+    await deleteGdprData(res.locals as Locals);
     res.json({ deleted: true });
   }
 }

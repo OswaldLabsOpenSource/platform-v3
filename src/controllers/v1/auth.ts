@@ -24,6 +24,7 @@ import {
 import asyncHandler from "express-async-handler";
 import { joiValidate, hashIdToId } from "../../helpers/utils";
 import Joi from "@hapi/joi";
+import { Locals } from "../../interfaces/general";
 
 @Controller("v1/auth")
 @ClassWrapper(asyncHandler)
@@ -60,7 +61,7 @@ export class AuthController {
     delete user.membershipRole;
     await register(
       user,
-      res.locals,
+      res.locals as Locals,
       email,
       req.body.organizationId,
       req.body.membershipRole
@@ -84,7 +85,9 @@ export class AuthController {
     )
   )
   async login(req: Request, res: Response) {
-    res.json(await login(req.body.email, req.body.password, res.locals));
+    res.json(
+      await login(req.body.email, req.body.password, res.locals as Locals)
+    );
   }
 
   @Post("2fa")
@@ -102,7 +105,7 @@ export class AuthController {
   async twoFactor(req: Request, res: Response) {
     const code = req.body.code;
     const token = req.body.token;
-    res.json(await login2FA(code, token, res.locals));
+    res.json(await login2FA(code, token, res.locals as Locals));
   }
 
   @Post("verify-token")
@@ -132,7 +135,7 @@ export class AuthController {
     const token =
       req.body.token || (req.get("Authorization") || "").replace("Bearer ", "");
     joiValidate({ token: Joi.string().required() }, { token });
-    res.json(await validateRefreshToken(token, res.locals));
+    res.json(await validateRefreshToken(token, res.locals as Locals));
   }
 
   @Post("logout")
@@ -140,7 +143,7 @@ export class AuthController {
     const token =
       req.body.token || (req.get("Authorization") || "").replace("Bearer ", "");
     joiValidate({ token: Joi.string().required() }, { token });
-    res.json(await invalidateRefreshToken(token, res.locals));
+    res.json(await invalidateRefreshToken(token, res.locals as Locals));
   }
 
   @Post("reset-password/request")
@@ -156,7 +159,7 @@ export class AuthController {
   )
   async postResetPasswordRequest(req: Request, res: Response) {
     const email = req.body.email;
-    await sendPasswordReset(email, res.locals);
+    await sendPasswordReset(email, res.locals as Locals);
     res.json({ queued: true });
   }
 
@@ -174,7 +177,7 @@ export class AuthController {
       },
       { token, password }
     );
-    await updatePassword(token, password, res.locals);
+    await updatePassword(token, password, res.locals as Locals);
     res.json({ success: true, message: "auth-recover-success" });
   }
 
@@ -186,21 +189,23 @@ export class AuthController {
   async getImpersonate(req: Request, res: Response) {
     const tokenUserId = res.locals.token.id;
     const impersonateUserId = hashIdToId(req.params.id);
-    res.json(await impersonate(tokenUserId, impersonateUserId, res.locals));
+    res.json(
+      await impersonate(tokenUserId, impersonateUserId, res.locals as Locals)
+    );
   }
 
   @Post("approve-location")
   async getApproveLocation(req: Request, res: Response) {
     const token = req.body.token || req.params.token;
     joiValidate({ token: Joi.string().required() }, { token });
-    res.json(await approveLocation(token, res.locals));
+    res.json(await approveLocation(token, res.locals as Locals));
   }
 
   @Post("verify-email")
   async postVerifyEmail(req: Request, res: Response) {
     const token = req.body.token || req.params.token;
     joiValidate({ token: Joi.string().required() }, { token });
-    await verifyEmail(token, res.locals);
+    await verifyEmail(token, res.locals as Locals);
     res.json({ success: true, message: "auth-verify-email-success" });
   }
 }

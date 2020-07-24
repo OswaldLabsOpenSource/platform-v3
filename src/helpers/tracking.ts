@@ -33,9 +33,9 @@ export const trackUrl = async (req: Request, res: Response) => {
     req.url.startsWith("/v1/agastya/load/")
   )
     return;
-  const trackingObject = {
+  const trackingObject: any = {
     date: new Date(),
-    apiKey: req.get("X-Api-Key") || req.query.key,
+    apiKey: req.get("X-Api-Key") || (req.query.key as string),
     method: req.method,
     params: req.params,
     protocol: req.protocol,
