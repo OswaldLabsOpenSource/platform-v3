@@ -5,7 +5,7 @@ const redis = createHandyClient(
   process.env.DEV
     ? undefined
     : {
-        host: "srv-captain--redis",
+        host: "srv-captain--oswaldlabsredis",
         port: 6379,
         password: process.env.REDIS_PASSWORD,
         retry_strategy: options => {
