@@ -50,7 +50,7 @@ export const getAllAgastyaApiKeysForUser = async (
 
 export const getPublicData = async () => {
   const fileName = "public-data";
-  let data: any;
+  let data: any = {};
   try {
     data = await temporaryStorage.read(fileName);
   } catch (error) {}
