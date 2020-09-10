@@ -63,8 +63,8 @@ export class ApiController {
   async readAloud(req: Request, res: Response) {
     const text = req.query.q as string;
     const lang = req.query.lang as string;
-    const ssml = req.query.ssml as boolean;
-    const playbackSpeed = req.query.playback as number;
+    const ssml = req.query.ssml as any;
+    const playbackSpeed = req.query.playback as any;
     joiValidate(
       {
         text: Joi.string().required(),

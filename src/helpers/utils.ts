@@ -362,7 +362,6 @@ export const generateSSMLString = (text: string, playbackSpeed: number) => {
   ssmlString = `<speak> 
   ${ssmlString} 
   </speak>`;
-  console.log("Final SSSML String: ", ssmlString);
   return ssmlString;
 };
 
