@@ -27,6 +27,7 @@ import { SessionsClient, Credentials } from "dialogflow";
 import {
   average,
   getVoiceFromLanguage,
+  generateSSMLString,
   detectTextLanguage,
   generateHashId
 } from "../helpers/utils";
@@ -53,12 +54,22 @@ const translate = new Translate({
   key: GOOGLE_TRANSLATE_KEY
 });
 
-export const readAloudText = (text: string, language: string) =>
+export const readAloudText = (
+  text: string,
+  language: string,
+  ssml: boolean = false,
+  playbackSpeed: number = 1
+) =>
   new Promise((resolve, reject) => {
+    // Confirming whether language is correct through util functions
+    language = detectTextLanguage(text);
     let voice = getVoiceFromLanguage(language);
     if (detectTextLanguage(text) === "hi") {
       voice = "Aditi";
       language = "hi-IN";
+    }
+    if (ssml) {
+      text = generateSSMLString(text, playbackSpeed);
     }
     const key = `read-aloud/${md5(`${text}${voice}${language}`)}.mp3`;
     getFromS3("oswald-labs-platform-cache", key)
@@ -67,6 +78,7 @@ export const readAloudText = (text: string, language: string) =>
         polly.synthesizeSpeech(
           {
             OutputFormat: "mp3",
+            TextType: ssml ? "ssml" : "text",
             Text: text,
             VoiceId: voice,
             LanguageCode:
