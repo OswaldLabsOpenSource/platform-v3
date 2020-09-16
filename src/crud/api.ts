@@ -62,9 +62,11 @@ export const readAloudText = (
   voice: string = "Joanna"
 ) =>
   new Promise((resolve, reject) => {
-    // Confirming whether language is correct through util functions
-    language = detectTextLanguage(text);
-    // let voice = getVoiceFromLanguage(language);
+    if (language !== detectTextLanguage(text)) {
+      // If specified language isn't the same as detected, then override the language and voice properties
+      language = detectTextLanguage(text);
+      voice = getVoiceFromLanguage(language);
+    }
     if (detectTextLanguage(text) === "hi") {
       voice = "Aditi";
       language = "hi-IN";
