@@ -58,12 +58,13 @@ export const readAloudText = (
   text: string,
   language: string,
   ssml: boolean = false,
-  playbackSpeed: number = 1
+  playbackSpeed: number = 1,
+  voice: string = "Joanna"
 ) =>
   new Promise((resolve, reject) => {
     // Confirming whether language is correct through util functions
     language = detectTextLanguage(text);
-    let voice = getVoiceFromLanguage(language);
+    // let voice = getVoiceFromLanguage(language);
     if (detectTextLanguage(text) === "hi") {
       voice = "Aditi";
       language = "hi-IN";
