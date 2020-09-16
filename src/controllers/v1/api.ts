@@ -65,6 +65,7 @@ export class ApiController {
     const lang = req.query.lang as string;
     const ssml = req.query.ssml as any;
     const playbackSpeed = req.query.playback as any;
+    const voice = req.query.voice as string;
     joiValidate(
       {
         text: Joi.string().required(),
@@ -73,7 +74,7 @@ export class ApiController {
       { text, lang }
     );
     res.setHeader("Content-Type", "audio/mpeg");
-    res.send(await readAloudText(text, lang, ssml, playbackSpeed));
+    res.send(await readAloudText(text, lang, ssml, playbackSpeed, voice));
   }
 
   @Get("reader")
