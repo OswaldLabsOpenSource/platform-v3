@@ -346,7 +346,7 @@ export const getVoiceFromLanguage = (code: string) => {
 export const generateSSMLString = (text: string, playbackSpeed: number) => {
   let ssmlString = "";
   let sentences = text.split(".");
-  let sightWordPlaybackSpeed = `${0.5 * playbackSpeed * 100}%`;
+  let sightWordPlaybackSpeed = `${0.8 * playbackSpeed * 100}%`;
   let playbackSpeedPercentage = `${playbackSpeed * 100}%`;
   sentences.forEach(sentence => {
     let sentenceSSML = "";
