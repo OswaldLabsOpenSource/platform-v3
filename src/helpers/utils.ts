@@ -359,8 +359,8 @@ export const generateSSMLString = (text: string, playbackSpeed: number) => {
     });
     ssmlString += `<s> <prosody rate="${playbackSpeedPercentage}"> ${sentenceSSML} </prosody> </s>`;
   });
-  ssmlString = `<speak> 
-  ${ssmlString} 
+  ssmlString = `<speak>
+  ${ssmlString}
   </speak>`;
   return ssmlString;
 };
