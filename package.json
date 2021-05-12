@@ -148,7 +148,7 @@
     "mysql": "^2.17.1",
     "node-cache": "^5.0.1",
     "node-emoji": "^1.10.0",
-    "nodemailer": "^6.4.2",
+    "nodemailer": "^6.4.16",
     "otplib": "^11.0.1",
     "parse-domain": "^2.3.2",
     "qrcode": "^1.4.2",
