@@ -137,7 +137,7 @@
     "iso-639-1": "^2.1.0",
     "jsonwebtoken": "^8.5.1",
     "languagedetect": "1.2.0",
-    "lighthouse": "^5.2.0",
+    "lighthouse": "^9.6.7",
     "marked": "^0.7.0",
     "matcher": "^2.0.0",
     "maxmind": "^4.0.0",
