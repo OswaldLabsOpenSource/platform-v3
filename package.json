@@ -119,7 +119,7 @@
     "crypto-random-string": "^3.0.1",
     "dialogflow": "^0.10.3",
     "disposable-email-domains": "^1.0.49",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "express-async-handler": "^1.1.4",
     "express-brute": "^1.0.1",
     "express-rate-limit": "^5.0.0",
